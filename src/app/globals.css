@@ -81,24 +81,28 @@
     @apply w-full rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm text-ink-900 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition-all placeholder:text-ink-400;
   }
 
-  .badge {
+  .badge,
+  .badge-brand,
+  .badge-green,
+  .badge-amber,
+  .badge-rose {
     @apply inline-flex items-center gap-1.5 rounded-full text-xs font-semibold px-2.5 py-1;
   }
 
   .badge-brand {
-    @apply badge bg-brand-50 text-brand-600;
+    @apply bg-brand-50 text-brand-600;
   }
 
   .badge-green {
-    @apply badge bg-emerald-50 text-emerald-600;
+    @apply bg-emerald-50 text-emerald-600;
   }
 
   .badge-amber {
-    @apply badge bg-amber-50 text-amber-600;
+    @apply bg-amber-50 text-amber-600;
   }
 
   .badge-rose {
-    @apply badge bg-rose-50 text-rose-600;
+    @apply bg-rose-50 text-rose-600;
   }
 
   .navlink {
