@@ -1,0 +1,107 @@
+@import "tailwindcss";
+
+@theme {
+  /* Brand */
+  --color-brand-50: #EFF5FF;
+  --color-brand-100: #DCEAFF;
+  --color-brand-200: #B9D6FF;
+  --color-brand-300: #8DBBFF;
+  --color-brand-400: #5C99FF;
+  --color-brand-500: #2F6FED;
+  --color-brand-600: #1F56C9;
+  --color-brand-700: #1A45A0;
+  --color-brand-800: #173A85;
+  --color-brand-900: #142F6B;
+
+  /* Ink */
+  --color-ink-50: #F4F6FB;
+  --color-ink-100: #E7EBF3;
+  --color-ink-200: #CCD4E3;
+  --color-ink-300: #A9B4CC;
+  --color-ink-400: #7C8AA5;
+  --color-ink-500: #5A6B8C;
+  --color-ink-600: #3B4A66;
+  --color-ink-700: #1E293F;
+  --color-ink-800: #131B2C;
+  --color-ink-900: #0B1220;
+
+  /* Gold */
+  --color-gold-400: #D9B44A;
+  --color-gold-500: #C9A227;
+  --color-gold-600: #A9831B;
+
+  /* Typography */
+  --font-sans: var(--font-plus-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, monospace;
+
+  /* Shadows */
+  --shadow-soft: 0 1px 2px rgba(11, 18, 32, 0.04), 0 8px 24px -8px rgba(11, 18, 32, 0.08);
+  --shadow-glow: 0 0 0 1px rgba(47, 111, 237, 0.15), 0 12px 32px -12px rgba(47, 111, 237, 0.35);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-ink-50 text-ink-900 antialiased;
+  }
+
+  ::selection {
+    background: #b9d6ff;
+  }
+
+  *:focus-visible {
+    outline: 2px solid #2f6fed;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-white border border-ink-100 rounded-2xl;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-brand-500 text-white px-5 py-2.5 text-sm font-semibold hover:bg-brand-600 active:scale-[0.98] transition-all shadow-soft whitespace-nowrap;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-ink-200 px-5 py-2.5 text-sm font-semibold text-ink-800 hover:bg-ink-50 transition-all whitespace-nowrap;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-medium text-ink-500 hover:bg-ink-100 transition-all whitespace-nowrap;
+  }
+
+  .input-field {
+    @apply w-full rounded-xl border border-ink-200 bg-white px-4 py-2.5 text-sm text-ink-900 focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition-all placeholder:text-ink-400;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1.5 rounded-full text-xs font-semibold px-2.5 py-1;
+  }
+
+  .badge-brand {
+    @apply badge bg-brand-50 text-brand-600;
+  }
+
+  .badge-green {
+    @apply badge bg-emerald-50 text-emerald-600;
+  }
+
+  .badge-amber {
+    @apply badge bg-amber-50 text-amber-600;
+  }
+
+  .badge-rose {
+    @apply badge bg-rose-50 text-rose-600;
+  }
+
+  .navlink {
+    @apply text-sm font-medium text-ink-600 hover:text-ink-900 transition-colors;
+  }
+}
