@@ -1,44 +1,45 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { motion, animate, useReducedMotion } from "motion/react";
 import { Lightning, ArrowRight, QrCode, CheckCircle } from "@phosphor-icons/react";
 import Link from "next/link";
 
-export default function Hero() {
+interface HeroStats {
+  totalCertificates: number;
+  totalUsers: number;
+}
+
+export default function Hero({ stats }: { stats: HeroStats }) {
   const reduce = useReducedMotion();
   const [statA, setStatA] = useState(0);
   const [statB, setStatB] = useState(0);
-  const [statC, setStatC] = useState(0);
+
+  // Gunakan nilai nyata dari database; jika 0, tampilkan 0 (jujur)
+  const targetCerts = stats.totalCertificates;
+  const targetUsers = stats.totalUsers;
 
   useEffect(() => {
     if (reduce) {
-      setStatA(12480);
-      setStatB(340);
-      setStatC(23);
+      setStatA(targetCerts);
+      setStatB(targetUsers);
       return;
     }
-    const c1 = animate(0, 12480, {
+    const c1 = animate(0, targetCerts, {
       duration: 2,
       ease: [0.16, 1, 0.3, 1],
       onUpdate: (v) => setStatA(Math.round(v)),
     });
-    const c2 = animate(0, 340, {
+    const c2 = animate(0, targetUsers, {
       duration: 1.8,
       ease: [0.16, 1, 0.3, 1],
       onUpdate: (v) => setStatB(Math.round(v)),
     });
-    const c3 = animate(0, 23, {
-      duration: 1.5,
-      ease: [0.16, 1, 0.3, 1],
-      onUpdate: (v) => setStatC(Math.round(v)),
-    });
     return () => {
       c1.stop();
       c2.stop();
-      c3.stop();
     };
-  }, [reduce]);
+  }, [reduce, targetCerts, targetUsers]);
 
   return (
     <section className="relative overflow-hidden min-h-[100dvh] flex items-center bg-ink-50">
@@ -65,38 +66,38 @@ export default function Hero() {
             </h1>
 
             <p className="mt-6 text-lg text-ink-500 max-w-xl leading-relaxed">
-              Unggah satu desain, tarik data peserta dari Excel, atur posisi nama sekali -
+              Unggah satu desain, tarik data peserta dari Excel, atur posisi nama sekali —
               SertifKilat.id menyusun semua sertifikat lengkap dengan QR verifikasi dalam
               hitungan menit.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/generator" className="btn-primary !px-6 !py-3 !text-base">
+              <Link href="/auth/register" className="btn-primary !px-6 !py-3 !text-base">
                 Coba Gratis Sekarang <ArrowRight size={17} weight="bold" />
               </Link>
-              <Link href="/generator" className="btn-secondary !px-6 !py-3 !text-base">
-                Lihat Demo Generator
+              <Link href="/auth/login" className="btn-secondary !px-6 !py-3 !text-base">
+                Masuk ke Dashboard
               </Link>
             </div>
 
             <div className="mt-10 flex flex-wrap gap-8">
               <div>
                 <div className="font-display text-2xl font-semibold text-ink-900">
-                  {statA.toLocaleString("id-ID")}
+                  {statA > 0 ? statA.toLocaleString("id-ID") : "—"}
                 </div>
-                <div className="text-xs text-ink-400 mt-0.5">Sertifikat dibuat bulan ini</div>
+                <div className="text-xs text-ink-400 mt-0.5">Sertifikat dibuat</div>
               </div>
               <div>
                 <div className="font-display text-2xl font-semibold text-ink-900">
-                  {statB.toLocaleString("id-ID")}+
+                  {statB > 0 ? `${statB.toLocaleString("id-ID")}+` : "—"}
                 </div>
-                <div className="text-xs text-ink-400 mt-0.5">Tim & organisasi aktif</div>
+                <div className="text-xs text-ink-400 mt-0.5">Pengguna terdaftar</div>
               </div>
               <div>
                 <div className="font-display text-2xl font-semibold text-ink-900">
-                  {(statC / 10).toFixed(1).replace(".", ",")} mnt
+                  &lt; 3 mnt
                 </div>
-                <div className="text-xs text-ink-400 mt-0.5">Rata-rata untuk 100 sertifikat</div>
+                <div className="text-xs text-ink-400 mt-0.5">Untuk 100 sertifikat</div>
               </div>
             </div>
           </motion.div>
@@ -164,8 +165,19 @@ export default function Hero() {
                 <CheckCircle size={18} weight="bold" className="text-emerald-500" />
               </div>
               <div>
-                <div className="text-sm font-semibold text-ink-900">248 sertifikat selesai</div>
-                <div className="text-[11px] text-ink-400">dalam 2 menit 14 detik</div>
+                {targetCerts > 0 ? (
+                  <>
+                    <div className="text-sm font-semibold text-ink-900">
+                      {targetCerts.toLocaleString("id-ID")} sertifikat dibuat
+                    </div>
+                    <div className="text-[11px] text-ink-400">dan terverifikasi QR</div>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-sm font-semibold text-ink-900">QR Verifikasi Aktif</div>
+                    <div className="text-[11px] text-ink-400">setiap sertifikat unik</div>
+                  </>
+                )}
               </div>
             </div>
           </motion.div>

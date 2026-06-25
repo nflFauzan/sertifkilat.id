@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { ArrowRight, QrCode } from "@phosphor-icons/react";
@@ -102,7 +102,7 @@ export default function LiveSimulator() {
           </div>
 
           <div className="mt-6">
-            <Link href="/generator" className="btn-primary">
+            <Link href="/auth/register" className="btn-primary">
               Mulai Generate Sekarang <ArrowRight size={15} weight="bold" />
             </Link>
           </div>

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { Check } from "@phosphor-icons/react";
@@ -123,7 +123,7 @@ export default function PricingSection() {
                 </ul>
 
                 <Link
-                  href="/generator"
+                  href="/auth/register"
                   className={`mt-6 w-full text-center rounded-xl px-4 py-2.5 text-sm font-semibold transition-all block ${
                     isDark
                       ? "bg-white text-ink-900 hover:bg-ink-50"

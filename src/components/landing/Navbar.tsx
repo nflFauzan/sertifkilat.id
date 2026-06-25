@@ -42,8 +42,8 @@ export default function Navbar() {
         </div>
 
         <div className="hidden md:flex items-center gap-3">
-          <Link href="/generator" className="btn-ghost">Masuk</Link>
-          <Link href="/generator" className="btn-primary">
+          <Link href="/auth/login" className="btn-ghost">Masuk</Link>
+          <Link href="/auth/register" className="btn-primary">
             Coba Gratis <ArrowRight size={15} weight="bold" />
           </Link>
         </div>
@@ -64,8 +64,8 @@ export default function Navbar() {
           <a href="#testimoni" className="block navlink py-2" onClick={() => setMobileOpen(false)}>Testimoni</a>
           <a href="#harga" className="block navlink py-2" onClick={() => setMobileOpen(false)}>Harga</a>
           <div className="flex gap-2 pt-3 border-t border-ink-100">
-            <Link href="/generator" className="btn-secondary flex-1 justify-center">Masuk</Link>
-            <Link href="/generator" className="btn-primary flex-1 justify-center">Coba Gratis</Link>
+            <Link href="/auth/login" className="btn-secondary flex-1 justify-center" onClick={() => setMobileOpen(false)}>Masuk</Link>
+            <Link href="/auth/register" className="btn-primary flex-1 justify-center" onClick={() => setMobileOpen(false)}>Coba Gratis</Link>
           </div>
         </div>
       )}

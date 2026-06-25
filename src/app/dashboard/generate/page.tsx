@@ -1,0 +1,32 @@
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/db";
+import { redirect } from "next/navigation";
+import GeneratorClient from "../generator/GeneratorClient";
+
+export const metadata = {
+  title: "Generator Sertifikat — SertifKilat.id",
+};
+
+export default async function GeneratePage() {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/auth/login");
+
+  const [events, recentBatches] = await Promise.all([
+    prisma.event.findMany({
+      where: { userId: session.user.id },
+      orderBy: { createdAt: "desc" },
+      select: { id: true, name: true, type: true },
+    }),
+    prisma.batch.findMany({
+      where: { event: { userId: session.user.id } },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+      include: {
+        event: { select: { name: true } },
+        _count: { select: { certificates: true } },
+      },
+    }),
+  ]);
+
+  return <GeneratorClient events={events} recentBatches={recentBatches} />;
+}

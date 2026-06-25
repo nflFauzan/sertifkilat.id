@@ -1,12 +1,15 @@
-const orgs = [
-  "KelasOnline.id",
-  "Studio Kreatif Nusantara",
-  "Komunitas Ngomestic",
-  "EduCamp Indonesia",
-  "Wirausaha Muda Hub",
-];
+// LogoStrip: Menampilkan nama organisasi/institusi dari pengguna terdaftar.
+// Data diambil dari props (server-side) berdasarkan nama event yang ada di database.
+// Jika database kosong, komponen ini tidak akan ditampilkan sama sekali.
 
-export default function LogoStrip() {
+interface LogoStripProps {
+  orgs: string[];
+}
+
+export default function LogoStrip({ orgs }: LogoStripProps) {
+  // Jika belum ada data dari database, sembunyikan section ini
+  if (orgs.length === 0) return null;
+
   return (
     <div className="border-t border-ink-100 bg-white">
       <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-10">

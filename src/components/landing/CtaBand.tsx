@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 
 export default function CtaBand() {
   return (
@@ -11,7 +11,7 @@ export default function CtaBand() {
         <p className="text-brand-100 mt-3 relative">
           Gratis untuk 25 sertifikat pertama. Tidak perlu kartu kredit.
         </p>
-        <Link href="/generator"
+        <Link href="/auth/register"
           className="inline-flex items-center gap-2 bg-white text-brand-600 hover:bg-brand-50 px-7 py-3 rounded-xl text-base font-semibold transition-all mt-7 relative shadow-soft">
           Mulai Sekarang
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
