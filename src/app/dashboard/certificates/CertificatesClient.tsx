@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Certificate, Download, MagnifyingGlass, QrCode, FilePdf, Image, CircleNotch } from "@phosphor-icons/react";
+import { Certificate, MagnifyingGlass, QrCode, FilePdf, Image as ImageIcon, CircleNotch } from "@phosphor-icons/react";
 import Link from "next/link";
 import { formatDate } from "@/lib/utils";
 import { generateCertificateCanvas, downloadCertificatePDF, downloadCertificatePNG, TemplateField } from "@/lib/certificateGenerator";
@@ -205,7 +205,7 @@ export default function CertificatesClient({
                           {downloadingId === c.id + "-png" ? (
                             <CircleNotch className="w-4 h-4 animate-spin" />
                           ) : (
-                            <Image className="w-4 h-4" />
+                            <ImageIcon className="w-4 h-4" />
                           )}
                         </button>
                       </div>

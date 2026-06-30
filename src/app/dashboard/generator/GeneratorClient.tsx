@@ -366,7 +366,7 @@ export default function GeneratorClient({
                   </thead>
                   <tbody className="divide-y divide-ink-50">
                     {participants.slice(0, 5).map((p, i) => (
-                      <tr key={i} className="hover:bg-ink-50">
+                      <tr key={`participant-preview-${i}-${p.email}`} className="hover:bg-ink-50">
                         <td className="px-3 py-2 text-ink-400">{i + 1}</td>
                         <td className="px-3 py-2 font-medium text-ink-900">{p.name}</td>
                         <td className="px-3 py-2 text-ink-600">{p.email}</td>

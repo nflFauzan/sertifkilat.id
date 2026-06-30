@@ -72,8 +72,8 @@ export default function Hero({ stats }: { stats: HeroStats }) {
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/auth/register" className="btn-primary !px-6 !py-3 !text-base">
-                Coba Gratis Sekarang <ArrowRight size={17} weight="bold" />
+              <Link href="/generator" className="btn-primary !px-6 !py-3 !text-base">
+                Coba Generator Sekarang <ArrowRight size={17} weight="bold" />
               </Link>
               <Link href="/auth/login" className="btn-secondary !px-6 !py-3 !text-base">
                 Masuk ke Dashboard

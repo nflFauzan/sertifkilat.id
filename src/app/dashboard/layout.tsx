@@ -25,7 +25,7 @@ const navItems = [
   { href: "/dashboard/events", label: "Events", icon: CalendarBlank },
   { href: "/dashboard/participants", label: "Participants", icon: Users },
   { href: "/dashboard/templates", label: "Templates", icon: Palette },
-  { href: "/dashboard/generate", label: "Generate", icon: Certificate },
+  { href: "/dashboard/generator", label: "Generate", icon: Certificate },
   { href: "/dashboard/certificates", label: "Certificates", icon: FileText },
   { href: "/dashboard/analytics", label: "Analytics", icon: ChartBar },
   { href: "/dashboard/settings", label: "Settings", icon: Gear },
@@ -116,7 +116,10 @@ export default function DashboardLayout({
             Pengaturan
           </Link>
           <button
-            onClick={() => signOut({ callbackUrl: "/" })}
+            onClick={async () => {
+              await signOut({ redirect: false });
+              window.location.href = "/";
+            }}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-ink-600 hover:bg-rose-50 hover:text-rose-600 transition-all"
           >
             <SignOut className="w-5 h-5 text-ink-400" />

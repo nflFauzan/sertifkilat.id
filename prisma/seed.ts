@@ -8,19 +8,18 @@ const adapter = new PrismaPg({
 });
 const prisma = new PrismaClient({ adapter });
 
-
 async function main() {
   console.log("🌱 Seeding database SertifKilat.id...");
 
-  // ─── Demo User ────────────────────────────────────────────────────────────
-  const hashedPassword = await bcrypt.hash("Demo1234", 12);
+  // ─── Developer User ────────────────────────────────────────────────────────
+  const hashedPassword = await bcrypt.hash("DevPassword123", 12);
 
   const user = await prisma.user.upsert({
-    where: { email: "demo@sertifkilat.id" },
+    where: { email: "developer@sertifkilat.id" },
     update: {},
     create: {
-      name: "Demo User",
-      email: "demo@sertifkilat.id",
+      name: "Developer User",
+      email: "developer@sertifkilat.id",
       password: hashedPassword,
       plan: "PRO",
     },
@@ -28,12 +27,12 @@ async function main() {
 
   console.log("✅ User created:", user.email);
 
-  // ─── Demo Events ─────────────────────────────────────────────────────────
+  // ─── Seed Events ─────────────────────────────────────────────────────────
   const event1 = await prisma.event.upsert({
-    where: { id: "event-demo-001" },
+    where: { id: "event-seed-001" },
     update: {},
     create: {
-      id: "event-demo-001",
+      id: "event-seed-001",
       name: "Webinar Nasional Desain UI/UX 2026",
       description: "Webinar tentang tren UI/UX terkini untuk product designer Indonesia.",
       type: "WEBINAR",
@@ -45,10 +44,10 @@ async function main() {
   });
 
   const event2 = await prisma.event.upsert({
-    where: { id: "event-demo-002" },
+    where: { id: "event-seed-002" },
     update: {},
     create: {
-      id: "event-demo-002",
+      id: "event-seed-002",
       name: "Pelatihan Manajemen Talenta Digital",
       description: "Pelatihan intensif 2 hari untuk HR dan talent manager.",
       type: "PELATIHAN",
@@ -60,10 +59,10 @@ async function main() {
   });
 
   const event3 = await prisma.event.upsert({
-    where: { id: "event-demo-003" },
+    where: { id: "event-seed-003" },
     update: {},
     create: {
-      id: "event-demo-003",
+      id: "event-seed-003",
       name: "Workshop Next.js & TypeScript",
       description: "Workshop hands-on membangun aplikasi modern dengan Next.js 15.",
       type: "WORKSHOP",
@@ -76,7 +75,7 @@ async function main() {
 
   console.log("✅ Events created:", [event1.name, event2.name, event3.name].join(", "));
 
-  // ─── Demo Participants ────────────────────────────────────────────────────
+  // ─── Seed Participants ────────────────────────────────────────────────────
   const participants = [
     { name: "Bagas Santoso", email: "bagas@kelasonline.id", eventId: event1.id },
     { name: "Dini Rahmawati", email: "dini@ngomestic.org", eventId: event1.id },
@@ -104,12 +103,12 @@ async function main() {
 
   console.log(`✅ ${participants.length} participants created`);
 
-  // ─── Demo Template ────────────────────────────────────────────────────────
+  // ─── Seed Template ────────────────────────────────────────────────────────
   const template = await prisma.template.upsert({
-    where: { id: "template-demo-001" },
+    where: { id: "template-seed-001" },
     update: {},
     create: {
-      id: "template-demo-001",
+      id: "template-seed-001",
       name: "Elegant Gold",
       fileUrl: "/templates/elegant-gold.png",
       userId: user.id,
@@ -126,12 +125,12 @@ async function main() {
 
   console.log("✅ Template created:", template.name);
 
-  // ─── Demo Batch & Certificates ────────────────────────────────────────────
+  // ─── Seed Batch & Certificates ────────────────────────────────────────────
   const batch = await prisma.batch.upsert({
-    where: { id: "batch-demo-001" },
+    where: { id: "batch-seed-001" },
     update: {},
     create: {
-      id: "batch-demo-001",
+      id: "batch-seed-001",
       name: "Batch Webinar UI/UX - Juni 2026",
       eventId: event1.id,
       templateId: template.id,
@@ -164,8 +163,8 @@ async function main() {
   console.log(`✅ ${event1Participants.length} certificates created`);
   console.log("\n🎉 Seed selesai!");
   console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-  console.log("📧 Email    : demo@sertifkilat.id");
-  console.log("🔑 Password : Demo1234");
+  console.log("📧 Gmail    : developer@sertifkilat.id");
+  console.log("🔑 Password : DevPassword123");
   console.log("🔗 URL      : http://localhost:3000/auth/login");
   console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 }

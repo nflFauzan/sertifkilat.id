@@ -19,14 +19,14 @@ async function getLandingData() {
       prisma.user.count(),
       // Ambil nama event unik yang bisa jadi "org names" di logo strip
       prisma.event.findMany({
-        select: { name: true },
+        select: { id: true, name: true },
         orderBy: { createdAt: "desc" },
         take: 6,
       }),
     ]);
 
     // Gunakan nama event sebagai "organisasi" yang tampil di LogoStrip
-    const orgs = recentEvents.map((e) => e.name).filter(Boolean);
+    const orgs = recentEvents.map((e) => ({ id: e.id, name: e.name }));
 
     return { totalCertificates, totalUsers, orgs };
   } catch {

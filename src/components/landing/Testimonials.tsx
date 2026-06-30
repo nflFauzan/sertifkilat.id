@@ -8,6 +8,7 @@ import { Star } from "@phosphor-icons/react";
 // Jika ingin sistem review nyata, tambahkan tabel `Testimonial` di Prisma.
 const testimonials = [
   {
+    id: "testimonial-dini",
     quote: "Dulu butuh dua hari kerja untuk 300 sertifikat peserta webinar. Sekarang selesai sebelum rapat sore berakhir.",
     name: "Dini Rahmawati",
     role: "Event Lead",
@@ -16,6 +17,7 @@ const testimonials = [
     color: "bg-brand-500",
   },
   {
+    id: "testimonial-bagas",
     quote: "Fitur QR verifikasi bikin peserta lebih percaya. Tinggal scan, langsung kelihatan sertifikatnya asli.",
     name: "Bagas Santoso",
     role: "Founder",
@@ -24,6 +26,7 @@ const testimonials = [
     color: "bg-ink-700",
   },
   {
+    id: "testimonial-putri",
     quote: "Drag-and-drop posisi nama itu kecil tapi krusial — template kami jadi bisa dipakai untuk semua jenis acara.",
     name: "Putri Lestari",
     role: "HR Manager",
@@ -45,7 +48,7 @@ export default function Testimonials() {
       <div className="grid md:grid-cols-3 gap-6">
         {testimonials.map((t, i) => (
           <motion.div
-            key={t.name}
+            key={t.id}
             className="card p-6 flex flex-col"
             initial={reduce ? false : { opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}

@@ -14,7 +14,6 @@ import {
 } from "@phosphor-icons/react";
 import { updateTemplateFieldsAction } from "@/app/actions/templates";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 type Field = {
   key: string;

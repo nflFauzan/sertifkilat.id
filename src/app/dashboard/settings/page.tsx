@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
-import { Gear, User, CreditCard, Sparkle } from "@phosphor-icons/react/dist/ssr";
+import { User, CreditCard, Sparkle } from "@phosphor-icons/react/dist/ssr";
 
 export const metadata = {
   title: "Pengaturan — SertifKilat.id",
@@ -45,7 +45,7 @@ export default async function SettingsPage() {
             </div>
             <div>
               <label className="block text-xs font-semibold text-ink-500 uppercase tracking-wide mb-1">
-                Email
+                Gmail
               </label>
               <p className="text-sm font-medium text-ink-900">{user.email}</p>
             </div>

@@ -104,8 +104,8 @@ export default function PricingSection() {
                 </div>
 
                 <ul className="mt-5 space-y-2.5 flex-1">
-                  {tier.features.map((feat) => (
-                    <li key={feat} className="flex items-start gap-2 text-sm">
+                  {tier.features.map((feat, idx) => (
+                    <li key={`${tier.id}-feat-${idx}`} className="flex items-start gap-2 text-sm">
                       <Check
                         size={14}
                         weight="bold"

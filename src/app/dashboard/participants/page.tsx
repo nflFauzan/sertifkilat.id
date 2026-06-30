@@ -59,7 +59,7 @@ export default async function DashboardParticipantsPage() {
                     Nama Peserta
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-ink-500 uppercase tracking-wide">
-                    Email
+                    Gmail
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-ink-500 uppercase tracking-wide">
                     Nama Event

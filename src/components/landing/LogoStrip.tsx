@@ -3,7 +3,7 @@
 // Jika database kosong, komponen ini tidak akan ditampilkan sama sekali.
 
 interface LogoStripProps {
-  orgs: string[];
+  orgs: { id: string; name: string }[];
 }
 
 export default function LogoStrip({ orgs }: LogoStripProps) {
@@ -19,10 +19,10 @@ export default function LogoStrip({ orgs }: LogoStripProps) {
         <div className="flex flex-wrap justify-center items-center gap-x-10 gap-y-4">
           {orgs.map((org) => (
             <span
-              key={org}
+              key={org.id}
               className="font-display text-base text-ink-300 hover:text-ink-400 transition-colors select-none"
             >
-              {org}
+              {org.name}
             </span>
           ))}
         </div>

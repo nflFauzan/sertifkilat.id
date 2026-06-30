@@ -5,18 +5,21 @@ import { UploadSimple, FileXls, Lightning } from "@phosphor-icons/react";
 
 const steps = [
   {
+    id: "step-1",
     num: "01",
     icon: UploadSimple,
     title: "Unggah Template",
     desc: "Pakai desain PNG/PDF Anda sendiri, atau pilih dari galeri template siap pakai.",
   },
   {
+    id: "step-2",
     num: "02",
     icon: FileXls,
     title: "Import Data Peserta",
     desc: "Tarik file Excel atau CSV berisi nama peserta, atau tambahkan manual satu per satu.",
   },
   {
+    id: "step-3",
     num: "03",
     icon: Lightning,
     title: "Generate & Bagikan",
@@ -43,7 +46,7 @@ export default function HowItWorks() {
           const Icon = step.icon;
           return (
             <motion.div
-              key={step.num}
+              key={step.id}
               className="card p-7 relative overflow-hidden hover:shadow-soft transition-shadow"
               initial={reduce ? false : { opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}

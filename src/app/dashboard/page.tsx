@@ -20,40 +20,44 @@ export const metadata = {
 };
 
 async function getDashboardData(userId: string) {
-  const [totalEvents, totalParticipants, totalCertificates, totalVerifications, recentEvents, recentCertificates] =
-    await Promise.all([
-      prisma.event.count({ where: { userId } }),
-      prisma.participant.count({
-        where: { event: { userId } },
-      }),
-      prisma.certificate.count({
-        where: { batch: { event: { userId } } },
-      }),
-      prisma.verificationLog.count({
-        where: {
-          certificate: {
-            batch: {
-              event: { userId },
-            },
-          },
-        },
-      }),
-      prisma.event.findMany({
-        where: { userId },
-        orderBy: { createdAt: "desc" },
-        take: 5,
-        include: { _count: { select: { participants: true } } },
-      }),
-      prisma.certificate.findMany({
-        where: { batch: { event: { userId } } },
-        orderBy: { issuedAt: "desc" },
-        take: 5,
-        include: {
-          participant: true,
-          batch: { include: { event: true } },
-        },
-      }),
-    ]);
+  const [
+    totalEvents,
+    totalParticipants,
+    totalCertificates,
+    verificationAggregate,
+    recentEvents,
+    recentCertificates,
+  ] = await Promise.all([
+    prisma.event.count({ where: { userId } }),
+    prisma.participant.count({
+      where: { event: { userId } },
+    }),
+    prisma.certificate.count({
+      where: { batch: { event: { userId } } },
+    }),
+    // Sum verifiedCount on all certificates owned by this user (total QR scans)
+    prisma.certificate.aggregate({
+      where: { batch: { event: { userId } } },
+      _sum: { verifiedCount: true },
+    }),
+    prisma.event.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+      include: { _count: { select: { participants: true } } },
+    }),
+    prisma.certificate.findMany({
+      where: { batch: { event: { userId } } },
+      orderBy: { issuedAt: "desc" },
+      take: 5,
+      include: {
+        participant: { select: { name: true } },
+        batch: { include: { event: { select: { name: true } } } },
+      },
+    }),
+  ]);
+
+  const totalVerifications = verificationAggregate._sum.verifiedCount ?? 0;
 
   // Hitung event yang dibuat bulan ini untuk trend yang akurat
   const now = new Date();
