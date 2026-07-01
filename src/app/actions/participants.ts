@@ -5,7 +5,6 @@ import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-// ─── Create single participant ─────────────────────────────────────────────────
 export async function createParticipantAction(
   eventId: string,
   name: string,
@@ -16,178 +15,262 @@ export async function createParticipantAction(
   const session = await auth();
   if (!session?.user?.id) redirect("/auth/login");
 
-  if (!eventId || !name.trim() || !email.trim()) {
-    return { error: "Nama dan Gmail wajib diisi" };
-  }
-
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email.trim())) {
-    return { error: "Format Gmail tidak valid" };
+  if (!eventId || !name || !email) {
+    return { error: "Semua field wajib diisi" };
   }
 
   try {
+    // Verify event ownership
     const event = await prisma.event.findFirst({
       where: { id: eventId, userId: session.user.id },
     });
     if (!event) return { error: "Event tidak ditemukan" };
 
-    const existingCount = await prisma.participant.count({ where: { eventId } });
+    // Get number of existing participants to assign rowIndex
+    const existingCount = await prisma.participant.count({
+      where: { eventId },
+    });
 
-    const extraData: Record<string, string> = {};
-    if (institution?.trim()) extraData.institution = institution.trim();
-    if (position?.trim()) extraData.position = position.trim();
-
-    await prisma.participant.create({
+    const participant = await prisma.participant.create({
       data: {
-        name: name.trim(),
-        email: email.trim().toLowerCase(),
+        name,
+        email,
         eventId,
         rowIndex: existingCount,
-        extraData: Object.keys(extraData).length ? extraData : undefined,
+        extraData: {
+          institution: institution || "",
+          position: position || "",
+        },
       },
     });
 
     revalidatePath(`/dashboard/events/${eventId}/participants`);
-    return { success: true };
+    return { success: true, participantId: participant.id };
   } catch (error) {
+    console.error("Error creating participant:", error);
     const err = error as { code?: string; message?: string };
     if (err.code === "P2002") {
       return { error: "Gmail ini sudah terdaftar sebagai peserta di event ini" };
     }
-    console.error("Error creating participant:", error);
-    return { error: "Gagal menambah peserta" };
+    return { error: err.message || "Gagal menambah peserta" };
   }
 }
 
-// ─── Validated row from Excel parse ──────────────────────────────────────────
-export type ImportRow = {
-  name: string;
-  email: string;
-  institution: string;
-  position: string;
-  valid: boolean;
-  errors: string[];
-};
-
-// ─── Batch import (only valid rows, transaction) ─────────────────────────────
-export async function batchImportParticipantsAction(
-  eventId: string,
-  rows: ImportRow[]
-) {
-  const session = await auth();
-  if (!session?.user?.id) redirect("/auth/login");
-
-  if (!eventId || !rows.length) {
-    return { error: "Data tidak lengkap" };
-  }
-
-  const validRows = rows.filter((r) => r.valid);
-  if (!validRows.length) {
-    return { error: "Tidak ada baris data yang valid untuk diimpor" };
-  }
-
-  try {
-    const event = await prisma.event.findFirst({
-      where: { id: eventId, userId: session.user.id },
-    });
-    if (!event) return { error: "Event tidak ditemukan" };
-
-    // Fetch existing emails to skip true duplicates already in DB
-    const existingEmails = await prisma.participant.findMany({
-      where: { eventId },
-      select: { email: true, rowIndex: true },
-    });
-    const existingEmailSet = new Set(existingEmails.map((e) => e.email.toLowerCase()));
-    const currentMaxIndex = existingEmails.reduce(
-      (max, e) => Math.max(max, e.rowIndex),
-      -1
-    );
-
-    const toInsert = validRows.filter(
-      (r) => !existingEmailSet.has(r.email.toLowerCase())
-    );
-
-    if (!toInsert.length) {
-      return { success: true, count: 0, skipped: validRows.length };
-    }
-
-    // Use a transaction to insert all new participants atomically
-    await prisma.$transaction(
-      toInsert.map((r, i) => {
-        const extraData: Record<string, string> = {};
-        if (r.institution) extraData.institution = r.institution;
-        if (r.position) extraData.position = r.position;
-
-        return prisma.participant.create({
-          data: {
-            name: r.name.trim(),
-            email: r.email.trim().toLowerCase(),
-            eventId,
-            rowIndex: currentMaxIndex + 1 + i,
-            extraData: Object.keys(extraData).length ? extraData : undefined,
-          },
-        });
-      })
-    );
-
-    revalidatePath(`/dashboard/events/${eventId}/participants`);
-    return {
-      success: true,
-      count: toInsert.length,
-      skipped: validRows.length - toInsert.length,
-    };
-  } catch (error) {
-    console.error("Error batch importing participants:", error);
-    const err = error as { message?: string };
-    return { error: err.message || "Gagal mengimpor data peserta" };
-  }
-}
-
-// ─── Delete single participant ────────────────────────────────────────────────
 export async function deleteParticipantAction(id: string, eventId: string) {
   const session = await auth();
   if (!session?.user?.id) redirect("/auth/login");
 
   try {
+    // Verify event ownership
     const event = await prisma.event.findFirst({
       where: { id: eventId, userId: session.user.id },
     });
     if (!event) return { error: "Akses ditolak" };
 
-    await prisma.participant.delete({ where: { id } });
+    await prisma.participant.delete({
+      where: { id },
+    });
 
     revalidatePath(`/dashboard/events/${eventId}/participants`);
     return { success: true };
   } catch (error) {
     console.error("Error deleting participant:", error);
-    return { error: "Gagal menghapus peserta" };
+    const err = error as { message?: string };
+    return { error: err.message || "Gagal menghapus peserta" };
   }
 }
 
-// ─── Bulk delete participants ─────────────────────────────────────────────────
-export async function bulkDeleteParticipantsAction(
-  ids: string[],
-  eventId: string
-) {
+// Bulk delete participants action
+export async function deleteParticipantsAction(ids: string[], eventId: string) {
   const session = await auth();
   if (!session?.user?.id) redirect("/auth/login");
 
-  if (!ids.length) return { error: "Tidak ada peserta yang dipilih" };
+  if (!ids.length || !eventId) {
+    return { error: "Pilih minimal satu peserta untuk dihapus" };
+  }
 
   try {
+    // Verify event ownership
     const event = await prisma.event.findFirst({
       where: { id: eventId, userId: session.user.id },
     });
     if (!event) return { error: "Akses ditolak" };
 
     await prisma.participant.deleteMany({
-      where: { id: { in: ids }, eventId },
+      where: {
+        id: { in: ids },
+        eventId,
+      },
     });
 
     revalidatePath(`/dashboard/events/${eventId}/participants`);
-    return { success: true, count: ids.length };
+    return { success: true };
   } catch (error) {
     console.error("Error bulk deleting participants:", error);
-    return { error: "Gagal menghapus peserta yang dipilih" };
+    const err = error as { message?: string };
+    return { error: err.message || "Gagal menghapus peserta terpilih" };
+  }
+}
+
+// Validation action to preview imported rows
+export async function validateParticipantsAction(
+  eventId: string,
+  rows: Array<{ name?: string; email?: string; institution?: string; position?: string }>
+) {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/auth/login");
+
+  try {
+    // Verify event ownership
+    const event = await prisma.event.findFirst({
+      where: { id: eventId, userId: session.user.id },
+    });
+    if (!event) return { error: "Event tidak ditemukan" };
+
+    // Fetch existing participant emails for this event
+    const existingParticipants = await prisma.participant.findMany({
+      where: { eventId },
+      select: { email: true },
+    });
+    const existingEmails = new Set(existingParticipants.map((p) => p.email.toLowerCase()));
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const seenEmailsInFile = new Set<string>();
+
+    let validRowsCount = 0;
+    let invalidRowsCount = 0;
+    let duplicateRowsCount = 0;
+
+    const validatedRows = rows.map((row) => {
+      const name = (row.name || "").trim();
+      const email = (row.email || "").trim();
+      const institution = (row.institution || "").trim();
+      const position = (row.position || "").trim();
+
+      const errors: string[] = [];
+      let isDuplicate = false;
+
+      // 1. Required columns check
+      if (!name) {
+        errors.push("Nama wajib diisi");
+      }
+      if (!email) {
+        errors.push("Email wajib diisi");
+      } else if (!emailRegex.test(email)) {
+        // 2. Email format check
+        errors.push("Format email tidak valid");
+      } else {
+        const lowerEmail = email.toLowerCase();
+        // 3. Duplicate check in file
+        if (seenEmailsInFile.has(lowerEmail)) {
+          errors.push("Email duplikat di dalam file");
+          isDuplicate = true;
+        } else {
+          seenEmailsInFile.add(lowerEmail);
+        }
+
+        // 4. Duplicate check in DB
+        if (existingEmails.has(lowerEmail)) {
+          errors.push("Email sudah terdaftar di event ini");
+          isDuplicate = true;
+        }
+      }
+
+      const isValid = errors.length === 0;
+      if (isValid) {
+        validRowsCount++;
+      } else if (isDuplicate) {
+        duplicateRowsCount++;
+      } else {
+        invalidRowsCount++;
+      }
+
+      return {
+        name,
+        email,
+        institution,
+        position,
+        isValid,
+        status: isValid ? "valid" : isDuplicate ? "duplicate" : "invalid",
+        message: errors.join(", "),
+      };
+    });
+
+    return {
+      success: true,
+      validatedRows,
+      summary: {
+        valid: validRowsCount,
+        invalid: invalidRowsCount,
+        duplicate: duplicateRowsCount,
+      },
+    };
+  } catch (error) {
+    console.error("Error validating participants:", error);
+    return { error: "Terjadi kesalahan saat memvalidasi data" };
+  }
+}
+
+// Transaction-based save action for valid rows only
+export async function importValidParticipantsAction(
+  eventId: string,
+  participants: Array<{ name: string; email: string; institution: string; position: string }>
+) {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/auth/login");
+
+  if (!eventId || !participants.length) {
+    return { error: "Tidak ada data untuk diimpor" };
+  }
+
+  try {
+    // Verify event ownership
+    const event = await prisma.event.findFirst({
+      where: { id: eventId, userId: session.user.id },
+    });
+    if (!event) return { error: "Event tidak ditemukan" };
+
+    // Get current participant count to assign correct rowIndex
+    const existingCount = await prisma.participant.count({
+      where: { eventId },
+    });
+
+    // Execute in a transaction
+    const result = await prisma.$transaction(async (tx) => {
+      let insertedCount = 0;
+
+      for (let i = 0; i < participants.length; i++) {
+        const p = participants[i];
+
+        // Double check uniqueness to prevent constraint violations
+        const existing = await tx.participant.findUnique({
+          where: { eventId_email: { eventId, email: p.email } },
+        });
+
+        if (existing) continue;
+
+        await tx.participant.create({
+          data: {
+            name: p.name,
+            email: p.email,
+            eventId,
+            rowIndex: existingCount + insertedCount,
+            extraData: {
+              institution: p.institution,
+              position: p.position,
+            },
+          },
+        });
+        insertedCount++;
+      }
+
+      return insertedCount;
+    });
+
+    revalidatePath(`/dashboard/events/${eventId}/participants`);
+    return { success: true, count: result };
+  } catch (error) {
+    console.error("Error importing participants in transaction:", error);
+    return { error: "Gagal menyimpan data peserta ke database" };
   }
 }

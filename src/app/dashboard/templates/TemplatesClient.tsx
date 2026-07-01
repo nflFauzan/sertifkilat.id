@@ -10,10 +10,13 @@ import {
   CircleNotch,
   Image as ImageIcon,
   CheckCircle,
+  X,
 } from "@phosphor-icons/react";
 import { createTemplateAction, deleteTemplateAction } from "@/app/actions/templates";
 import Image from "next/image";
 import Link from "next/link";
+
+import UpgradeModal from "@/components/UpgradeModal";
 
 type Event = { id: string; name: string };
 type Template = {
@@ -28,12 +31,15 @@ type Template = {
 export default function TemplatesClient({
   events,
   templates: initialTemplates,
+  userPlan,
 }: {
   events: Event[];
   templates: Template[];
+  userPlan: string;
 }) {
   const [templates, setTemplates] = useState<Template[]>(initialTemplates);
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [templateName, setTemplateName] = useState("");
   const [selectedEventId, setSelectedEventId] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -41,6 +47,9 @@ export default function TemplatesClient({
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const limitTemplates = userPlan === "FREE" ? 1 : userPlan === "PRO" ? 5 : 999999;
+  const isLocked = templates.length >= limitTemplates;
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -111,7 +120,10 @@ export default function TemplatesClient({
           </p>
         </div>
         <button
-          onClick={() => setShowUploadModal(true)}
+          onClick={() => {
+            if (isLocked) setUpgradeOpen(true);
+            else setShowUploadModal(true);
+          }}
           className="btn-primary self-start sm:self-auto"
         >
           <Plus className="w-4 h-4" />
@@ -130,7 +142,10 @@ export default function TemplatesClient({
             Upload file gambar sertifikat kosong Anda (tanpa nama peserta dan QR) untuk mulai mendesain tata letak.
           </p>
           <button
-            onClick={() => setShowUploadModal(true)}
+            onClick={() => {
+              if (isLocked) setUpgradeOpen(true);
+              else setShowUploadModal(true);
+            }}
             className="btn-primary mx-auto"
           >
             Upload Sekarang
@@ -219,7 +234,7 @@ export default function TemplatesClient({
                 }}
                 className="p-1.5 rounded-lg text-ink-400 hover:bg-ink-50 hover:text-ink-700 transition-all"
               >
-                <ImageIcon className="w-5 h-5" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
@@ -342,6 +357,12 @@ export default function TemplatesClient({
           </div>
         </div>
       )}
+
+      <UpgradeModal
+        isOpen={upgradeOpen}
+        onClose={() => setUpgradeOpen(false)}
+        currentPlan={userPlan}
+      />
     </div>
   );
 }

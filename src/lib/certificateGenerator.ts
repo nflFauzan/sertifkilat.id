@@ -8,6 +8,8 @@ export type CertificateData = {
   date: string;
   serial: string;
   verifyUrl: string;
+  templateWidth?: number;
+  templateHeight?: number;
 };
 
 export type TemplateField = {
@@ -53,12 +55,27 @@ export async function generateCertificateCanvas(
   // Draw background template image
   ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
+  // Sync fonts before rendering
+  if (typeof document !== "undefined" && (document as any).fonts) {
+    try {
+      await (document as any).fonts.ready;
+    } catch (e) {
+      console.warn("Fonts loading sync failed:", e);
+    }
+  }
+
+  // Calculate coordinates scaling factor
+  const tWidth = data.templateWidth || 1122;
+  const tHeight = data.templateHeight || 794;
+  const scaleX = canvas.width / tWidth;
+  const scaleY = canvas.height / tHeight;
+
   // Draw fields
   for (const field of fields) {
     if (field.key === "qr") {
       try {
         // Generate QR code as DataURL
-        const qrSize = field.fontSize || 100;
+        const qrSize = (field.fontSize || 100) * scaleX;
         const qrDataUrl = await QRCode.toDataURL(data.verifyUrl, {
           margin: 1,
           width: qrSize * 2, // Generate higher res QR
@@ -68,8 +85,8 @@ export async function generateCertificateCanvas(
         const qrImg = await loadImage(qrDataUrl);
         
         // Draw centered QR code
-        const qx = field.x - qrSize / 2;
-        const qy = field.y - qrSize / 2;
+        const qx = (field.x * scaleX) - qrSize / 2;
+        const qy = (field.y * scaleY) - qrSize / 2;
         ctx.drawImage(qrImg, qx, qy, qrSize, qrSize);
       } catch (err) {
         console.error("Failed to draw QR code:", err);
@@ -83,7 +100,7 @@ export async function generateCertificateCanvas(
       else if (field.key === "serial") text = data.serial;
       else continue;
 
-      const fontSize = field.fontSize || 24;
+      const fontSize = (field.fontSize || 24) * scaleX;
       const fontWeight = field.fontWeight || "normal";
       const fontColor = field.color || "#000000";
       const align = (field.align || "center") as CanvasTextAlign;
@@ -93,7 +110,7 @@ export async function generateCertificateCanvas(
       ctx.fillStyle = fontColor;
       ctx.textAlign = align;
       ctx.textBaseline = "middle";
-      ctx.fillText(text, field.x, field.y);
+      ctx.fillText(text, field.x * scaleX, field.y * scaleY);
       ctx.restore();
     }
   }
@@ -183,15 +200,23 @@ export async function downloadCertificatesZip({
         pdf.addImage(jpegDataUrl, "JPEG", 0, 0, imgWidth, imgHeight);
         
         // Add PDF to ZIP
-        const pdfBlob = pdf.output("blob");
-        zip.file(`${baseFilename}.pdf`, pdfBlob);
+        const pdfArray = pdf.output("arraybuffer");
+        zip.file(`${baseFilename}.pdf`, pdfArray);
       }
     } catch (err) {
       console.error(`Failed to generate ZIP item for ${cert.name}:`, err);
     }
   }
 
-  const content = await zip.generateAsync({ type: "blob" });
+  const content = await zip.generateAsync({
+    type: "blob",
+    mimeType: "application/zip",
+    platform: "DOS",
+    compression: "DEFLATE",
+    compressionOptions: {
+      level: 9,
+    },
+  });
   const url = URL.createObjectURL(content);
   const link = document.createElement("a");
   link.href = url;

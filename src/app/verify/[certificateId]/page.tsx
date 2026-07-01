@@ -10,8 +10,11 @@ import {
   User,
   Hash,
   MapPin,
+  Clock,
 } from "@phosphor-icons/react/dist/ssr";
 import type { Metadata } from "next";
+
+import { headers } from "next/headers";
 
 interface Props {
   params: Promise<{ certificateId: string }>;
@@ -29,6 +32,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function VerifyPage({ params }: Props) {
   const { certificateId } = await params;
   const decodedId = decodeURIComponent(certificateId);
+
+  const reqHeaders = await headers();
+  const userAgent = reqHeaders.get("user-agent") || undefined;
+  const ipAddress = reqHeaders.get("x-forwarded-for") || reqHeaders.get("x-real-ip") || undefined;
 
   let certificateData = null;
   let isFromDatabase = false;
@@ -68,10 +75,31 @@ export default async function VerifyPage({ params }: Props) {
           lastVerifiedAt: new Date(),
         },
       }).catch(() => {});
+
+      // Record successful verification log
+      prisma.verificationLog.create({
+        data: {
+          serialNumber: decodedId,
+          certificateId: dbCert.id,
+          status: "SUCCESS",
+          ipAddress,
+          userAgent,
+        },
+      }).catch(() => {});
+    } else {
+      // Record failed verification log
+      prisma.verificationLog.create({
+        data: {
+          serialNumber: decodedId,
+          status: "FAILED",
+          ipAddress,
+          userAgent,
+        },
+      }).catch(() => {});
     }
   } catch (err) {
-    // Database connection failed or tables don't exist, proceed to mock data fallback
-    console.warn("Database lookup failed, falling back to mock data:", err);
+    // Database connection failed or tables don't exist
+    console.warn("Database lookup failed:", err);
   }
 
   // If DB lookup returned nothing, the certificate is invalid — no mock fallback.
@@ -131,16 +159,21 @@ export default async function VerifyPage({ params }: Props) {
           {isValid && certificateData ? (
             <div className="p-6 space-y-6">
               {/* Recipient Header */}
-              <div className="text-center py-4 border-b border-ink-100">
-                <div className="w-16 h-16 rounded-full bg-brand-100 flex items-center justify-center mx-auto mb-3">
-                  <CertIcon className="w-8 h-8 text-brand-500" weight="fill" />
+              <div className="flex items-center justify-between border-b border-ink-100 pb-4">
+                <div className="flex-1">
+                  <h3 className="text-2xl font-display font-bold text-ink-900 leading-snug">
+                    {certificateData.recipientName}
+                  </h3>
+                  <p className="text-xs text-ink-400 mt-1 uppercase tracking-wider font-semibold">
+                    Penerima Penghargaan
+                  </p>
                 </div>
-                <h3 className="text-2xl font-display font-bold text-ink-900 leading-snug">
-                  {certificateData.recipientName}
-                </h3>
-                <p className="text-xs text-ink-400 mt-1 uppercase tracking-wider font-semibold">
-                  Penerima Penghargaan
-                </p>
+                <div>
+                  <span className="bg-emerald-50 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1.5 shadow-sm border border-emerald-200">
+                    <CheckCircle className="w-4 h-4 text-emerald-600" weight="fill" />
+                    VALID
+                  </span>
+                </div>
               </div>
 
               {/* Certificate Metadata Details */}
@@ -173,6 +206,14 @@ export default async function VerifyPage({ params }: Props) {
                   icon={<CalendarBlank className="w-4 h-4" />}
                   label="Tanggal Diterbitkan"
                   value={certificateData.issuedAt}
+                />
+                <DetailRow
+                  icon={<Clock className="w-4 h-4" />}
+                  label="Waktu Verifikasi"
+                  value={new Date().toLocaleString("id-ID", {
+                    dateStyle: "medium",
+                    timeStyle: "medium",
+                  })}
                 />
                 {certificateData.templateName && (
                   <DetailRow

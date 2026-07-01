@@ -25,6 +25,11 @@ import {
   Copy,
   ArrowClockwise,
 } from "@phosphor-icons/react";
+import * as XLSX from "xlsx";
+import { jsPDF } from "jspdf";
+import QRCode from "qrcode";
+import JSZip from "jszip";
+import { downloadExcelTemplate } from "@/lib/excelTemplate";
 
 // Types for local state
 interface Participant {
@@ -49,12 +54,6 @@ interface DraggableElement {
   width: number;
   height: number;
 }
-
-const DEFAULT_PARTICIPANTS: Participant[] = [
-  { nama: "Bagas Santoso", email: "bagas@kelasonline.id", acara: "Webinar UI/UX", tanggal: "12 Jun 2026" },
-  { nama: "Dini Rahmawati", email: "dini@ngomestic.org", acara: "Webinar UI/UX", tanggal: "12 Jun 2026" },
-  { nama: "Putri Lestari", email: "putri@skn.co.id", acara: "Webinar UI/UX", tanggal: "12 Jun 2026" },
-];
 
 const DEFAULT_TEMPLATE_IMAGE = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='566' viewBox='0 0 800 566'><rect width='800' height='566' fill='%23FBF8F0'/><rect x='20' y='20' width='760' height='526' fill='none' stroke='%23C9A227' stroke-width='2' stroke-dasharray='10 5'/><rect x='30' y='30' width='740' height='506' fill='none' stroke='%23C9A227' stroke-width='1'/><text x='400' y='100' font-family='Georgia, serif' font-size='24' fill='%230B1220' text-anchor='middle' letter-spacing='4'>SERTIFIKAT PENGHARGAAN</text><text x='400' y='150' font-family='sans-serif' font-size='12' fill='%235A6B8C' text-anchor='middle'>Diberikan Kepada:</text><line x1='300' y1='300' x2='500' y2='300' stroke='%23C9A227' stroke-width='1'/><text x='400' y='330' font-family='sans-serif' font-size='11' fill='%235A6B8C' text-anchor='middle'>Atas partisipasi aktifnya dalam acara tersebut</text></svg>";
 
@@ -110,6 +109,7 @@ export default function GeneratorWorkspace() {
   const [currentIdx, setCurrentIdx] = useState(0);
   const [successCount, setSuccessCount] = useState(0);
   const [failedCount, setFailedCount] = useState(0);
+  const [zipBlob, setZipBlob] = useState<Blob | null>(null);
 
   // Drag coordinates reference
   const dragStartRef = useRef({ x: 0, y: 0, elX: 0, elY: 0 });
@@ -154,18 +154,6 @@ export default function GeneratorWorkspace() {
   };
 
   // ───────────────────────────────────────────────────────────────────────────
-  // FILE DOWNLOAD TEMPLATE
-  // ───────────────────────────────────────────────────────────────────────────
-  const downloadExcelTemplate = () => {
-    const csvContent = "data:text/csv;charset=utf-8,Nama,Email\nBagas Santoso,bagas@kelasonline.id\nDini Rahmawati,dini@ngomestic.org\nPutri Lestari,putri@skn.co.id\n";
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "sertifkilat_template_peserta.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
 
   // ───────────────────────────────────────────────────────────────────────────
   // STEP 1 HANDLERS (Template)
@@ -206,27 +194,61 @@ export default function GeneratorWorkspace() {
 
     setDataError("");
     const reader = new FileReader();
-    reader.onload = () => {
-      // Simulate raw lines parsing
-      // We will parse a couple of valid rows, and inject some errors to demo validation if needed
-      // To provide a robust user experience, let's parse a mix of correct and incorrect data
-      const parsedData: Participant[] = [
-        { nama: "Budi Raharjo", email: "budi.raharjo@gmail.com", acara: "Webinar UI/UX", tanggal: "12 Jun 2026" },
-        { nama: "Siti Aminah", email: "siti.aminah@yahoo.com", acara: "Webinar UI/UX", tanggal: "12 Jun 2026" },
-        { nama: "Farhan Hakim", email: "farhan.hakim@gmail.com", acara: "Webinar UI/UX", tanggal: "12 Jun 2026" },
-        { nama: "", email: "aditya.p@gmail.com", acara: "Webinar UI/UX", tanggal: "12 Jun 2026" }, // Name empty
-        { nama: "Citra Lestari", email: "citra.lestari", acara: "Webinar UI/UX", tanggal: "12 Jun 2026" }, // Invalid email
-        { nama: "Rizky Amelia", email: "siti.aminah@yahoo.com", acara: "Webinar UI/UX", tanggal: "12 Jun 2026" }, // Duplicate email
-      ];
+    reader.onload = (evt) => {
+      try {
+        const arrayBuffer = evt.target?.result as ArrayBuffer;
+        const data = new Uint8Array(arrayBuffer);
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as unknown[][];
 
-      runDataValidation(parsedData);
+        if (rows.length < 2) {
+          setDataError("File harus memiliki baris header dan minimal 1 baris data.");
+          return;
+        }
+
+        const headers = rows[0].map(h => String(h || "").trim().toLowerCase());
+        const nameIdx = headers.findIndex(h => h === "full name" || h === "nama lengkap" || h === "name" || h === "nama");
+        const emailIdx = headers.findIndex(h => h === "email" || h === "gmail");
+        const eventIdx = headers.findIndex(h => h === "event" || h === "acara");
+        const dateIdx = headers.findIndex(h => h === "date" || h === "tanggal");
+
+        if (nameIdx === -1 || emailIdx === -1) {
+          setDataError("Pastikan file memiliki kolom 'Nama' (Name) dan 'Email'.");
+          return;
+        }
+
+        const parsedData: Participant[] = [];
+        for (let i = 1; i < rows.length; i++) {
+          const row = rows[i];
+          if (!row || row.every(val => val === null || val === undefined || String(val).trim() === "")) {
+            continue;
+          }
+
+          parsedData.push({
+            nama: nameIdx !== -1 && row[nameIdx] !== undefined ? String(row[nameIdx]).trim() : "",
+            email: emailIdx !== -1 && row[emailIdx] !== undefined ? String(row[emailIdx]).trim() : "",
+            acara: eventIdx !== -1 && row[eventIdx] !== undefined ? String(row[eventIdx]).trim() : "Event Sertifikat",
+            tanggal: dateIdx !== -1 && row[dateIdx] !== undefined ? String(row[dateIdx]).trim() : new Date().toLocaleDateString("id-ID"),
+          });
+        }
+
+        if (parsedData.length === 0) {
+          setDataError("Tidak ada baris data peserta yang valid.");
+          return;
+        }
+
+        runDataValidation(parsedData);
+      } catch (err) {
+        console.error(err);
+        setDataError("Gagal membaca file. Pastikan format berkas valid.");
+      }
     };
-    reader.readAsText(file);
+    reader.readAsArrayBuffer(file);
   };
 
-  const loadSampleData = () => {
-    runDataValidation(DEFAULT_PARTICIPANTS);
-  };
+
 
   const runDataValidation = (dataList: Participant[]) => {
     const errors: ValidationError[] = [];
@@ -241,15 +263,15 @@ export default function GeneratorWorkspace() {
       }
 
       if (!item.email.trim()) {
-        rowErrors.push("Email tidak boleh kosong");
+        rowErrors.push("Gmail tidak boleh kosong");
       } else {
         // format check
         if (!item.email.includes("@") || !item.email.includes(".")) {
-          rowErrors.push("Format email tidak valid");
+          rowErrors.push("Format Gmail tidak valid");
         }
         // duplicate check
         if (emailsSeen.has(item.email.toLowerCase())) {
-          rowErrors.push("Email duplikat ditemukan");
+          rowErrors.push("Gmail duplikat ditemukan");
         } else {
           emailsSeen.add(item.email.toLowerCase());
         }
@@ -381,54 +403,144 @@ export default function GeneratorWorkspace() {
     }, 1500);
   };
 
-  const executeGeneration = () => {
+  const loadImage = (url: string): Promise<HTMLImageElement> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => resolve(img);
+      img.onerror = (err) => reject(err);
+      img.src = url;
+    });
+  };
+
+  const executeGeneration = async () => {
     setStep(5);
     setGenerationProgress(0);
     setCurrentIdx(0);
     setSuccessCount(0);
     setFailedCount(0);
+    setZipBlob(null);
 
     const total = participants.length;
-    let idx = 0;
+    const zip = new JSZip();
 
-    const interval = setInterval(() => {
-      if (idx >= total) {
-        clearInterval(interval);
-        setStep(6);
-        return;
+    try {
+      const bgImg = await loadImage(templateFile || DEFAULT_TEMPLATE_IMAGE);
+      const canvasW = bgImg.naturalWidth || 800;
+      const canvasH = bgImg.naturalHeight || 566;
+
+      for (let i = 0; i < total; i++) {
+        const currentParticipant = participants[i];
+        setCurrentIdx(i + 1);
+        setGenerationProgress(Math.round(((i + 1) / total) * 100));
+
+        const isFailed = !currentParticipant.nama.trim() || !currentParticipant.email.trim() || !currentParticipant.email.includes("@");
+
+        if (isFailed) {
+          setFailedCount((f) => f + 1);
+          setGenerationLog(`Gagal: Baris ${i + 1} (${currentParticipant.nama || "Tanpa Nama"}) data tidak lengkap/valid.`);
+          continue;
+        }
+
+        try {
+          const canvas = document.createElement("canvas");
+          canvas.width = canvasW;
+          canvas.height = canvasH;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) throw new Error("Failed to get canvas context");
+
+          ctx.drawImage(bgImg, 0, 0, canvasW, canvasH);
+
+          for (const el of elements) {
+            const pxX = (el.x / 100) * canvasW;
+            const pxY = (el.y / 100) * canvasH;
+
+            if (el.id === "nama") {
+              ctx.save();
+              ctx.font = `bold ${Math.round(canvasH * 0.045)}px "Plus Jakarta Sans", "Inter", sans-serif`;
+              ctx.fillStyle = "#0B1220";
+              ctx.textAlign = "center";
+              ctx.textBaseline = "middle";
+              ctx.fillText(currentParticipant.nama, pxX, pxY);
+              ctx.restore();
+            } else if (el.id === "tanggal") {
+              ctx.save();
+              ctx.font = `${Math.round(canvasH * 0.03)}px "Plus Jakarta Sans", "Inter", sans-serif`;
+              ctx.fillStyle = "#5A6B8C";
+              ctx.textAlign = "center";
+              ctx.textBaseline = "middle";
+              ctx.fillText(currentParticipant.tanggal || new Date().toLocaleDateString("id-ID"), pxX, pxY);
+              ctx.restore();
+            } else if (el.id === "tandaTangan") {
+              ctx.save();
+              ctx.font = `italic ${Math.round(canvasH * 0.035)}px "Georgia", serif`;
+              ctx.fillStyle = "#1E293B";
+              ctx.textAlign = "center";
+              ctx.textBaseline = "middle";
+              ctx.fillText("SertifKilat", pxX, pxY);
+              ctx.restore();
+            } else if (el.id === "qr") {
+              const qrSize = Math.round(canvasH * 0.12);
+              const verifyUrl = `https://sertifkilat.id/verify/mock-${i + 1}`;
+              const qrDataUrl = await QRCode.toDataURL(verifyUrl, {
+                margin: 1,
+                width: qrSize * 2,
+                errorCorrectionLevel: "H",
+              });
+              const qrImg = await loadImage(qrDataUrl);
+              ctx.drawImage(qrImg, pxX - qrSize / 2, pxY - qrSize / 2, qrSize, qrSize);
+            }
+          }
+
+          const pdf = new jsPDF({
+            orientation: canvasW >= canvasH ? "l" : "p",
+            unit: "px",
+            format: [canvasW, canvasH],
+          });
+          const jpegDataUrl = canvas.toDataURL("image/jpeg", 0.95);
+          pdf.addImage(jpegDataUrl, "JPEG", 0, 0, canvasW, canvasH);
+          const pdfArray = pdf.output("arraybuffer");
+
+          const safeName = currentParticipant.nama.replace(/[^a-z0-9]/gi, "_").toLowerCase();
+          zip.file(`sertifikat_${i + 1}_${safeName}.pdf`, pdfArray);
+
+          setSuccessCount((s) => s + 1);
+          setGenerationLog(`Sukses: Membuat PDF sertifikat untuk ${currentParticipant.nama}`);
+        } catch (err) {
+          console.error(err);
+          setFailedCount((f) => f + 1);
+          setGenerationLog(`Gagal: Proses canvas/PDF gagal untuk ${currentParticipant.nama}`);
+        }
       }
 
-      // Simulate some success vs failure
-      const currentParticipant = participants[idx];
-      const isFailed = !currentParticipant.nama || !currentParticipant.email || !currentParticipant.email.includes("@");
+      const zipContent = await zip.generateAsync({
+        type: "blob",
+        mimeType: "application/zip",
+        platform: "DOS",
+        compression: "DEFLATE",
+        compressionOptions: { level: 9 },
+      });
 
-      if (isFailed) {
-        setFailedCount((f) => f + 1);
-        setGenerationLog(`Gagal: Baris ${idx + 1} (${currentParticipant.nama || "Tanpa Nama"}) format tidak valid.`);
-      } else {
-        setSuccessCount((s) => s + 1);
-        setGenerationLog(`Sukses: Membuat PDF sertifikat untuk ${currentParticipant.nama}`);
-      }
-
-      idx++;
-      setCurrentIdx(idx);
-      setGenerationProgress(Math.round((idx / total) * 100));
-    }, 400);
+      setZipBlob(zipContent);
+      setStep(6);
+    } catch (err) {
+      console.error(err);
+      setGenerationLog("Error: Gagal memproses latar belakang gambar.");
+      setStep(6);
+    }
   };
 
   const triggerZipDownload = () => {
+    if (!zipBlob) return;
     const zipName = `SertifKilat_Batch_${new Date().getFullYear()}.zip`;
-    const dummyContent = `SertifKilat.id - Bundel Sertifikat Resmi\n\nTanggal Transaksi: ${new Date().toLocaleDateString("id-ID")}\nJumlah Sukses: ${successCount}\nJumlah Gagal: ${failedCount}`;
-    
-    const blob = new Blob([dummyContent], { type: "application/zip" });
-    const url = URL.createObjectURL(blob);
+    const url = URL.createObjectURL(zipBlob);
     const a = document.createElement("a");
     a.href = url;
     a.download = zipName;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 100);
   };
 
   const resetWorkspace = () => {
@@ -617,7 +729,7 @@ export default function GeneratorWorkspace() {
                           <tr>
                             <th className="px-4 py-2.5">No</th>
                             <th className="px-4 py-2.5">Nama Lengkap</th>
-                            <th className="px-4 py-2.5">Email</th>
+                            <th className="px-4 py-2.5">Gmail</th>
                             <th className="px-4 py-2.5">Acara</th>
                           </tr>
                         </thead>
@@ -654,11 +766,17 @@ export default function GeneratorWorkspace() {
                     <div className="bg-ink-50 rounded-xl p-4 border border-ink-150 text-xs space-y-2 text-ink-600 leading-normal">
                       <p className="font-semibold text-ink-800">📋 Informasi Format & Kuota:</p>
                       <ul className="list-disc pl-4 space-y-1">
-                        <li>Mendukung file Excel (<code className="bg-ink-200 px-1 py-0.5 rounded text-[10px]">.xlsx</code>) atau <code className="bg-ink-200 px-1 py-0.5 rounded text-[10px]">.csv</code>.</li>
-                        <li>Format kolom wajib: <strong className="text-ink-900">Nama</strong> dan <strong className="text-ink-900">Email</strong>.</li>
+                        <li>Mendukung file Excel (<code className="bg-ink-200 px-1 py-0.5 rounded text-[10px]">.xlsx</code>) or <code className="bg-ink-200 px-1 py-0.5 rounded text-[10px]">.csv</code>.</li>
+                        <li>Format kolom wajib: <strong className="text-ink-900">Nama</strong> dan <strong className="text-ink-900">Gmail</strong>.</li>
                         <li>Maksimal kuota gratis: <strong className="text-emerald-600">25 sertifikat / bulan</strong>.</li>
                         <li>Jika jumlah peserta melebihi kuota gratis, biaya kelebihan dihitung otomatis secara transparan.</li>
                       </ul>
+                    </div>
+
+                    {/* Empty State / Initial Message */}
+                    <div className="text-center py-4 text-ink-500 border border-ink-150 rounded-xl bg-ink-50">
+                      <p className="font-semibold text-sm text-ink-800">No participants uploaded yet.</p>
+                      <p className="text-xs text-ink-400 mt-0.5">Upload an Excel file to begin.</p>
                     </div>
 
                     {/* Drag and drop zone */}
@@ -680,16 +798,7 @@ export default function GeneratorWorkspace() {
                       />
                     </div>
 
-                    <div className="flex items-center gap-3">
-                      <div className="flex-1 h-px bg-ink-100" />
-                      <span className="text-xs text-ink-400 font-semibold uppercase tracking-wider">Atau</span>
-                      <div className="flex-1 h-px bg-ink-100" />
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <button onClick={loadSampleData} className="btn-secondary justify-center text-xs py-2.5">
-                        Gunakan Data Contoh (3 Peserta)
-                      </button>
+                    <div className="grid grid-cols-1 gap-3">
                       <button onClick={downloadExcelTemplate} className="btn-secondary justify-center text-xs py-2.5 text-brand-600 hover:text-brand-700">
                         <Download size={14} /> Download Template Excel
                       </button>
@@ -856,7 +965,7 @@ export default function GeneratorWorkspace() {
                       <Warning weight="fill" className="w-4 h-4 mt-0.5 shrink-0" />
                       <div>
                         <p className="font-bold">Ditemukan {validationErrors.length} kesalahan data!</p>
-                        <p className="text-xxs mt-0.5">Sertifikat tidak dapat dicetak jika terdapat data nama/email kosong atau duplikat.</p>
+                        <p className="text-xxs mt-0.5">Sertifikat tidak dapat dicetak jika terdapat data nama/Gmail kosong atau duplikat.</p>
                       </div>
                     </div>
 
@@ -866,7 +975,7 @@ export default function GeneratorWorkspace() {
                           <tr>
                             <th className="px-4 py-2.5">Baris</th>
                             <th className="px-4 py-2.5">Nama Terbaca</th>
-                            <th className="px-4 py-2.5">Email Terbaca</th>
+                            <th className="px-4 py-2.5">Gmail Terbaca</th>
                             <th className="px-4 py-2.5">Deskripsi Kesalahan</th>
                           </tr>
                         </thead>
@@ -892,10 +1001,7 @@ export default function GeneratorWorkspace() {
                     </div>
 
                     <div className="flex gap-3">
-                      <button onClick={loadSampleData} className="btn-primary text-xs bg-emerald-600 hover:bg-emerald-700">
-                        Gunakan Data Uji Bersih
-                      </button>
-                      <button onClick={() => setStep(2)} className="btn-secondary text-xs text-rose-600 border-rose-200 hover:bg-rose-50">
+                      <button onClick={() => setStep(2)} className="btn-secondary text-xs text-rose-600 border-rose-200 hover:bg-rose-50 w-full justify-center">
                         Upload Ulang File Excel
                       </button>
                     </div>
@@ -908,7 +1014,7 @@ export default function GeneratorWorkspace() {
                     <div className="space-y-1">
                       <h4 className="font-bold text-ink-900 text-base">Seluruh Data Peserta Valid!</h4>
                       <p className="text-xs text-ink-500 max-w-sm mx-auto">
-                        Kami memeriksa alamat email kosong, format salah, dan baris duplikat. Tidak ada kesalahan terdeteksi.
+                        Kami memeriksa alamat Gmail kosong, format salah, dan baris duplikat. Tidak ada kesalahan terdeteksi.
                       </p>
                     </div>
 

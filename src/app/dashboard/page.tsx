@@ -87,11 +87,24 @@ const STATUS_CONFIG: Record<
   ARCHIVED: { label: "Diarsipkan", className: "bg-ink-100 text-ink-500 inline-flex items-center gap-1.5 rounded-full text-xs font-semibold px-2.5 py-1" },
 };
 
+import DashboardPlanCard from "./DashboardPlanCard";
+
 export default async function DashboardPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/auth/login");
 
-  const data = await getDashboardData(session.user.id);
+  const [data, userPlanData, totalTemplates] = await Promise.all([
+    getDashboardData(session.user.id),
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { plan: true },
+    }),
+    prisma.template.count({
+      where: { userId: session.user.id },
+    }),
+  ]);
+
+  const userPlan = userPlanData?.plan || "FREE";
 
   const stats = [
     {
@@ -137,6 +150,14 @@ export default async function DashboardPage() {
           ! Berikut ringkasan aktivitas kamu.
         </p>
       </div>
+
+      {/* Plan Card */}
+      <DashboardPlanCard 
+        plan={userPlan} 
+        templatesCount={totalTemplates} 
+        certificatesCount={data.totalCertificates} 
+        participantsCount={data.totalParticipants} 
+      />
 
       {/* Stats grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">

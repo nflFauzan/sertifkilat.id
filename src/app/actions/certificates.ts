@@ -13,6 +13,7 @@ export async function generateCertificatesAction(formData: FormData) {
   const eventId = formData.get("eventId") as string;
   const batchName = formData.get("batchName") as string;
   const csvData = formData.get("csvData") as string; // JSON string of participants
+  const templateId = formData.get("templateId") as string | null;
 
   if (!eventId || !batchName || !csvData) {
     return { error: "Data tidak lengkap" };
@@ -33,10 +34,19 @@ export async function generateCertificatesAction(formData: FormData) {
 
   if (!participants.length) return { error: "Tidak ada peserta" };
 
-  // Get or create a template
-  let template = await prisma.template.findFirst({
-    where: { userId: session.user.id },
-  });
+  // Get selected template, fallback to first user template, fallback to default template
+  let template = null;
+  if (templateId) {
+    template = await prisma.template.findFirst({
+      where: { id: templateId, userId: session.user.id },
+    });
+  }
+
+  if (!template) {
+    template = await prisma.template.findFirst({
+      where: { userId: session.user.id },
+    });
+  }
 
   if (!template) {
     template = await prisma.template.create({
@@ -132,6 +142,8 @@ export async function getBatchCertificatesAction(batchId: string) {
         select: {
           fileUrl: true,
           fields: true,
+          width: true,
+          height: true,
         },
       },
       event: {
@@ -160,6 +172,8 @@ export async function getBatchCertificatesAction(batchId: string) {
       name: batch.name,
       templateUrl: batch.template.fileUrl,
       templateFields: batch.template.fields || [],
+      templateWidth: batch.template.width,
+      templateHeight: batch.template.height,
       certificates: batch.certificates.map((c) => ({
         serial: c.serialNumber,
         name: c.participant.name,

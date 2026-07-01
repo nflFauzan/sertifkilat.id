@@ -13,7 +13,7 @@ export default async function GeneratorPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/auth/login");
 
-  const [events, recentBatches] = await Promise.all([
+  const [events, recentBatches, templates, user] = await Promise.all([
     prisma.event.findMany({
       where: { userId: session.user.id },
       orderBy: { createdAt: "desc" },
@@ -28,7 +28,25 @@ export default async function GeneratorPage() {
         _count: { select: { certificates: true } },
       },
     }),
+    prisma.template.findMany({
+      where: { userId: session.user.id },
+      orderBy: { createdAt: "desc" },
+      select: { id: true, name: true },
+    }),
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { plan: true },
+    }),
   ]);
 
-  return <GeneratorClient events={events} recentBatches={recentBatches} />;
+  const userPlan = user?.plan || "FREE";
+
+  return (
+    <GeneratorClient
+      events={events}
+      recentBatches={recentBatches}
+      templates={templates}
+      userPlan={userPlan}
+    />
+  );
 }

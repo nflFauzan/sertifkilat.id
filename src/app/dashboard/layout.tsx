@@ -28,7 +28,6 @@ const navItems = [
   { href: "/dashboard/generator", label: "Generate", icon: Certificate },
   { href: "/dashboard/certificates", label: "Certificates", icon: FileText },
   { href: "/dashboard/analytics", label: "Analytics", icon: ChartBar },
-  { href: "/dashboard/settings", label: "Settings", icon: Gear },
 ];
 
 export default function DashboardLayout({

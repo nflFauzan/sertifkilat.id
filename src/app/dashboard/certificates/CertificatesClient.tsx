@@ -20,6 +20,8 @@ type SerializedCertificate = {
   eventDate: Date | string;
   templateUrl: string;
   templateFields: TemplateField[];
+  templateWidth?: number;
+  templateHeight?: number;
 };
 
 export default function CertificatesClient({
@@ -42,6 +44,8 @@ export default function CertificatesClient({
           date: formatDate(c.eventDate),
           serial: c.serialNumber,
           verifyUrl: c.verifyUrl || "",
+          templateWidth: c.templateWidth,
+          templateHeight: c.templateHeight,
         }
       );
       downloadCertificatePDF(canvas, `${c.serialNumber}_${c.participantName.replace(/[^a-z0-9]/gi, "_").toLowerCase()}`);
@@ -65,6 +69,8 @@ export default function CertificatesClient({
           date: formatDate(c.eventDate),
           serial: c.serialNumber,
           verifyUrl: c.verifyUrl || "",
+          templateWidth: c.templateWidth,
+          templateHeight: c.templateHeight,
         }
       );
       downloadCertificatePNG(canvas, `${c.serialNumber}_${c.participantName.replace(/[^a-z0-9]/gi, "_").toLowerCase()}`);

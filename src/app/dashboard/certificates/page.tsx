@@ -35,6 +35,8 @@ export default async function CertificatesPage() {
             select: {
               fileUrl: true,
               fields: true,
+              width: true,
+              height: true,
             },
           },
           event: {
@@ -63,6 +65,8 @@ export default async function CertificatesPage() {
     eventDate: c.batch.event.date,
     templateUrl: c.batch.template.fileUrl,
     templateFields: (c.batch.template.fields as unknown as TemplateField[]) || [],
+    templateWidth: c.batch.template.width,
+    templateHeight: c.batch.template.height,
   }));
 
   return <CertificatesClient certificates={serializedCertificates} />;

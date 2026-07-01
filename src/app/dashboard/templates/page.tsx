@@ -25,6 +25,13 @@ export default async function TemplatesPage() {
     orderBy: { createdAt: "desc" },
   });
 
+  // Fetch user plan
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { plan: true },
+  });
+  const userPlan = user?.plan || "FREE";
+
   // Safe serialization of templates (convert Date and JSON fields appropriately)
   const serializedTemplates = templates.map((t: typeof templates[number]) => ({
     id: t.id,
@@ -36,5 +43,5 @@ export default async function TemplatesPage() {
     event: t.event ? { name: t.event.name } : null,
   }));
 
-  return <TemplatesClient events={events} templates={serializedTemplates} />;
+  return <TemplatesClient events={events} templates={serializedTemplates} userPlan={userPlan} />;
 }

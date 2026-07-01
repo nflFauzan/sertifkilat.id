@@ -5,93 +5,104 @@ import ParticipantsClient from "./ParticipantsClient";
 
 export const dynamic = "force-dynamic";
 
-const PAGE_SIZE = 20;
-
 interface Props {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ page?: string; q?: string }>;
+  searchParams: Promise<{ q?: string; page?: string }>;
 }
 
-export async function generateMetadata({ params }: Props) {
+export default async function EventParticipantsPage({
+  params,
+  searchParams,
+}: Props) {
   const { id } = await params;
-  const event = await prisma.event.findUnique({
-    where: { id },
-    select: { name: true },
-  });
-  return { title: `Peserta — ${event?.name ?? "Event"} — SertifKilat.id` };
-}
-
-export default async function EventParticipantsPage({ params, searchParams }: Props) {
-  const { id } = await params;
-  const { page: pageStr, q: search } = await searchParams;
-
+  const resolvedSearchParams = await searchParams;
+  
   const session = await auth();
   if (!session?.user?.id) redirect("/auth/login");
 
-  // Ownership check
+  // Fetch the event and check ownership
   const event = await prisma.event.findFirst({
     where: { id, userId: session.user.id },
     select: { id: true, name: true },
   });
-  if (!event) notFound();
 
-  const page = Math.max(1, parseInt(pageStr ?? "1", 10));
-  const skip = (page - 1) * PAGE_SIZE;
+  if (!event) {
+    notFound();
+  }
 
-  // Build filter: support search across name, email
-  const where = {
+  // Parse search query and page number
+  const searchQuery = (resolvedSearchParams.q || "").trim();
+  const page = Math.max(1, parseInt(resolvedSearchParams.page || "1", 10));
+  const limit = 20;
+
+  // Build the search condition
+  const searchFilter = searchQuery
+    ? {
+        OR: [
+          { name: { contains: searchQuery, mode: "insensitive" as const } },
+          { email: { contains: searchQuery, mode: "insensitive" as const } },
+          {
+            extraData: {
+              path: ["institution"],
+              string_contains: searchQuery,
+            },
+          },
+        ],
+      }
+    : {};
+
+  const whereClause = {
     eventId: id,
-    ...(search?.trim()
-      ? {
-          OR: [
-            { name: { contains: search.trim(), mode: "insensitive" as const } },
-            { email: { contains: search.trim(), mode: "insensitive" as const } },
-          ],
-        }
-      : {}),
+    ...searchFilter,
   };
 
-  const [participants, totalCount] = await Promise.all([
-    prisma.participant.findMany({
-      where,
-      orderBy: { rowIndex: "asc" },
-      skip,
-      take: PAGE_SIZE,
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        rowIndex: true,
-        extraData: true,
-        createdAt: true,
-      },
-    }),
-    prisma.participant.count({ where }),
-  ]);
+  // Get total count of filtered participants
+  const totalCount = await prisma.participant.count({
+    where: whereClause,
+  });
 
-  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+  // Fetch paginated participants selecting only required columns
+  const participants = await prisma.participant.findMany({
+    where: whereClause,
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      extraData: true,
+      rowIndex: true,
+      createdAt: true,
+    },
+    orderBy: { rowIndex: "asc" },
+    skip: (page - 1) * limit,
+    take: limit,
+  });
 
-  const serialized = participants.map((p) => {
-    const extra = (p.extraData ?? {}) as Record<string, string>;
+  // Calculate total pages
+  const totalPages = Math.ceil(totalCount / limit);
+
+  // Safe serialization (ensure Date object is converted to ISO string or formatted)
+  const serializedParticipants = participants.map((p) => {
+    // Parse institution and position safely from extraData JSON
+    const extra = (p.extraData as { institution?: string; position?: string }) || {};
     return {
       id: p.id,
       name: p.name,
       email: p.email,
       rowIndex: p.rowIndex,
-      institution: extra.institution ?? "",
-      position: extra.position ?? "",
-      createdAt: p.createdAt,
+      institution: extra.institution || "",
+      position: extra.position || "",
+      createdAt: p.createdAt.toISOString(),
     };
   });
 
   return (
     <ParticipantsClient
       event={event}
-      participants={serialized}
+      participants={serializedParticipants}
       totalCount={totalCount}
-      page={page}
+      currentPage={page}
       totalPages={totalPages}
-      searchQuery={search ?? ""}
+      searchQuery={searchQuery}
     />
   );
 }
