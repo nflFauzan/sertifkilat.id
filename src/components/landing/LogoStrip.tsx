@@ -1,12 +1,15 @@
-const orgs = [
-  "KelasOnline.id",
-  "Studio Kreatif Nusantara",
-  "Komunitas Ngomestic",
-  "EduCamp Indonesia",
-  "Wirausaha Muda Hub",
-];
+// LogoStrip: Menampilkan nama organisasi/institusi dari pengguna terdaftar.
+// Data diambil dari props (server-side) berdasarkan nama event yang ada di database.
+// Jika database kosong, komponen ini tidak akan ditampilkan sama sekali.
 
-export default function LogoStrip() {
+interface LogoStripProps {
+  orgs: { id: string; name: string }[];
+}
+
+export default function LogoStrip({ orgs }: LogoStripProps) {
+  // Jika belum ada data dari database, sembunyikan section ini
+  if (orgs.length === 0) return null;
+
   return (
     <div className="border-t border-ink-100 bg-white">
       <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-10">
@@ -16,10 +19,10 @@ export default function LogoStrip() {
         <div className="flex flex-wrap justify-center items-center gap-x-10 gap-y-4">
           {orgs.map((org) => (
             <span
-              key={org}
+              key={org.id}
               className="font-display text-base text-ink-300 hover:text-ink-400 transition-colors select-none"
             >
-              {org}
+              {org.name}
             </span>
           ))}
         </div>

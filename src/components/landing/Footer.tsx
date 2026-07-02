@@ -1,4 +1,5 @@
-﻿import Link from "next/link";
+import Link from "next/link";
+
 
 export default function Footer() {
   return (
@@ -22,27 +23,33 @@ export default function Footer() {
           <ul className="space-y-2 text-sm text-ink-500">
             <li><a href="#fitur" className="hover:text-brand-500 transition-colors">Fitur</a></li>
             <li><a href="#harga" className="hover:text-brand-500 transition-colors">Harga</a></li>
+            <li><Link href="/auth/register" className="hover:text-brand-500 transition-colors">Daftar Gratis</Link></li>
             <li><Link href="/verify/SK-2026-0001" className="hover:text-brand-500 transition-colors">Verifikasi Sertifikat</Link></li>
           </ul>
         </div>
         <div>
-          <h4 className="text-sm font-semibold text-ink-900 mb-3">Perusahaan</h4>
+          <h4 className="text-sm font-semibold text-ink-900 mb-3">Akun</h4>
           <ul className="space-y-2 text-sm text-ink-500">
-            <li><a href="#" className="hover:text-brand-500 transition-colors">Tentang Kami</a></li>
-            <li><a href="#" className="hover:text-brand-500 transition-colors">Karier</a></li>
-            <li><a href="#" className="hover:text-brand-500 transition-colors">Kontak</a></li>
+            <li><Link href="/auth/login" className="hover:text-brand-500 transition-colors">Masuk</Link></li>
+            <li><Link href="/auth/register" className="hover:text-brand-500 transition-colors">Daftar</Link></li>
+            <li><Link href="/dashboard" className="hover:text-brand-500 transition-colors">Dashboard</Link></li>
           </ul>
         </div>
         <div>
           <h4 className="text-sm font-semibold text-ink-900 mb-3">Legal</h4>
           <ul className="space-y-2 text-sm text-ink-500">
-            <li><a href="#" className="hover:text-brand-500 transition-colors">Kebijakan Privasi</a></li>
-            <li><a href="#" className="hover:text-brand-500 transition-colors">Syarat Layanan</a></li>
+            <li><span className="text-ink-300 cursor-default">Kebijakan Privasi</span></li>
+            <li><span className="text-ink-300 cursor-default">Syarat Layanan</span></li>
+            <li>
+              <a href="mailto:support@sertifkilat.id" className="hover:text-brand-500 transition-colors">
+                Hubungi Kami
+              </a>
+            </li>
           </ul>
         </div>
       </div>
       <div className="border-t border-ink-100 py-5 text-center text-xs text-ink-400">
-        &copy; 2026 SertifKilat.id
+        &copy; 2026 SertifKilat.id &mdash; Platform Generator Sertifikat Indonesia
       </div>
     </footer>
   );

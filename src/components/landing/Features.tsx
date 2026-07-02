@@ -5,31 +5,37 @@ import { Stack, ArrowsOut, QrCode, Image, ChartBar, Download } from "@phosphor-i
 
 const features = [
   {
+    id: "feature-mass-gen",
     icon: Stack,
     title: "Generator Massal",
     desc: "Buat 1 hingga 10.000 sertifikat sekaligus dari satu template yang sama.",
   },
   {
+    id: "feature-drag-drop",
     icon: ArrowsOut,
     title: "Drag & Drop Posisi",
     desc: "Atur posisi nama, tanggal, dan tanda tangan langsung di atas kanvas sertifikat.",
   },
   {
+    id: "feature-qr-verify",
     icon: QrCode,
     title: "QR Verifikasi",
     desc: "Setiap sertifikat punya kode QR dan tautan unik yang bisa diverifikasi publik.",
   },
   {
+    id: "feature-templates",
     icon: Image,
     title: "Template Siap Pakai",
     desc: "Puluhan desain untuk webinar, lomba, hingga pelatihan internal - tinggal isi data.",
   },
   {
+    id: "feature-analytics",
     icon: ChartBar,
     title: "Analitik Real-time",
     desc: "Pantau jumlah unduhan, scan verifikasi, dan keterlibatan peserta dari satu dasbor.",
   },
   {
+    id: "feature-export",
     icon: Download,
     title: "Ekspor Fleksibel",
     desc: "Unduh sebagai PDF atau PNG, atau kirim langsung ke email peserta secara massal.",
@@ -57,7 +63,7 @@ export default function Features() {
             const Icon = feat.icon;
             return (
               <motion.div
-                key={feat.title}
+                key={feat.id}
                 className="card p-6 hover:shadow-soft transition-all hover:-translate-y-0.5"
                 initial={reduce ? false : { opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}

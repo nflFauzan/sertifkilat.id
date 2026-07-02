@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Fraunces, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import AuthSessionProvider from "@/components/SessionProvider";
 
 const plusJakarta = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta",
@@ -39,7 +40,9 @@ export default function RootLayout({
       lang="id"
       className={`${plusJakarta.variable} ${fraunces.variable} ${jetbrainsMono.variable}`}
     >
-      <body className="min-h-screen">{children}</body>
+      <body className="min-h-screen">
+        <AuthSessionProvider>{children}</AuthSessionProvider>
+      </body>
     </html>
   );
 }

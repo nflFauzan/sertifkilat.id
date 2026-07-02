@@ -1,12 +1,15 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { ArrowRight, QrCode } from "@phosphor-icons/react";
 import Link from "next/link";
 
 function CertPreview({ name, event }: { name: string; event: string }) {
-  const displayName = name.trim() || "Nama Penerima";
-  const displayEvent = event.trim() || "Nama Acara";
+  const isNameEmpty = !name.trim();
+  const isEventEmpty = !event.trim();
+  
+  const displayName = name.trim() || "[Nama Peserta]";
+  const displayEvent = event.trim() || "[Nama Event]";
 
   return (
     <div className="card shadow-glow p-3">
@@ -25,13 +28,19 @@ function CertPreview({ name, event }: { name: string; event: string }) {
             SERTIFIKAT PENGHARGAAN
           </span>
           <p className="text-[10px] text-ink-400 mt-2">Diberikan kepada</p>
-          <div className="mt-2 font-display text-xl sm:text-2xl text-ink-900 transition-all duration-200">
+          <div 
+            className={`mt-2 font-display text-xl sm:text-2xl transition-all duration-200 ${
+              isNameEmpty ? "text-ink-300 italic font-normal" : "text-ink-900"
+            }`}
+          >
             {displayName}
           </div>
           <div className="w-16 h-px bg-[#C9A84C]/45 my-2" />
           <p className="text-[10px] text-ink-500 max-w-[200px] leading-relaxed transition-all duration-200">
             atas partisipasinya dalam{" "}
-            <span className="font-medium">{displayEvent}</span>
+            <span className={`font-medium ${isEventEmpty ? "text-ink-300 italic" : "text-ink-900"}`}>
+              {displayEvent}
+            </span>
           </p>
         </div>
 
@@ -51,8 +60,8 @@ function CertPreview({ name, event }: { name: string; event: string }) {
 }
 
 export default function LiveSimulator() {
-  const [name, setName] = useState("Bagas Santoso");
-  const [event, setEvent] = useState("Webinar Nasional UI/UX 2026");
+  const [name, setName] = useState("");
+  const [event, setEvent] = useState("");
 
   return (
     <section className="max-w-[1200px] mx-auto px-5 sm:px-8 py-20">
