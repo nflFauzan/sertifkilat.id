@@ -5,6 +5,8 @@ import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { generateSerialNumber } from "@/lib/utils";
+import fs from "fs/promises";
+import path from "path";
 
 export async function generateCertificatesAction(formData: FormData) {
   const session = await auth();
@@ -183,4 +185,40 @@ export async function getBatchCertificatesAction(batchId: string) {
       })),
     },
   };
+}
+
+export async function saveGeneratedCertificateAction({
+  batchId,
+  filename,
+  base64Data,
+}: {
+  batchId: string;
+  filename: string;
+  base64Data: string;
+}) {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/auth/login");
+
+  try {
+    const buffer = Buffer.from(base64Data, "base64");
+    const uploadDir = path.join(
+      process.cwd(),
+      "public",
+      "uploads",
+      "certificates",
+      session.user.id,
+      batchId
+    );
+
+    // Ensure directory exists
+    await fs.mkdir(uploadDir, { recursive: true });
+
+    const filePath = path.join(uploadDir, filename);
+    await fs.writeFile(filePath, buffer);
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error saving generated certificate:", error);
+    return { error: "Gagal menyimpan file hasil generate" };
+  }
 }

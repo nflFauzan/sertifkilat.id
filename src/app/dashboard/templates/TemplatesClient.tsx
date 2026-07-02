@@ -152,62 +152,84 @@ export default function TemplatesClient({
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl">
           {templates.map((template) => (
             <div
               key={template.id}
-              className="card group overflow-hidden flex flex-col border border-ink-150 hover:shadow-soft hover:border-brand-300 transition-all duration-200"
+              className="bg-white rounded-2xl border border-ink-150 shadow-xl overflow-hidden flex flex-col p-5 hover:scale-[1.02] hover:shadow-2xl transition-all duration-300 relative group"
             >
-              {/* Image Preview Container */}
-              <div className="relative aspect-[16/11] bg-ink-50 border-b border-ink-100 overflow-hidden">
+              {/* Image Preview Container (object-contain so SVG displays in full) */}
+              <div className="relative aspect-[1122/794] w-full bg-ink-50 rounded-xl overflow-hidden border border-ink-100 mb-5">
                 <Image
                   src={template.fileUrl}
                   alt={template.name}
                   fill
-                  className="object-cover group-hover:scale-[1.02] transition-transform duration-300"
-                  sizes="(max-width: 768px) 100vw, 33vw"
+                  loading="lazy"
+                  className="object-contain p-2"
                 />
-                <div className="absolute inset-0 bg-ink-900/40 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 transition-opacity duration-200">
-                  <Link
-                    href={`/dashboard/templates/${template.id}`}
-                    className="btn-primary py-2 px-3 text-xs bg-white text-ink-900 hover:bg-brand-50 hover:text-brand-600 shadow-lg border border-transparent"
-                  >
-                    <Sliders className="w-4 h-4" />
-                    Atur Letak
-                  </Link>
-                  <button
-                    onClick={() => handleDelete(template.id)}
-                    className="btn-primary py-2 px-3 text-xs bg-rose-600 hover:bg-rose-700 text-white shadow-lg border border-transparent"
-                  >
-                    <Trash className="w-4 h-4" />
-                    Hapus
-                  </button>
+                
+                {/* Plan Badge */}
+                <div className={`absolute top-2.5 left-2.5 z-10 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider border shadow-sm ${
+                  ["/templates/sertifikat1.svg", "/templates/sertifikat2.svg"].includes(template.fileUrl)
+                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                    : ["/templates/elegan-navy-gold.svg", "/templates/luxury-achievement.svg", "/templates/elegant-gold.svg", "/templates/modern-appreciation.svg"].includes(template.fileUrl)
+                      ? "bg-amber-50 text-amber-700 border-amber-200"
+                      : "bg-slate-50 text-slate-700 border-slate-200"
+                }`}>
+                  {["/templates/sertifikat1.svg", "/templates/sertifikat2.svg"].includes(template.fileUrl)
+                    ? "Gratis"
+                    : ["/templates/elegan-navy-gold.svg", "/templates/luxury-achievement.svg", "/templates/elegant-gold.svg", "/templates/modern-appreciation.svg"].includes(template.fileUrl)
+                      ? "Premium"
+                      : "Kustom"}
                 </div>
+                
+                {/* Trash button absolute top-right */}
+                <button
+                  onClick={() => handleDelete(template.id)}
+                  className="absolute top-2.5 right-2.5 p-2 rounded-lg bg-white/90 hover:bg-rose-50 text-ink-500 hover:text-rose-600 border border-ink-100 hover:border-rose-100 shadow-sm transition-all z-10 opacity-0 group-hover:opacity-100 focus:opacity-100"
+                  title="Hapus Template"
+                >
+                  <Trash className="w-4 h-4" />
+                </button>
               </div>
 
-              {/* Body */}
-              <div className="p-4 flex-1 flex flex-col justify-between">
+              {/* Body Content */}
+              <div className="flex-1 flex flex-col justify-between">
                 <div>
-                  <h3 className="font-semibold text-ink-900 text-base">{template.name}</h3>
-                  <p className="text-xs text-ink-400 mt-1">
-                    Dibuat pada {new Date(template.createdAt).toLocaleDateString("id-ID", {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                    })}
+                  <h3 className="text-lg font-bold text-ink-900 group-hover:text-brand-600 transition-colors">
+                    {template.name}
+                  </h3>
+                  <p className="text-sm text-ink-550 mt-1 line-clamp-2 min-h-[40px]">
+                    {template.fileUrl.includes("sertifikat1") && "Desain sertifikat elegan navy dan gold."}
+                    {template.fileUrl.includes("sertifikat2") && "Desain sertifikat modern appreciation maroon."}
+                    {template.fileUrl.includes("elegan-navy-gold") && "Desain minimalis navy gold premium."}
+                    {template.fileUrl.includes("luxury-achievement") && "Desain mewah pencapaian profesional."}
+                    {template.fileUrl.includes("elegant-gold") && "Desain premium perpaduan emas dan gelap."}
+                    {template.fileUrl.includes("modern-appreciation.svg") && "Desain modern minimalis bersih."}
+                    {!["sertifikat1", "sertifikat2", "elegan-navy-gold", "luxury-achievement", "elegant-gold", "modern-appreciation.svg"].some(path => template.fileUrl.includes(path)) && "Desain sertifikat kustom Anda."}
                   </p>
+
+                  {template.event ? (
+                    <div className="mt-3 flex items-center gap-1.5 text-xs text-brand-600 font-medium">
+                      <CheckCircle className="w-3.5 h-3.5 text-brand-500" weight="fill" />
+                      <span>Dihubungkan ke: {template.event.name}</span>
+                    </div>
+                  ) : (
+                    <div className="mt-3 text-xs text-ink-400">
+                      Belum dihubungkan ke event
+                    </div>
+                  )}
                 </div>
 
-                {template.event ? (
-                  <div className="mt-4 pt-3 border-t border-ink-50 flex items-center gap-1.5 text-xs text-brand-600 font-medium">
-                    <CheckCircle className="w-4 h-4 text-brand-500" weight="fill" />
-                    <span>Dihubungkan ke: {template.event.name}</span>
-                  </div>
-                ) : (
-                  <div className="mt-4 pt-3 border-t border-ink-50 text-xs text-ink-400">
-                    Belum dihubungkan ke event
-                  </div>
-                )}
+                <div className="mt-6">
+                  <Link
+                    href={`/dashboard/templates/${template.id}`}
+                    className="btn-primary w-full justify-center !py-2.5 text-xs font-semibold"
+                  >
+                    <Sliders className="w-3.5 h-3.5" />
+                    Gunakan
+                  </Link>
+                </div>
               </div>
             </div>
           ))}
