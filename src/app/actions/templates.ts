@@ -43,25 +43,69 @@ export async function createTemplateAction(formData: FormData) {
   }
 
   try {
-    const fileUrl = await saveUploadedFile(file);
-
-    // Default fields: name, event date, verify code/qr
+    // 1. Define all default certificate fields (A4 Landscape 1122x794 coords)
     const defaultFields = [
-      { key: "name", x: 400, y: 300, fontSize: 32, color: "#1e293b", fontWeight: "bold", align: "center" },
-      { key: "event", x: 400, y: 380, fontSize: 18, color: "#475569", fontWeight: "normal", align: "center" },
-      { key: "date", x: 400, y: 440, fontSize: 16, color: "#475569", fontWeight: "normal", align: "center" },
-      { key: "serial", x: 100, y: 700, fontSize: 12, color: "#64748b", fontWeight: "normal", align: "left" },
-      { key: "qr", x: 900, y: 650, fontSize: 100, color: "#000000", fontWeight: "normal", align: "center" }, // width/height is mapped to fontSize in QR
+      { key: "ornament", x: 561, y: 120, fontSize: 32, color: "#D4AF37", fontWeight: "normal", align: "center", text: "✦" },
+      { key: "title", x: 561, y: 180, fontSize: 48, color: "#0D1B2A", fontWeight: "bold", align: "center", text: "SERTIFIKAT" },
+      { key: "subtitle", x: 561, y: 240, fontSize: 18, color: "#D4AF37", fontWeight: "bold", align: "center", text: "DIBERIKAN KEPADA" },
+      { key: "name", x: 561, y: 340, fontSize: 44, color: "#0D1B2A", fontWeight: "normal", align: "center", text: "Nama Peserta" },
+      { key: "participation", x: 561, y: 410, fontSize: 14, color: "#475569", fontWeight: "normal", align: "center", text: "ATAS PARTISIPASINYA SEBAGAI" },
+      { key: "event", x: 561, y: 460, fontSize: 24, color: "#0D1B2A", fontWeight: "bold", align: "center", text: "Webinar Nasional Desain UI/UX 2026" },
+      { key: "divider", x: 561, y: 505, fontSize: 16, color: "#D4AF37", fontWeight: "normal", align: "center", text: "— — — — — — — — — — — — — — —" },
+      { key: "date", x: 480, y: 540, fontSize: 14, color: "#475569", fontWeight: "normal", align: "right", text: "12 Juni 2026" },
+      { key: "location", x: 640, y: 540, fontSize: 14, color: "#475569", fontWeight: "normal", align: "left", text: "Jakarta, Indonesia" },
+      { key: "qr", x: 180, y: 645, fontSize: 80, color: "#000000", fontWeight: "normal", align: "center" },
+      { key: "qrText", x: 180, y: 705, fontSize: 10, color: "#64748b", fontWeight: "normal", align: "center", text: "SCAN UNTUK VERIFIKASI" },
+      { key: "signer1Name", x: 450, y: 670, fontSize: 16, color: "#0D1B2A", fontWeight: "bold", align: "center", text: "NAMA KETUA PANITIA" },
+      { key: "signer1Title", x: 450, y: 695, fontSize: 14, color: "#475569", fontWeight: "normal", align: "center", text: "Jabatan" },
+      { key: "signer2Name", x: 750, y: 670, fontSize: 16, color: "#0D1B2A", fontWeight: "bold", align: "center", text: "NAMA PIMPINAN INSTANSI" },
+      { key: "signer2Title", x: 750, y: 695, fontSize: 14, color: "#475569", fontWeight: "normal", align: "center", text: "Jabatan" },
+      { key: "serial", x: 1020, y: 730, fontSize: 12, color: "#64748b", fontWeight: "normal", align: "right", text: "SK-2026-0001" },
+      { key: "logo", x: 970, y: 120, width: 80, height: 80, fileUrl: "", hidden: false },
     ];
 
+    // 2. Create the template in the database first to get the ID
     const template = await prisma.template.create({
       data: {
         name,
-        fileUrl,
+        fileUrl: "", // temp
         eventId: eventId || undefined,
         userId: session.user.id,
         fields: defaultFields,
       },
+    });
+
+    // 3. Save uploaded file to: /public/uploads/templates/sertifikat/{userId}/{templateId}/background.png
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+
+    const uploadDir = path.join(
+      process.cwd(),
+      "public",
+      "uploads",
+      "templates",
+      "sertifikat",
+      session.user.id,
+      template.id
+    );
+    
+    // Ensure directory exists
+    await fs.mkdir(uploadDir, { recursive: true });
+
+    // Use name background with original file extension
+    const ext = path.extname(file.name) || ".png";
+    const filename = `background${ext}`;
+    const filePath = path.join(uploadDir, filename);
+
+    // Write file
+    await fs.writeFile(filePath, buffer);
+
+    const fileUrl = `/uploads/templates/sertifikat/${session.user.id}/${template.id}/${filename}`;
+
+    // 4. Update the template's fileUrl with the correct path
+    await prisma.template.update({
+      where: { id: template.id },
+      data: { fileUrl },
     });
 
     revalidatePath("/dashboard/templates");

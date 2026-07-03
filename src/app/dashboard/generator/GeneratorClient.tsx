@@ -16,7 +16,7 @@ import {
   Check,
   Plus,
 } from "@phosphor-icons/react";
-import { generateCertificatesAction, getBatchCertificatesAction } from "@/app/actions/certificates";
+import { generateCertificatesAction, getBatchCertificatesAction, saveGeneratedCertificateAction } from "@/app/actions/certificates";
 import { formatDate } from "@/lib/utils";
 import { downloadCertificatesZip, TemplateField } from "@/lib/certificateGenerator";
 import { downloadExcelTemplate } from "@/lib/excelTemplate";
@@ -44,7 +44,7 @@ const BATCH_STATUS: Record<string, { label: string; className: string }> = {
 
 import UpgradeModal from "@/components/UpgradeModal";
 
-type Template = { id: string; name: string };
+type Template = { id: string; name: string; fileUrl: string };
 
 export default function GeneratorClient({
   events,
@@ -99,7 +99,14 @@ export default function GeneratorClient({
         templateUrl,
         fields: templateFields as unknown as TemplateField[],
         zipFilename: name.replace(/[^a-z0-9]/gi, "_").toLowerCase(),
-        format
+        format,
+        onSaveFile: async (filename, base64) => {
+          await saveGeneratedCertificateAction({
+            batchId,
+            filename,
+            base64Data: base64,
+          });
+        }
       });
     } catch (err) {
       console.error("ZIP Generation error:", err);
@@ -349,7 +356,7 @@ export default function GeneratorClient({
 
       {/* STEP 2: Pilih Template */}
       {step === 2 && (
-        <div className="card p-6 space-y-5">
+        <div className="card p-6 space-y-6">
           <div className="space-y-1">
             <h2 className="font-semibold text-ink-900 text-base">Langkah 2: Pilih Template Sertifikat</h2>
             <p className="text-xs text-ink-500">Tentukan desain latar belakang dan tata letak tulisan sertifikat.</p>
@@ -364,26 +371,94 @@ export default function GeneratorClient({
               </Link>
             </div>
           ) : (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-ink-700 mb-1.5">
-                  Template Desain <span className="text-rose-500">*</span>
-                </label>
-                <select
-                  value={selectedTemplate}
-                  onChange={(e) => setSelectedTemplate(e.target.value)}
-                  className="input-field"
-                >
-                  <option value="">— Pilih template —</option>
-                  {templates.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.name}
-                    </option>
-                  ))}
-                </select>
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {templates.map((t) => {
+                  const isPremium = t.fileUrl.includes("elegan-navy-gold") || t.fileUrl.includes("luxury-achievement");
+                  const isGratis = t.fileUrl.includes("minimal-white-gold") || t.fileUrl.includes("modern-appreciation");
+                  const isSelected = selectedTemplate === t.id;
+                  
+                  const badgeText = isPremium ? "PREMIUM" : isGratis ? "GRATIS" : "CUSTOM";
+                  const badgeClass = isPremium
+                    ? "bg-amber-100 text-amber-800 border-amber-200"
+                    : isGratis
+                      ? "bg-emerald-100 text-emerald-800 border-emerald-200"
+                      : "bg-blue-100 text-blue-800 border-blue-200";
+
+                  const handleSelect = () => {
+                    if (isPremium && userPlan === "FREE") {
+                      setUpgradeOpen(true);
+                    } else {
+                      setSelectedTemplate(t.id);
+                    }
+                  };
+
+                  return (
+                    <div
+                      key={t.id}
+                      onClick={handleSelect}
+                      className={`card flex flex-col justify-between overflow-hidden border transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer ${
+                        isSelected
+                          ? "border-brand-500 ring-2 ring-brand-500/20"
+                          : "border-ink-150 hover:border-brand-300"
+                      }`}
+                    >
+                      {/* Image Preview Container */}
+                      <div className="relative aspect-[16/11] bg-ink-50 border-b border-ink-100 overflow-hidden flex items-center justify-center p-2">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={t.fileUrl}
+                          alt={t.name}
+                          className="w-full h-full object-contain"
+                        />
+                        {isPremium && userPlan === "FREE" && (
+                          <div className="absolute inset-0 bg-ink-950/60 flex items-center justify-center backdrop-blur-[1px]">
+                            <span className="px-2.5 py-1 bg-amber-500 text-white rounded text-[10px] font-bold shadow-sm">
+                              🔒 Upgrade Pro
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Card Body */}
+                      <div className="p-4 flex-1 flex flex-col justify-between gap-3">
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span className={`px-2 py-0.5 rounded text-[8px] font-bold tracking-wider border ${badgeClass}`}>
+                              {badgeText}
+                            </span>
+                            <span className="text-[9px] text-ink-400">A4 Landscape</span>
+                          </div>
+                          <h3 className="font-bold text-ink-900 text-xs sm:text-sm line-clamp-1 mt-1">{t.name}</h3>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSelect();
+                          }}
+                          className={`w-full py-1.5 px-3 rounded-lg text-xxs sm:text-xs font-semibold transition-all ${
+                            isSelected
+                              ? "bg-brand-600 text-white shadow-glow"
+                              : isPremium && userPlan === "FREE"
+                                ? "bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200"
+                                : "bg-ink-100 hover:bg-brand-50 hover:text-brand-600 text-ink-700"
+                          }`}
+                        >
+                          {isSelected
+                            ? "✓ Terpilih"
+                            : isPremium && userPlan === "FREE"
+                              ? "Upgrade ke Pro"
+                              : "Gunakan Template"}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
 
-              <div className="flex justify-between">
+              <div className="flex justify-between border-t border-ink-100 pt-4">
                 <button onClick={() => setStep(1)} className="btn-secondary text-xs flex items-center gap-1">
                   <ArrowLeft size={14} /> Kembali
                 </button>

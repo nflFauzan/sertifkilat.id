@@ -20,6 +20,29 @@ export type TemplateField = {
   color?: string;
   fontWeight?: string;
   align?: string;
+  text?: string;
+  hidden?: boolean;
+  width?: number;
+  height?: number;
+  fileUrl?: string;
+};
+
+const FIELD_FALLBACK_TEXTS: Record<string, string> = {
+  ornament: "✦",
+  title: "SERTIFIKAT",
+  subtitle: "DIBERIKAN KEPADA",
+  name: "Nama Peserta",
+  participation: "ATAS PARTISIPASINYA SEBAGAI",
+  event: "Nama Event / Kegiatan",
+  date: "Tanggal Kegiatan",
+  location: "Tempat Kegiatan",
+  signer1Name: "NAMA KETUA PANITIA",
+  signer1Title: "Jabatan",
+  signer2Name: "NAMA PIMPINAN INSTANSI",
+  signer2Title: "Jabatan",
+  serial: "SK-2026-0001",
+  qrText: "SCAN UNTUK VERIFIKASI",
+  divider: "— — — — — — — — — — — — — — —",
 };
 
 /**
@@ -56,8 +79,10 @@ export async function generateCertificateCanvas(
   ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
   // Sync fonts before rendering
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (typeof document !== "undefined" && (document as any).fonts) {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (document as any).fonts.ready;
     } catch (e) {
       console.warn("Fonts loading sync failed:", e);
@@ -72,10 +97,12 @@ export async function generateCertificateCanvas(
 
   // Draw fields
   for (const field of fields) {
+    if (field.hidden) continue;
+
     if (field.key === "qr") {
       try {
         // Generate QR code as DataURL
-        const qrSize = (field.fontSize || 100) * scaleX;
+        const qrSize = (field.fontSize || 80) * scaleX;
         const qrDataUrl = await QRCode.toDataURL(data.verifyUrl, {
           margin: 1,
           width: qrSize * 2, // Generate higher res QR
@@ -91,6 +118,18 @@ export async function generateCertificateCanvas(
       } catch (err) {
         console.error("Failed to draw QR code:", err);
       }
+    } else if (field.key === "logo") {
+      if (!field.fileUrl) continue;
+      try {
+        const logoImg = await loadImage(field.fileUrl);
+        const lw = (field.width || 80) * scaleX;
+        const lh = (field.height || 80) * scaleY;
+        const lx = (field.x * scaleX) - lw / 2;
+        const ly = (field.y * scaleY) - lh / 2;
+        ctx.drawImage(logoImg, lx, ly, lw, lh);
+      } catch (err) {
+        console.error("Failed to draw logo:", err);
+      }
     } else {
       // Draw text fields
       let text = "";
@@ -98,15 +137,18 @@ export async function generateCertificateCanvas(
       else if (field.key === "event") text = data.event;
       else if (field.key === "date") text = data.date;
       else if (field.key === "serial") text = data.serial;
-      else continue;
+      else text = field.text !== undefined ? field.text : (FIELD_FALLBACK_TEXTS[field.key] || "");
 
       const fontSize = (field.fontSize || 24) * scaleX;
       const fontWeight = field.fontWeight || "normal";
       const fontColor = field.color || "#000000";
       const align = (field.align || "center") as CanvasTextAlign;
+      const fontFamily = field.key === "name"
+        ? '"Alex Brush", "Playball", cursive'
+        : '"Plus Jakarta Sans", "Inter", sans-serif';
 
       ctx.save();
-      ctx.font = `${fontWeight} ${fontSize}px "Plus Jakarta Sans", "Inter", sans-serif`;
+      ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
       ctx.fillStyle = fontColor;
       ctx.textAlign = align;
       ctx.textBaseline = "middle";
@@ -161,6 +203,7 @@ export async function downloadCertificatesZip({
   zipFilename,
   format = "pdf",
   onProgress,
+  onSaveFile,
 }: {
   certificates: CertificateData[];
   templateUrl: string;
@@ -168,6 +211,7 @@ export async function downloadCertificatesZip({
   zipFilename: string;
   format?: "pdf" | "png" | "both";
   onProgress?: (current: number, total: number) => void;
+  onSaveFile?: (filename: string, base64: string) => Promise<void>;
 }): Promise<void> {
   const zip = new JSZip();
   const total = certificates.length;
@@ -185,6 +229,14 @@ export async function downloadCertificatesZip({
         const pngDataUrl = canvas.toDataURL("image/png");
         const pngBase64 = pngDataUrl.split(",")[1];
         zip.file(`${baseFilename}.png`, pngBase64, { base64: true });
+        
+        if (onSaveFile) {
+          try {
+            await onSaveFile(`${baseFilename}.png`, pngBase64);
+          } catch (saveErr) {
+            console.error("Failed to save PNG on server:", saveErr);
+          }
+        }
       }
 
       if (format === "pdf" || format === "both") {
@@ -202,6 +254,16 @@ export async function downloadCertificatesZip({
         // Add PDF to ZIP
         const pdfArray = pdf.output("arraybuffer");
         zip.file(`${baseFilename}.pdf`, pdfArray);
+        
+        if (onSaveFile) {
+          try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const pdfBase64 = (pdf as any).output("base64");
+            await onSaveFile(`${baseFilename}.pdf`, pdfBase64);
+          } catch (saveErr) {
+            console.error("Failed to save PDF on server:", saveErr);
+          }
+        }
       }
     } catch (err) {
       console.error(`Failed to generate ZIP item for ${cert.name}:`, err);

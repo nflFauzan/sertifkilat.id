@@ -1,141 +1,141 @@
 "use client";
 
 import { motion } from "motion/react";
-import { Lightning, ArrowRight, CheckCircle, Sparkle, FileZip } from "@phosphor-icons/react";
+import { ArrowRight, Sparkle } from "@phosphor-icons/react";
 import Link from "next/link";
+import Image from "next/image";
 
-export default function Hero() {
+interface HeroProps {
+  stats?: {
+    totalCertificates: number;
+    totalUsers: number;
+  };
+}
+
+export default function Hero({ stats }: HeroProps) {
+  const formattedCerts = stats?.totalCertificates
+    ? stats.totalCertificates >= 1000
+      ? `${(stats.totalCertificates / 1000).toFixed(1).replace(".0", "")}K+`
+      : stats.totalCertificates
+    : "26+";
+
+  const formattedUsers = stats?.totalUsers
+    ? stats.totalUsers >= 1000
+      ? `${(stats.totalUsers / 1000).toFixed(1).replace(".0", "")}K+`
+      : `${stats.totalUsers}+`
+    : "5+";
+
   return (
-    <section className="relative overflow-hidden min-h-[92dvh] flex items-center bg-gradient-to-br from-white via-blue-50/20 to-indigo-50/30">
-      {/* Blurred decorative circles */}
-      <div className="absolute -top-40 -right-40 w-[600px] h-[600px] bg-brand-200/25 rounded-full blur-3xl -z-10 pointer-events-none" />
-      <div className="absolute top-[30%] -left-60 w-[500px] h-[500px] bg-indigo-200/20 rounded-full blur-3xl -z-10 pointer-events-none" />
-      <div className="absolute bottom-10 right-[20%] w-[350px] h-[350px] bg-blue-100/30 rounded-full blur-3xl -z-10 pointer-events-none" />
+    <section className="relative overflow-hidden min-h-[90vh] flex items-center bg-gradient-to-b from-white via-blue-50/20 to-indigo-50/40 py-16 lg:py-24">
+      
+      {/* Soft large blur background decoration */}
+      <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-gradient-to-tr from-brand-100/30 to-indigo-100/20 rounded-full blur-3xl -z-10 pointer-events-none" />
 
-      <div className="max-w-[1200px] mx-auto px-5 sm:px-8 pt-8 pb-16 w-full z-10">
-        <div className="grid lg:grid-cols-12 gap-14 items-center">
+      <div className="max-w-[1200px] mx-auto px-5 sm:px-8 w-full z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+        
+        {/* Left Side Info */}
+        <div className="lg:col-span-6 flex flex-col space-y-6 sm:space-y-8 text-center lg:text-left items-center lg:items-start">
+          
+          {/* Premium Badge */}
+          <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-brand-50 border border-brand-100 text-brand-700 text-xs font-semibold tracking-wide">
+            <Sparkle className="w-3.5 h-3.5 text-brand-500 animate-pulse" weight="fill" />
+            Indonesia&apos;s Smart Certificate Generator
+          </div>
 
-          {/* Left Column (Information) */}
-          <motion.div
-            className="lg:col-span-7 space-y-6"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          >
-            {/* Premium Badge */}
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-brand-50 border border-brand-100 text-brand-700 text-xs font-semibold tracking-wide">
-              <Sparkle className="w-3.5 h-3.5 text-brand-500 animate-pulse" weight="fill" />
-              Indonesia's Smart Certificate Generator
-            </div>
+          {/* Title */}
+          <h1 className="font-sans text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-ink-900 leading-[1.08] max-w-xl">
+            Buat Sertifikat Profesional <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-500 via-indigo-500 to-indigo-600">
+              dalam Hitungan Menit
+            </span>
+          </h1>
 
-            {/* Typography Title */}
-            <h1 className="font-sans text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-ink-900 leading-[1.08]">
-              Buat Sertifikat Profesional <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-500 via-indigo-500 to-indigo-600">
-                dalam Hitungan Menit
-              </span>
-            </h1>
+          {/* Description */}
+          <p className="text-base sm:text-lg text-ink-550 max-w-xl leading-relaxed">
+            Unggah satu desain, tarik data peserta dari Excel, atur posisi nama sekali — 
+            SertifKilat.id menyusun seluruh sertifikat digital lengkap dengan QR verifikasi unik dan siap unduh.
+          </p>
 
-            {/* Subdescription */}
-            <p className="text-base sm:text-lg text-ink-500 max-w-xl leading-relaxed">
-              Unggah satu desain, tarik data peserta dari Excel, atur posisi nama sekali —
-              SertifKilat.id menyusun seluruh sertifikat digital lengkap dengan QR verifikasi unik dan siap unduh.
-            </p>
-
-            {/* Call to Actions */}
-            <div className="flex flex-wrap gap-4 pt-2">
-              <Link
-                href="/generator"
-                className="btn-primary !px-7 !py-3.5 !text-sm flex items-center gap-2 group shadow-glow shadow-brand-500/20 hover:-translate-y-0.5 active:translate-y-0 transition-all"
-              >
-                Coba Gratis Sekarang
-                <ArrowRight size={16} weight="bold" className="group-hover:translate-x-1 transition-transform" />
-              </Link>
-              <Link
-                href="#templates"
-                className="btn-secondary !px-7 !py-3.5 !text-sm hover:bg-ink-100 hover:-translate-y-0.5 active:translate-y-0 transition-all"
-              >
-                Lihat Template
-              </Link>
-            </div>
-
-            {/* Trust Indicators */}
-            <div className="grid grid-cols-3 gap-6 pt-8 border-t border-ink-100 max-w-lg mt-10">
-              <div>
-                <p className="text-2xl sm:text-3xl font-extrabold text-brand-600 tracking-tight">500+</p>
-                <p className="text-xxs sm:text-xs font-semibold text-ink-400 mt-1 uppercase tracking-wider">Events & Acara</p>
-              </div>
-              <div>
-                <p className="text-2xl sm:text-3xl font-extrabold text-indigo-600 tracking-tight">18K+</p>
-                <p className="text-xxs sm:text-xs font-semibold text-ink-400 mt-1 uppercase tracking-wider">Sertifikat Dibuat</p>
-              </div>
-              <div>
-                <p className="text-2xl sm:text-3xl font-extrabold text-emerald-600 tracking-tight">99.9%</p>
-                <p className="text-xxs sm:text-xs font-semibold text-ink-400 mt-1 uppercase tracking-wider">Success Rate</p>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Right Column (Visual Focus) */}
-          <motion.div
-            className="lg:col-span-5 relative flex items-center justify-center py-6"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-          >
-            {/* Soft Shadow Glow Backdrop */}
-            <div className="absolute -inset-4 bg-gradient-to-br from-brand-100/40 via-indigo-100/20 to-transparent rounded-[2.5rem] -z-10 blur-xl" />
-
-            {/* Floater perspective element */}
-            <motion.div
-              className="relative w-full max-w-[480px] cursor-pointer"
-              style={{ perspective: 1200 }}
-              animate={{ y: [0, -12, 0] }}
-              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+          {/* CTA Button with hover animation */}
+          <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-2">
+            <Link 
+              href="/auth/register" 
+              className="btn-primary !px-8 !py-4 !text-sm flex items-center gap-2 group shadow-glow shadow-brand-500/20 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300"
             >
-              {/* Premium Certificate mock with slight perspective rotate */}
-              <div
-                className="card shadow-2xl p-3 sm:p-4 bg-white/95 border border-white/80 transition-all duration-700 ease-out hover:rotate-0 hover:scale-[1.02]"
-                style={{
-                  transform: "rotateY(-12deg) rotateX(10deg) rotateZ(-2deg)",
-                  transformStyle: "preserve-3d"
-                }}
-              >
-                <div
-                  className="bg-[#FAF8F5] rounded-xl relative overflow-hidden border-4 border-[#C5A03C]"
-                  style={{ aspectRatio: "1.41 / 1" }}
-                >
-                  <img src="/sertifkilat.png" alt="Sertifikat" className="w-full h-full object-cover" />
-                </div>
-              </div>
+              Coba Gratis Sekarang
+              <ArrowRight size={16} weight="bold" className="group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
 
-              {/* Floating Glassmorphic Card 1: QR Verified */}
-              <div className="flex items-center gap-2 bg-white/75 backdrop-blur-md border border-white/50 shadow-[0_8px_32px_0_rgba(11,18,32,0.1)] p-2.5 rounded-xl absolute -top-8 -left-8 z-20 hover:scale-105 transition-transform">
-                <div className="w-6 h-6 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-500">
-                  <CheckCircle size={14} weight="fill" />
-                </div>
-                <span className="text-[10px] font-bold text-ink-850 whitespace-nowrap">✓ QR Verified</span>
-              </div>
-
-              {/* Floating Glassmorphic Card 2: 120 Certificates Generated */}
-              <div className="flex items-center gap-2 bg-white/75 backdrop-blur-md border border-white/50 shadow-[0_8px_32px_0_rgba(11,18,32,0.1)] p-2.5 rounded-xl absolute -bottom-8 -right-8 z-20 hover:scale-105 transition-transform">
-                <div className="w-6 h-6 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-500">
-                  <Lightning size={14} weight="fill" />
-                </div>
-                <span className="text-[10px] font-bold text-ink-850 whitespace-nowrap">✓ 120 Certificates Generated</span>
-              </div>
-
-              {/* Floating Glassmorphic Card 3: Export ZIP Ready */}
-              <div className="flex items-center gap-2 bg-white/75 backdrop-blur-md border border-white/50 shadow-[0_8px_32px_0_rgba(11,18,32,0.1)] p-2.5 rounded-xl absolute top-[60%] -left-12 z-20 hover:scale-105 transition-transform">
-                <div className="w-6 h-6 rounded-full bg-brand-50 border border-brand-100 flex items-center justify-center text-brand-500">
-                  <FileZip size={14} weight="fill" />
-                </div>
-                <span className="text-[10px] font-bold text-ink-850 whitespace-nowrap">✓ Export ZIP Ready</span>
-              </div>
-            </motion.div>
-          </motion.div>
-
+          {/* Statistics Cards */}
+          <div className="grid grid-cols-3 gap-4 w-full max-w-md pt-4">
+            <div className="bg-white/60 backdrop-blur-md rounded-xl p-4 border border-white/80 shadow-md flex flex-col items-center lg:items-start justify-center transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
+              <span className="text-2xl font-extrabold text-brand-600 tracking-tight">{formattedUsers}</span>
+              <span className="text-[10px] font-bold text-ink-400 mt-1 uppercase tracking-wider">Events</span>
+            </div>
+            <div className="bg-white/60 backdrop-blur-md rounded-xl p-4 border border-white/80 shadow-md flex flex-col items-center lg:items-start justify-center transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
+              <span className="text-2xl font-extrabold text-indigo-600 tracking-tight">{formattedCerts}</span>
+              <span className="text-[10px] font-bold text-ink-400 mt-1 uppercase tracking-wider text-center lg:text-left">Certificates</span>
+            </div>
+            <div className="bg-white/60 backdrop-blur-md rounded-xl p-4 border border-white/80 shadow-md flex flex-col items-center lg:items-start justify-center transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
+              <span className="text-2xl font-extrabold text-emerald-600 tracking-tight">99.9%</span>
+              <span className="text-[10px] font-bold text-ink-400 mt-1 uppercase tracking-wider">Success</span>
+            </div>
+          </div>
         </div>
+
+        {/* Right Side Image (3D pedestal mockup layout) */}
+        <div className="lg:col-span-6 relative aspect-[4/3] w-full flex items-center justify-center">
+          
+          {/* Neon Glow reflection on the pedestal */}
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-[70%] h-12 bg-gradient-to-tr from-brand-400/20 to-indigo-500/20 rounded-full blur-xl -z-10" />
+
+          {/* 3D Pedestal / Platform */}
+          <div 
+            className="absolute bottom-2 left-1/2 -translate-x-1/2 w-[85%] h-8 bg-gradient-to-b from-white/90 to-ink-150/40 rounded-full border border-white/60 shadow-lg -z-20 transform scale-y-[0.25]"
+          />
+
+          {/* Floating perspective element */}
+          <motion.div
+            className="relative w-full max-w-[540px] aspect-[4/3] cursor-pointer"
+            animate={{ y: [0, -16, 0] }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+          >
+            {/* Soft Shadow Glow Backdrop & Blue-White Gradient behind the image */}
+            <div className="absolute -inset-6 bg-gradient-to-tr from-brand-300/30 via-indigo-200/20 to-white/10 rounded-[2.5rem] -z-10 blur-2xl animate-pulse" />
+
+            {/* Premium Preview Image with shadow-2xl, rotate and border */}
+            <div 
+              className="relative w-full h-full rounded-2xl overflow-hidden shadow-2xl border border-white/85 bg-white/40 transition-all duration-700 ease-out hover:rotate-0 hover:scale-[1.03]"
+              style={{ 
+                transform: "rotateY(-12deg) rotateX(12deg) rotateZ(-3deg)",
+                transformStyle: "preserve-3d"
+              }}
+            >
+              <Image
+                src="/templates/landingpage.png"
+                alt="Landing Preview"
+                fill
+                priority
+                className="object-contain"
+              />
+            </div>
+
+            {/* Floating Glassmorphic Badges */}
+            <div className="flex items-center gap-1.5 bg-white/70 backdrop-blur-md border border-white/50 shadow-xl px-4 py-2 rounded-full absolute -top-8 -left-6 z-20 hover:scale-105 transition-transform text-xs font-bold text-ink-850">
+              <span className="text-emerald-500 font-bold">✓</span> QR Verification
+            </div>
+
+            <div className="flex items-center gap-1.5 bg-white/70 backdrop-blur-md border border-white/50 shadow-xl px-4 py-2 rounded-full absolute -bottom-8 -right-6 z-20 hover:scale-105 transition-transform text-xs font-bold text-ink-850">
+              <span className="text-brand-500 font-bold">⚡</span> Generate Certificate
+            </div>
+
+            <div className="flex items-center gap-1.5 bg-white/70 backdrop-blur-md border border-white/50 shadow-xl px-4 py-2 rounded-full absolute top-[55%] -left-16 z-20 hover:scale-105 transition-transform text-xs font-bold text-ink-850">
+              <span className="font-bold">📦</span> Export ZIP
+            </div>
+          </motion.div>
+        </div>
+
       </div>
     </section>
   );

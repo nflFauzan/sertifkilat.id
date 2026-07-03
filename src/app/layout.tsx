@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, Fraunces, JetBrains_Mono } from "next/font/google";
+import { Plus_Jakarta_Sans, Fraunces, JetBrains_Mono, Alex_Brush } from "next/font/google";
 import "./globals.css";
 import AuthSessionProvider from "@/components/SessionProvider";
 
@@ -24,6 +24,13 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
+const alexBrush = Alex_Brush({
+  variable: "--font-alex-brush",
+  subsets: ["latin"],
+  weight: ["400"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "SertifKilat.id — Generator Sertifikat Massal",
   description:
@@ -38,7 +45,7 @@ export default function RootLayout({
   return (
     <html
       lang="id"
-      className={`${plusJakarta.variable} ${fraunces.variable} ${jetbrainsMono.variable}`}
+      className={`${plusJakarta.variable} ${fraunces.variable} ${jetbrainsMono.variable} ${alexBrush.variable}`}
     >
       <body className="min-h-screen">
         <AuthSessionProvider>{children}</AuthSessionProvider>
