@@ -1,5 +1,7 @@
 "use client";
 
+import { useParams } from "next/navigation";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
@@ -36,8 +38,13 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const params = useParams();
   const { data: session } = useSession();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Template editor takes over full viewport — skip dashboard chrome
+  const isTemplateEditor = pathname.startsWith("/dashboard/templates/") && !!params?.id;
+  if (isTemplateEditor) return <>{children}</>;
 
   const user = session?.user;
   const initials = user?.name ? getInitials(user.name) : "?";
