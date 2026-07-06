@@ -27,6 +27,7 @@ import {
 } from "@/app/actions/participants";
 import Link from "next/link";
 import * as XLSX from "xlsx";
+import { useTranslation } from "@/lib/hooks/useTranslation";
 
 type Participant = {
   id: string;
@@ -66,6 +67,7 @@ export default function ParticipantsClient({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { t, lang } = useTranslation();
 
   // Search state
   const [search, setSearch] = useState(initialSearch);
@@ -127,7 +129,7 @@ export default function ParticipantsClient({
     ws["!cols"] = maxCols.map(w => ({ wch: w }));
 
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Template Peserta");
+    XLSX.utils.book_append_sheet(wb, ws, lang === "id" ? "Template Peserta" : "Recipient Template");
     XLSX.writeFile(wb, "template_peserta.xlsx");
   };
 
@@ -154,7 +156,7 @@ export default function ParticipantsClient({
         const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as unknown[][];
 
         if (rows.length < 2) {
-          setExcelError("File Excel/CSV harus memiliki baris header dan minimal 1 baris data.");
+          setExcelError(lang === "id" ? "File Excel/CSV harus memiliki baris header dan minimal 1 baris data." : "Excel/CSV file must have a header row and at least 1 data row.");
           setIsValidating(false);
           return;
         }
@@ -167,7 +169,7 @@ export default function ParticipantsClient({
         const posIdx = headers.findIndex(h => h === "position" || h === "jabatan" || h === "role" || h === "peran");
 
         if (nameIdx === -1 || emailIdx === -1) {
-          setExcelError("Format kolom tidak sesuai. Pastikan file memiliki kolom 'Full Name' (Nama) dan 'Email'.");
+          setExcelError(lang === "id" ? "Format kolom tidak sesuai. Pastikan file memiliki kolom 'Full Name' (Nama) dan 'Email'." : "Invalid column format. Make sure the file has 'Full Name' and 'Email' columns.");
           setIsValidating(false);
           return;
         }
@@ -196,7 +198,7 @@ export default function ParticipantsClient({
         }
 
         if (collectedData.length === 0) {
-          setExcelError("Tidak ada baris data peserta yang valid di dalam file.");
+          setExcelError(lang === "id" ? "Tidak ada baris data peserta yang valid di dalam file." : "No valid participant data rows found in the file.");
           setIsValidating(false);
           return;
         }
@@ -211,7 +213,7 @@ export default function ParticipantsClient({
         }
       } catch (err) {
         console.error("Error reading file:", err);
-        setExcelError("Gagal membaca file. Pastikan format berkas valid.");
+        setExcelError(lang === "id" ? "Gagal membaca file. Pastikan format berkas valid." : "Failed to read file. Make sure the file format is valid.");
       } finally {
         setIsValidating(false);
       }
@@ -242,7 +244,7 @@ export default function ParticipantsClient({
   const handleSingleAdd = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !email.trim()) {
-      setFormError("Nama dan Gmail wajib diisi");
+      setFormError(lang === "id" ? "Nama dan Gmail wajib diisi" : "Name and Email are required");
       return;
     }
     setFormError("");
@@ -263,7 +265,7 @@ export default function ParticipantsClient({
 
   // Single delete
   const handleDelete = (id: string) => {
-    if (!confirm("Apakah Anda yakin ingin menghapus peserta ini?")) return;
+    if (!confirm(lang === "id" ? "Apakah Anda yakin ingin menghapus peserta ini?" : "Are you sure you want to delete this participant?")) return;
 
     startTransition(async () => {
       const res = await deleteParticipantAction(id, event.id);
@@ -279,7 +281,7 @@ export default function ParticipantsClient({
   // Bulk delete
   const handleBulkDelete = () => {
     if (selectedIds.length === 0) return;
-    if (!confirm(`Apakah Anda yakin ingin menghapus ${selectedIds.length} peserta terpilih?`)) return;
+    if (!confirm(lang === "id" ? `Apakah Anda yakin ingin menghapus ${selectedIds.length} peserta terpilih?` : `Are you sure you want to delete ${selectedIds.length} selected participants?`)) return;
 
     startTransition(async () => {
       const res = await deleteParticipantsAction(selectedIds, event.id);
@@ -322,7 +324,9 @@ export default function ParticipantsClient({
         </Link>
         <div>
           <h1 className="text-xl font-bold text-ink-900">{event.name}</h1>
-          <p className="text-xs text-ink-400">Kelola daftar peserta yang akan menerima sertifikat event ini.</p>
+          <p className="text-xs text-ink-400">
+            {lang === "id" ? "Kelola daftar peserta yang akan menerima sertifikat event ini." : "Manage the list of participants who will receive certificates for this event."}
+          </p>
         </div>
       </div>
 
@@ -333,7 +337,7 @@ export default function ParticipantsClient({
           <div className="card p-6">
             <h2 className="font-semibold text-ink-900 text-base mb-4 flex items-center gap-2">
               <User className="w-4 h-4 text-brand-500" />
-              Tambah Peserta Baru
+              {lang === "id" ? "Tambah Peserta Baru" : "Add New Participant"}
             </h2>
 
             <form onSubmit={handleSingleAdd} className="space-y-4">
@@ -346,54 +350,54 @@ export default function ParticipantsClient({
 
               <div>
                 <label className="block text-sm font-medium text-ink-700 mb-1.5">
-                  Nama Lengkap <span className="text-rose-500">*</span>
+                  {lang === "id" ? "Nama Lengkap" : "Full Name"} <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="text"
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Contoh: Bagas Santoso"
+                  placeholder={lang === "id" ? "Contoh: Bagas Santoso" : "Example: Bagas Santoso"}
                   className="input-field"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-ink-700 mb-1.5">
-                  Gmail <span className="text-rose-500">*</span>
+                  {lang === "id" ? "Gmail" : "Email"} <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Contoh: bagas@kelasonline.id"
+                  placeholder={lang === "id" ? "Contoh: bagas@kelasonline.id" : "Example: bagas@kelasonline.id"}
                   className="input-field"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-ink-700 mb-1.5">
-                  Institusi
+                  {lang === "id" ? "Institusi" : "Institution"}
                 </label>
                 <input
                   type="text"
                   value={institution}
                   onChange={(e) => setInstitution(e.target.value)}
-                  placeholder="Contoh: Universitas ABC"
+                  placeholder={lang === "id" ? "Contoh: Universitas ABC" : "Example: ABC University"}
                   className="input-field"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-ink-700 mb-1.5">
-                  Posisi / Jabatan
+                  {lang === "id" ? "Posisi / Jabatan" : "Position / Role"}
                 </label>
                 <input
                   type="text"
                   value={position}
                   onChange={(e) => setPosition(e.target.value)}
-                  placeholder="Contoh: Participant"
+                  placeholder={lang === "id" ? "Contoh: Participant" : "Example: Participant"}
                   className="input-field"
                 />
               </div>
@@ -408,7 +412,7 @@ export default function ParticipantsClient({
                 ) : (
                   <Plus className="w-4 h-4" />
                 )}
-                Tambah Peserta
+                {lang === "id" ? "Tambah Peserta" : "Add Participant"}
               </button>
             </form>
           </div>
@@ -419,9 +423,13 @@ export default function ParticipantsClient({
               <UploadSimple className="w-6 h-6 text-brand-500" />
             </div>
             <div>
-              <h3 className="font-semibold text-ink-900 text-sm">Impor Massal Peserta</h3>
+              <h3 className="font-semibold text-ink-900 text-sm">
+                {lang === "id" ? "Impor Massal Peserta" : "Bulk Import Recipients"}
+              </h3>
               <p className="text-xs text-ink-400 mt-1">
-                Upload daftar nama, email, institusi, dan posisi peserta sekaligus via file Excel atau CSV.
+                {lang === "id"
+                  ? "Upload daftar nama, email, institusi, dan posisi peserta sekaligus via file Excel atau CSV."
+                  : "Upload names, emails, institutions, and roles of recipients at once via Excel or CSV."}
               </p>
             </div>
             <div className="space-y-2">
@@ -429,14 +437,14 @@ export default function ParticipantsClient({
                 onClick={() => setShowUploadModal(true)}
                 className="btn-primary w-full justify-center"
               >
-                Impor File Excel / CSV
+                {lang === "id" ? "Impor File Excel / CSV" : "Import Excel / CSV File"}
               </button>
               <button
                 onClick={downloadExcelTemplate}
                 className="btn-secondary w-full justify-center text-xs"
               >
                 <Download className="w-3.5 h-3.5" />
-                Download Excel Template
+                {lang === "id" ? "Download Excel Template" : "Download Excel Template"}
               </button>
             </div>
           </div>
@@ -447,7 +455,7 @@ export default function ParticipantsClient({
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
             <h2 className="font-semibold text-ink-900 text-base flex items-center gap-2">
               <Users className="w-4 h-4 text-ink-400" />
-              Daftar Peserta ({totalCount})
+              {lang === "id" ? `Daftar Peserta (${totalCount})` : `Participants List (${totalCount})`}
             </h2>
 
             {/* Search Input */}
@@ -462,7 +470,7 @@ export default function ParticipantsClient({
                   setSearch(e.target.value);
                   triggerSearch(e.target.value);
                 }}
-                placeholder="Cari nama, email, institusi..."
+                placeholder={lang === "id" ? "Cari nama, email, institusi..." : "Search name, email, institution..."}
                 className="input-field pl-9 pr-4 py-1.5 text-xs"
               />
             </div>
@@ -472,14 +480,14 @@ export default function ParticipantsClient({
           {selectedIds.length > 0 && (
             <div className="flex items-center justify-between p-3 rounded-xl bg-rose-50 border border-rose-200">
               <span className="text-xs font-semibold text-rose-700">
-                {selectedIds.length} peserta terpilih
+                {selectedIds.length} {lang === "id" ? "peserta terpilih" : "participants selected"}
               </span>
               <button
                 onClick={handleBulkDelete}
                 className="btn-secondary text-rose-600 hover:bg-rose-100 hover:text-rose-700 text-xs py-1.5 px-3"
               >
                 <Trash className="w-3.5 h-3.5" />
-                Hapus Terpilih
+                {lang === "id" ? "Hapus Terpilih" : "Delete Selected"}
               </button>
             </div>
           )}
@@ -493,51 +501,51 @@ export default function ParticipantsClient({
                 </div>
                 <div className="max-w-sm mx-auto">
                   <p className="text-base font-semibold text-ink-900">
-                    No participants yet.
+                    {lang === "id" ? "Belum ada peserta." : "No participants yet."}
                   </p>
                   <p className="text-xs text-ink-400 mt-1">
-                    Upload an Excel file to start generating certificates.
+                    {lang === "id" ? "Unggah berkas Excel untuk mulai generate sertifikat." : "Upload an Excel file to start generating certificates."}
                   </p>
                 </div>
                 <button
                   onClick={() => setShowUploadModal(true)}
                   className="btn-secondary text-xs mx-auto"
                 >
-                  Upload Excel File
+                  {lang === "id" ? "Unggah File Excel" : "Upload Excel File"}
                 </button>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+              <div className="overflow-x-auto max-h-[600px] scrollbar-thin">
+                <table className="w-full text-sm border-collapse">
                   <thead>
-                    <tr className="bg-ink-50 border-b border-ink-100 text-xs font-semibold text-ink-500 uppercase tracking-wide">
-                      <th className="px-5 py-3 text-left w-10">
+                    <tr className="bg-ink-50/75 backdrop-blur-sm sticky top-0 z-10 border-b border-ink-150 text-xs font-bold text-ink-600 uppercase tracking-wider">
+                      <th className="px-5 py-3.5 text-left w-10">
                         <input
-                          type="checkbox"
-                          checked={selectedIds.length === participants.length && participants.length > 0}
-                          onChange={(e) => handleSelectAll(e.target.checked)}
-                          className="rounded border-ink-300 text-brand-500 focus:ring-brand-500 h-4 w-4"
+                           type="checkbox"
+                           checked={selectedIds.length === participants.length && participants.length > 0}
+                           onChange={(e) => handleSelectAll(e.target.checked)}
+                           className="rounded border-ink-300 text-brand-500 focus:ring-brand-500 h-4 w-4 cursor-pointer"
                         />
                       </th>
-                      <th className="px-5 py-3 text-left">Nama</th>
-                      <th className="px-5 py-3 text-left">Gmail</th>
-                      <th className="px-5 py-3 text-left">Institusi</th>
-                      <th className="px-5 py-3 text-left">Posisi</th>
-                      <th className="px-5 py-3 text-right" />
+                      <th className="px-5 py-3.5 text-left">{lang === "id" ? "Nama" : "Name"}</th>
+                      <th className="px-5 py-3.5 text-left">{lang === "id" ? "Gmail" : "Email"}</th>
+                      <th className="px-5 py-3.5 text-left">{lang === "id" ? "Institusi" : "Institution"}</th>
+                      <th className="px-5 py-3.5 text-left">{lang === "id" ? "Posisi" : "Position"}</th>
+                      <th className="px-5 py-3.5 text-right" />
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-ink-50">
+                  <tbody className="divide-y divide-ink-100 bg-white">
                     {participants.map((p) => (
-                      <tr key={p.id} className="hover:bg-ink-50">
+                      <tr key={p.id} className="hover:bg-brand-50/10 transition-colors duration-150">
                         <td className="px-5 py-3.5">
                           <input
                             type="checkbox"
                             checked={selectedIds.includes(p.id)}
                             onChange={(e) => handleSelectRow(p.id, e.target.checked)}
-                            className="rounded border-ink-300 text-brand-500 focus:ring-brand-500 h-4 w-4"
+                            className="rounded border-ink-300 text-brand-500 focus:ring-brand-500 h-4 w-4 cursor-pointer"
                           />
                         </td>
-                        <td className="px-5 py-3.5 font-medium text-ink-900">
+                        <td className="px-5 py-3.5 font-semibold text-ink-900">
                           {p.name}
                         </td>
                         <td className="px-5 py-3.5 text-ink-600">
@@ -552,8 +560,8 @@ export default function ParticipantsClient({
                         <td className="px-5 py-3.5 text-right">
                           <button
                             onClick={() => handleDelete(p.id)}
-                            className="p-1 rounded-lg text-ink-400 hover:text-rose-600 hover:bg-rose-50 transition-all"
-                            title="Hapus Peserta"
+                            className="p-2 rounded-xl text-ink-400 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-100 shadow-sm transition-all"
+                            title={lang === "id" ? "Hapus Peserta" : "Delete Participant"}
                           >
                             <Trash className="w-4 h-4" />
                           </button>
@@ -570,7 +578,7 @@ export default function ParticipantsClient({
           {totalPages > 1 && (
             <div className="flex items-center justify-between pt-2">
               <span className="text-xs text-ink-400">
-                Halaman {currentPage} dari {totalPages}
+                {lang === "id" ? `Halaman ${currentPage} dari ${totalPages}` : `Page ${currentPage} of ${totalPages}`}
               </span>
               <div className="flex items-center gap-2">
                 <button
@@ -578,14 +586,14 @@ export default function ParticipantsClient({
                   onClick={() => handlePageChange(currentPage - 1)}
                   className="btn-secondary py-1 px-3 text-xs disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <ArrowLeft className="w-3.5 h-3.5" /> Sebelumnya
+                  <ArrowLeft className="w-3.5 h-3.5" /> {lang === "id" ? "Sebelumnya" : "Previous"}
                 </button>
                 <button
                   disabled={currentPage >= totalPages}
                   onClick={() => handlePageChange(currentPage + 1)}
                   className="btn-secondary py-1 px-3 text-xs disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Selanjutnya <ArrowRight className="w-3.5 h-3.5" />
+                  {lang === "id" ? "Selanjutnya" : "Next"} <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
@@ -599,7 +607,9 @@ export default function ParticipantsClient({
           <div className="w-full max-w-2xl bg-white rounded-2xl shadow-soft overflow-hidden flex flex-col max-h-[85vh]">
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-ink-100 flex-shrink-0">
-              <h2 className="text-lg font-bold text-ink-900">Impor Massal Peserta</h2>
+              <h2 className="text-lg font-bold text-ink-900">
+                {lang === "id" ? "Impor Massal Peserta" : "Bulk Import Participants"}
+              </h2>
               <button
                 onClick={() => {
                   setShowUploadModal(false);
@@ -631,8 +641,12 @@ export default function ParticipantsClient({
                   >
                     <UploadSimple className="w-12 h-12 text-ink-300 mx-auto" />
                     <div>
-                      <p className="text-sm font-semibold text-ink-900">Upload file Excel (.xlsx) atau CSV</p>
-                      <p className="text-xs text-ink-400 mt-1">Seret berkas template Anda kemari atau cari dari folder.</p>
+                      <p className="text-sm font-semibold text-ink-900">
+                        {lang === "id" ? "Upload file Excel (.xlsx) atau CSV" : "Upload Excel (.xlsx) or CSV file"}
+                      </p>
+                      <p className="text-xs text-ink-400 mt-1">
+                        {lang === "id" ? "Seret berkas template Anda kemari atau cari dari folder." : "Drag your template file here or search from files."}
+                      </p>
                     </div>
                   </div>
                   <div className="text-center">
@@ -650,7 +664,9 @@ export default function ParticipantsClient({
               {isValidating && (
                 <div className="flex flex-col items-center justify-center py-10 space-y-3">
                   <CircleNotch className="w-8 h-8 text-brand-500 animate-spin" />
-                  <p className="text-xs text-ink-500 font-medium">Sedang memvalidasi baris data file...</p>
+                  <p className="text-xs text-ink-500 font-medium">
+                    {lang === "id" ? "Sedang memvalidasi baris data file..." : "Validating file data rows..."}
+                  </p>
                 </div>
               )}
 
@@ -683,23 +699,25 @@ export default function ParticipantsClient({
 
                   {/* Preview Table */}
                   <div className="space-y-2">
-                    <h4 className="text-xs font-bold text-ink-800 uppercase tracking-wider">Pratinjau Data Impor</h4>
+                    <h4 className="text-xs font-bold text-ink-800 uppercase tracking-wider">
+                      {lang === "id" ? "Pratinjau Data Impor" : "Import Data Preview"}
+                    </h4>
                     <div className="border border-ink-100 rounded-xl overflow-hidden max-h-60 overflow-y-auto">
                       <table className="w-full text-xs">
                         <thead className="bg-ink-50 sticky top-0 border-b border-ink-100">
                           <tr className="text-ink-500 font-semibold uppercase tracking-wide">
-                            <th className="px-4 py-2.5 text-left">Nama</th>
-                            <th className="px-4 py-2.5 text-left">Email</th>
-                            <th className="px-4 py-2.5 text-left">Institusi</th>
-                            <th className="px-4 py-2.5 text-left">Posisi</th>
+                            <th className="px-4 py-2.5 text-left">{lang === "id" ? "Nama" : "Name"}</th>
+                            <th className="px-4 py-2.5 text-left">{lang === "id" ? "Email" : "Email"}</th>
+                            <th className="px-4 py-2.5 text-left">{lang === "id" ? "Institusi" : "Institution"}</th>
+                            <th className="px-4 py-2.5 text-left">{lang === "id" ? "Posisi" : "Position"}</th>
                             <th className="px-4 py-2.5 text-left">Status</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-ink-50 bg-white">
                           {validatedData.map((d, idx) => (
                             <tr key={`excel-preview-${idx}-${d.email}`} className="hover:bg-ink-50">
-                              <td className="px-4 py-2 font-medium text-ink-900">{d.name || <span className="text-rose-500 italic">[Kosong]</span>}</td>
-                              <td className="px-4 py-2 text-ink-600">{d.email || <span className="text-rose-500 italic">[Kosong]</span>}</td>
+                              <td className="px-4 py-2 font-medium text-ink-900">{d.name || <span className="text-rose-500 italic">{lang === "id" ? "[Kosong]" : "[Empty]"}</span>}</td>
+                              <td className="px-4 py-2 text-ink-600">{d.email || <span className="text-rose-500 italic">{lang === "id" ? "[Kosong]" : "[Empty]"}</span>}</td>
                               <td className="px-4 py-2 text-ink-500">{d.institution || "-"}</td>
                               <td className="px-4 py-2 text-ink-500">{d.position || "-"}</td>
                               <td className="px-4 py-2">
@@ -736,7 +754,7 @@ export default function ParticipantsClient({
                 className="btn-secondary"
                 disabled={isPending}
               >
-                Batal
+                {lang === "id" ? "Batal" : "Cancel"}
               </button>
               {validatedData.length > 0 && (
                 <button
@@ -747,12 +765,12 @@ export default function ParticipantsClient({
                   {isPending ? (
                     <>
                       <CircleNotch className="w-4 h-4 animate-spin" />
-                      Mengimpor...
+                      {lang === "id" ? "Mengimpor..." : "Importing..."}
                     </>
                   ) : (
                     <>
                       <CheckCircle className="w-4 h-4" weight="fill" />
-                      Import Participants ({summary?.valid || 0})
+                      {lang === "id" ? `Impor Peserta (${summary?.valid || 0})` : `Import Recipients (${summary?.valid || 0})`}
                     </>
                   )}
                 </button>

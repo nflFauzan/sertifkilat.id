@@ -9,9 +9,10 @@ import {
   Sparkle,
   Clock,
 } from "@phosphor-icons/react";
+import { useTranslation } from "@/lib/hooks/useTranslation";
 
 type StatCard = {
-  label: string;
+  label: { id: string; en: string };
   value: number;
   icon: React.ElementType;
   className: string;
@@ -50,30 +51,32 @@ export default function AnalyticsClient({
   recentVerifications: Verification[];
   events: EventSummary[];
 }) {
+  const { lang } = useTranslation();
+
   const cards: StatCard[] = [
     {
-      label: "Total Event",
+      label: { id: "Total Event", en: "Total Events" },
       value: stats.totalEvents,
       icon: CalendarBlank,
       className: "bg-gradient-to-br from-indigo-50 to-white border-indigo-100",
       iconClassName: "bg-indigo-500 text-white shadow-glow",
     },
     {
-      label: "Total Peserta",
+      label: { id: "Total Peserta", en: "Total Recipients" },
       value: stats.totalParticipants,
       icon: Users,
       className: "bg-gradient-to-br from-brand-50 to-white border-brand-100",
       iconClassName: "bg-brand-500 text-white shadow-glow",
     },
     {
-      label: "Sertifikat Digenerate",
+      label: { id: "Sertifikat Digenerate", en: "Generated Certificates" },
       value: stats.totalCertificates,
       icon: Certificate,
       className: "bg-gradient-to-br from-emerald-50 to-white border-emerald-100",
       iconClassName: "bg-emerald-500 text-white shadow-glow",
     },
     {
-      label: "Total Verifikasi Publik",
+      label: { id: "Total Verifikasi Publik", en: "Total Public Verifications" },
       value: stats.totalVerifications,
       icon: QrCode,
       className: "bg-gradient-to-br from-amber-50 to-white border-amber-100",
@@ -85,9 +88,13 @@ export default function AnalyticsClient({
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-ink-900">Analitik Platform</h1>
+        <h1 className="text-2xl font-bold text-ink-900">
+          {lang === "id" ? "Analitik Platform" : "Platform Analytics"}
+        </h1>
         <p className="text-sm text-ink-500 mt-1">
-          Dapatkan statistik real-time dari performa event dan pemindaian sertifikat Anda.
+          {lang === "id"
+            ? "Dapatkan statistik real-time dari performa event dan pemindaian sertifikat Anda."
+            : "Get real-time statistics on your event performance and certificate verification scans."}
         </p>
       </div>
 
@@ -95,6 +102,7 @@ export default function AnalyticsClient({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {cards.map((card, i) => {
           const Icon = card.icon;
+          const labelText = lang === "id" ? card.label.id : card.label.en;
           return (
             <div
               key={i}
@@ -107,7 +115,7 @@ export default function AnalyticsClient({
               </div>
               <div>
                 <p className="text-xs font-semibold text-ink-500 uppercase tracking-wider">
-                  {card.label}
+                  {labelText}
                 </p>
                 <p className="text-2xl font-bold text-ink-900 mt-1">{card.value}</p>
               </div>
@@ -120,23 +128,25 @@ export default function AnalyticsClient({
         {/* Event Performance Table */}
         <div className="lg:col-span-2 card">
           <div className="px-5 py-4 border-b border-ink-100 flex items-center justify-between">
-            <h2 className="font-semibold text-ink-900 text-base">Breakdown Kinerja Event</h2>
+            <h2 className="font-semibold text-ink-900 text-base">
+              {lang === "id" ? "Breakdown Kinerja Event" : "Event Performance Breakdown"}
+            </h2>
             <Sparkle className="w-5 h-5 text-brand-500 animate-pulse" weight="fill" />
           </div>
           
           {events.length === 0 ? (
             <div className="p-8 text-center text-ink-400 text-sm">
-              Belum ada data event yang tersedia.
+              {lang === "id" ? "Belum ada data event yang tersedia." : "No event data available."}
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-ink-50 text-xs font-semibold text-ink-500 uppercase tracking-wide border-b border-ink-100">
-                    <th className="px-5 py-3 text-left">Nama Event</th>
-                    <th className="px-5 py-3 text-center">Tipe</th>
-                    <th className="px-5 py-3 text-center">Peserta</th>
-                    <th className="px-5 py-3 text-center">Batch Generate</th>
+                    <th className="px-5 py-3 text-left">{lang === "id" ? "Nama Event" : "Event Name"}</th>
+                    <th className="px-5 py-3 text-center">{lang === "id" ? "Tipe" : "Type"}</th>
+                    <th className="px-5 py-3 text-center">{lang === "id" ? "Peserta" : "Recipients"}</th>
+                    <th className="px-5 py-3 text-center">{lang === "id" ? "Batch Generate" : "Generated Batches"}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-ink-50">
@@ -154,7 +164,7 @@ export default function AnalyticsClient({
                         </span>
                       </td>
                       <td className="px-5 py-3.5 text-center text-ink-600 text-xs">
-                        {e.batchCount} batch
+                        {e.batchCount} {lang === "id" ? "batch" : (e.batchCount === 1 ? "batch" : "batches")}
                       </td>
                     </tr>
                   ))}
@@ -168,14 +178,16 @@ export default function AnalyticsClient({
         <div className="card flex flex-col">
           <div className="px-5 py-4 border-b border-ink-100 flex items-center gap-2">
             <Clock className="w-5 h-5 text-amber-500" weight="fill" />
-            <h2 className="font-semibold text-ink-900 text-base">Pemindaian QR Terakhir</h2>
+            <h2 className="font-semibold text-ink-900 text-base">
+              {lang === "id" ? "Pemindaian QR Terakhir" : "Latest QR Scans"}
+            </h2>
           </div>
 
           <div className="p-4 flex-1 flex flex-col justify-start">
             {recentVerifications.length === 0 ? (
               <div className="text-center text-ink-400 text-xs py-12 flex-1 flex flex-col items-center justify-center gap-2">
                 <QrCode className="w-8 h-8 text-ink-300" />
-                <p>Belum ada aktivitas pemindaian QR dari publik.</p>
+                <p>{lang === "id" ? "Belum ada aktivitas pemindaian QR dari publik." : "No public QR scans recorded yet."}</p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -191,7 +203,7 @@ export default function AnalyticsClient({
                         </span>
                         <span className="text-xxs text-ink-400">
                           {v.lastVerifiedAt
-                            ? new Date(v.lastVerifiedAt).toLocaleTimeString("id-ID", {
+                            ? new Date(v.lastVerifiedAt).toLocaleTimeString(lang === "id" ? "id-ID" : "en-US", {
                                 hour: "2-digit",
                                 minute: "2-digit",
                               })
@@ -206,7 +218,7 @@ export default function AnalyticsClient({
                     
                     <div className="text-right shrink-0">
                       <span className="inline-flex items-center gap-1 text-xxs font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
-                        {v.verifiedCount}x Scan
+                        {v.verifiedCount}{lang === "id" ? "x Scan" : "x Scans"}
                         <ArrowUpRight className="w-3 h-3 text-amber-600" />
                       </span>
                     </div>

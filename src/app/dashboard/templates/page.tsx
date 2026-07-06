@@ -220,6 +220,8 @@ export default async function TemplatesPage() {
     id: t.id,
     name: t.name,
     fileUrl: t.fileUrl,
+    width: t.width,
+    height: t.height,
     eventId: t.eventId,
     fields: t.fields,
     createdAt: t.createdAt,

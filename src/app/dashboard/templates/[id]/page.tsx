@@ -41,5 +41,28 @@ export default async function TemplateEditorPage({
     }> || [],
   };
 
-  return <EditorClient template={serializedTemplate} />;
+  // Fetch all templates for the user to support live template switching dropdown
+  const templates = await prisma.template.findMany({
+    where: { userId: session.user.id },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const serializedTemplates = templates.map(t => ({
+    id: t.id,
+    name: t.name,
+    fileUrl: t.fileUrl,
+    width: t.width,
+    height: t.height,
+    fields: t.fields as Array<{
+      key: string;
+      x: number;
+      y: number;
+      fontSize?: number;
+      color?: string;
+      fontWeight?: string;
+      align?: string;
+    }> || [],
+  }));
+
+  return <EditorClient template={serializedTemplate} templates={serializedTemplates} />;
 }

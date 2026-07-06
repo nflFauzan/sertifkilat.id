@@ -22,6 +22,8 @@ import { downloadCertificatesZip, TemplateField } from "@/lib/certificateGenerat
 import { downloadExcelTemplate } from "@/lib/excelTemplate";
 import Link from "next/link";
 import * as XLSX from "xlsx";
+import { useTranslation } from "@/lib/hooks/useTranslation";
+import UpgradeModal from "@/components/UpgradeModal";
 
 type Event = { id: string; name: string; type: string };
 type Batch = {
@@ -35,14 +37,12 @@ type Batch = {
   _count: { certificates: number };
 };
 
-const BATCH_STATUS: Record<string, { label: string; className: string }> = {
-  PENDING: { label: "Menunggu", className: "badge-amber" },
-  PROCESSING: { label: "Diproses", className: "badge-brand" },
-  DONE: { label: "Selesai", className: "badge-green" },
-  FAILED: { label: "Gagal", className: "badge-rose" },
+const BATCH_STATUS: Record<string, { label: { id: string; en: string }; className: string }> = {
+  PENDING: { label: { id: "Menunggu", en: "Pending" }, className: "badge-amber" },
+  PROCESSING: { label: { id: "Diproses", en: "Processing" }, className: "badge-brand" },
+  DONE: { label: { id: "Selesai", en: "Completed" }, className: "badge-green" },
+  FAILED: { label: { id: "Gagal", en: "Failed" }, className: "badge-rose" },
 };
-
-import UpgradeModal from "@/components/UpgradeModal";
 
 type Template = { id: string; name: string; fileUrl: string };
 
@@ -75,13 +75,14 @@ export default function GeneratorClient({
   const [isPending, startTransition] = useTransition();
   const fileRef = useRef<HTMLInputElement>(null);
   const [downloadingBatchId, setDownloadingBatchId] = useState<string | null>(null);
+  const { t, lang } = useTranslation();
 
   async function handleDownloadZip(batchId: string, format: "pdf" | "png") {
     setDownloadingBatchId(batchId + "-" + format);
     try {
       const res = await getBatchCertificatesAction(batchId);
       if (res.error || !res.batch) {
-        alert(res.error || "Gagal mengunduh ZIP. Batch tidak ditemukan.");
+        alert(res.error || (lang === "id" ? "Gagal mengunduh ZIP. Batch tidak ditemukan." : "Failed to download ZIP. Batch not found."));
         return;
       }
       
@@ -110,7 +111,7 @@ export default function GeneratorClient({
       });
     } catch (err) {
       console.error("ZIP Generation error:", err);
-      alert("Terjadi kesalahan saat memproses file ZIP.");
+      alert(lang === "id" ? "Terjadi kesalahan saat memproses file ZIP." : "An error occurred while processing the ZIP file.");
     } finally {
       setDownloadingBatchId(null);
     }
@@ -121,7 +122,7 @@ export default function GeneratorClient({
     if (!file) return;
 
     if (!file.name.endsWith(".csv") && !file.name.endsWith(".xlsx") && !file.name.endsWith(".xls")) {
-      setCsvError("Format berkas harus berupa CSV atau Excel (.xlsx, .xls).");
+      setCsvError(lang === "id" ? "Format berkas harus berupa CSV atau Excel (.xlsx, .xls)." : "File format must be CSV or Excel (.xlsx, .xls).");
       return;
     }
 
@@ -138,7 +139,7 @@ export default function GeneratorClient({
         const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as unknown[][];
 
         if (rows.length < 2) {
-          setCsvError("File harus memiliki baris header dan minimal 1 baris data.");
+          setCsvError(lang === "id" ? "File harus memiliki baris header dan minimal 1 baris data." : "File must have a header row and at least 1 data row.");
           return;
         }
 
@@ -147,7 +148,7 @@ export default function GeneratorClient({
         const emailIdx = headers.findIndex(h => h === "email" || h === "gmail");
 
         if (nameIdx === -1 || emailIdx === -1) {
-          setCsvError("Pastikan file memiliki kolom 'Full Name' dan 'Gmail'.");
+          setCsvError(lang === "id" ? "Pastikan file memiliki kolom 'Full Name' dan 'Gmail'." : "Please make sure the file contains 'Full Name' and 'Gmail' columns.");
           return;
         }
 
@@ -167,18 +168,18 @@ export default function GeneratorClient({
           const rowNum = i + 1;
 
           if (!nameVal) {
-            errorsList.push(`Baris ${rowNum}: Nama Lengkap tidak boleh kosong.`);
+            errorsList.push(lang === "id" ? `Baris ${rowNum}: Nama Lengkap tidak boleh kosong.` : `Row ${rowNum}: Full Name cannot be empty.`);
           }
 
           if (!emailVal) {
-            errorsList.push(`Baris ${rowNum}: Gmail tidak boleh kosong.`);
+            errorsList.push(lang === "id" ? `Baris ${rowNum}: Gmail tidak boleh kosong.` : `Row ${rowNum}: Gmail cannot be empty.`);
           } else {
             const emailLower = emailVal.toLowerCase();
             if (!emailLower.includes("@") || !emailLower.includes(".")) {
-              errorsList.push(`Baris ${rowNum}: Format Gmail tidak valid (${emailVal}).`);
+              errorsList.push(lang === "id" ? `Baris ${rowNum}: Format Gmail tidak valid (${emailVal}).` : `Row ${rowNum}: Gmail format is invalid (${emailVal}).`);
             }
             if (emailsSeen.has(emailLower)) {
-              errorsList.push(`Baris ${rowNum}: Gmail duplikat ditemukan (${emailVal}).`);
+              errorsList.push(lang === "id" ? `Baris ${rowNum}: Gmail duplikat ditemukan (${emailVal}).` : `Row ${rowNum}: Duplicate Gmail found (${emailVal}).`);
             } else {
               emailsSeen.add(emailLower);
             }
@@ -188,13 +189,17 @@ export default function GeneratorClient({
         }
 
         if (!parsed.length) {
-          setCsvError("Tidak ada data peserta yang ditemukan.");
+          setCsvError(lang === "id" ? "Tidak ada data peserta yang ditemukan." : "No participant data found.");
           return;
         }
 
         const limit = userPlan === "FREE" ? 25 : userPlan === "PRO" ? 150 : 999999;
         if (parsed.length > limit) {
-          setCsvError(`Batas maksimal peserta untuk paket ${userPlan} Anda adalah ${limit} orang per cetak. File Anda berisi ${parsed.length} peserta. Silakan upgrade untuk membuka kuota yang lebih besar.`);
+          setCsvError(
+            lang === "id"
+              ? `Batas maksimal peserta untuk paket ${userPlan} Anda adalah ${limit} orang per cetak. File Anda berisi ${parsed.length} peserta. Silakan upgrade untuk membuka kuota yang lebih besar.`
+              : `The maximum participant limit for your ${userPlan} plan is ${limit} recipients per run. Your file contains ${parsed.length} recipients. Please upgrade to unlock a higher quota.`
+          );
           return;
         }
 
@@ -203,7 +208,7 @@ export default function GeneratorClient({
         setValidationErrors(errorsList);
       } catch (err) {
         console.error(err);
-        setCsvError("Gagal membaca file. Pastikan file valid.");
+        setCsvError(lang === "id" ? "Gagal membaca file. Pastikan file valid." : "Failed to read file. Make sure the file is valid.");
       }
     };
     reader.readAsArrayBuffer(file);
@@ -247,27 +252,29 @@ export default function GeneratorClient({
     if (fileRef.current) fileRef.current.value = "";
   }
 
+  const stepsList = [
+    { n: 1, label: lang === "id" ? "Pilih Event" : "Select Event" },
+    { n: 2, label: lang === "id" ? "Pilih Template" : "Select Template" },
+    { n: 3, label: lang === "id" ? "Unduh Excel" : "Download Excel" },
+    { n: 4, label: lang === "id" ? "Unggah File" : "Upload File" },
+    { n: 5, label: lang === "id" ? "Review Data" : "Review Data" },
+    { n: 6, label: lang === "id" ? "Proses Cetak" : "Processing" },
+    { n: 7, label: t("common.completed") },
+  ];
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-ink-900">Generator Sertifikat</h1>
+        <h1 className="text-2xl font-bold text-ink-900">{lang === "id" ? "Generator Sertifikat" : "Certificate Generator"}</h1>
         <p className="text-sm text-ink-500 mt-1">
-          Alur pembuatan sertifikat massal yang terintegrasi dengan tanda tangan digital & QR verifikasi.
+          {t("dashboard.generate.subtitle")}
         </p>
       </div>
 
       {/* Step indicator */}
       <div className="flex flex-wrap items-center gap-y-3 gap-x-2 border-b border-ink-100 pb-4 select-none">
-        {[
-          { n: 1, label: "Pilih Event" },
-          { n: 2, label: "Pilih Template" },
-          { n: 3, label: "Unduh Excel" },
-          { n: 4, label: "Unggah File" },
-          { n: 5, label: "Review Data" },
-          { n: 6, label: "Proses Cetak" },
-          { n: 7, label: "Selesai" },
-        ].map((s, i) => (
+        {stepsList.map((s, i) => (
           <div key={s.n} className="flex items-center gap-2">
             <div
               className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold transition-all ${
@@ -301,23 +308,23 @@ export default function GeneratorClient({
       {step === 1 && (
         <div className="card p-6 space-y-5">
           <div className="space-y-1">
-            <h2 className="font-semibold text-ink-900 text-base">Langkah 1: Pilih Event</h2>
-            <p className="text-xs text-ink-500">Pilih salah satu event aktif Anda untuk mendaftarkan batch sertifikat baru.</p>
+            <h2 className="font-semibold text-ink-900 text-base">{t("dashboard.generate.selectEventLabel")}</h2>
+            <p className="text-xs text-ink-500">{lang === "id" ? "Pilih salah satu event aktif Anda untuk mendaftarkan batch sertifikat baru." : "Choose one of your active events to register a new certificate batch."}</p>
           </div>
 
           {events.length === 0 ? (
             <div className="text-center py-8 border border-dashed border-ink-200 rounded-2xl bg-ink-50 space-y-3">
-              <p className="text-sm text-ink-400 font-semibold">No events created yet.</p>
-              <p className="text-xs text-ink-500 max-w-sm mx-auto">Anda harus memiliki setidaknya satu event sebelum dapat membuat sertifikat.</p>
+              <p className="text-sm text-ink-400 font-semibold">{lang === "id" ? "Belum ada event yang dibuat." : "No events created yet."}</p>
+              <p className="text-xs text-ink-500 max-w-sm mx-auto">{lang === "id" ? "Anda harus memiliki setidaknya satu event sebelum dapat membuat sertifikat." : "You must have at least one event before you can generate certificates."}</p>
               <Link href="/dashboard/events" className="btn-primary inline-flex items-center gap-1.5 text-xs py-2">
-                <Plus size={14} /> Buat Event Baru
+                <Plus size={14} /> {t("dashboard.events.createTitle")}
               </Link>
             </div>
           ) : (
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-ink-700 mb-1.5">
-                  Event <span className="text-rose-500">*</span>
+                  {lang === "id" ? "Event" : "Event"} <span className="text-rose-500">*</span>
                 </label>
                 <select
                   value={selectedEvent}
@@ -326,12 +333,12 @@ export default function GeneratorClient({
                     // Pre-fill batch name automatically based on event name
                     const ev = events.find(event => event.id === e.target.value);
                     if (ev) {
-                      setBatchName(`Batch Sertifikat ${ev.name}`);
+                      setBatchName(lang === "id" ? `Batch Sertifikat ${ev.name}` : `Certificate Batch ${ev.name}`);
                     }
                   }}
                   className="input-field"
                 >
-                  <option value="">— Pilih event —</option>
+                  <option value="">{lang === "id" ? "— Pilih event —" : "— Select event —"}</option>
                   {events.map((ev) => (
                     <option key={ev.id} value={ev.id}>
                       {ev.name} ({ev.type})
@@ -346,7 +353,7 @@ export default function GeneratorClient({
                   disabled={!selectedEvent}
                   className="btn-primary text-xs flex items-center gap-1 disabled:opacity-60"
                 >
-                  Lanjut <ArrowRight size={14} />
+                  {t("common.next")} <ArrowRight size={14} />
                 </button>
               </div>
             </div>
@@ -358,16 +365,16 @@ export default function GeneratorClient({
       {step === 2 && (
         <div className="card p-6 space-y-6">
           <div className="space-y-1">
-            <h2 className="font-semibold text-ink-900 text-base">Langkah 2: Pilih Template Sertifikat</h2>
-            <p className="text-xs text-ink-500">Tentukan desain latar belakang dan tata letak tulisan sertifikat.</p>
+            <h2 className="font-semibold text-ink-900 text-base">{t("dashboard.generate.selectTemplateLabel")}</h2>
+            <p className="text-xs text-ink-500">{lang === "id" ? "Tentukan desain latar belakang dan tata letak tulisan sertifikat." : "Determine the background design and certificate text layout."}</p>
           </div>
 
           {templates.length === 0 ? (
             <div className="text-center py-8 border border-dashed border-ink-200 rounded-2xl bg-ink-50 space-y-3">
-              <p className="text-sm text-ink-400 font-semibold">No template created yet.</p>
-              <p className="text-xs text-ink-500 max-w-sm mx-auto">Anda harus mengunggah template desain sertifikat terlebih dahulu.</p>
+              <p className="text-sm text-ink-400 font-semibold">{lang === "id" ? "Belum ada template yang dibuat." : "No templates created yet."}</p>
+              <p className="text-xs text-ink-500 max-w-sm mx-auto">{lang === "id" ? "Anda harus mengunggah template desain sertifikat terlebih dahulu." : "You must upload a certificate design template first."}</p>
               <Link href="/dashboard/templates" className="btn-primary inline-flex items-center gap-1.5 text-xs py-2">
-                <Plus size={14} /> Kelola Template
+                <Plus size={14} /> {lang === "id" ? "Kelola Template" : "Manage Templates"}
               </Link>
             </div>
           ) : (
@@ -378,7 +385,7 @@ export default function GeneratorClient({
                   const isGratis = t.fileUrl.includes("minimal-white-gold") || t.fileUrl.includes("modern-appreciation");
                   const isSelected = selectedTemplate === t.id;
                   
-                  const badgeText = isPremium ? "PREMIUM" : isGratis ? "GRATIS" : "CUSTOM";
+                  const badgeText = isPremium ? "PREMIUM" : isGratis ? (lang === "id" ? "GRATIS" : "FREE") : (lang === "id" ? "KUSTOM" : "CUSTOM");
                   const badgeClass = isPremium
                     ? "bg-amber-100 text-amber-800 border-amber-200"
                     : isGratis
@@ -447,10 +454,10 @@ export default function GeneratorClient({
                           }`}
                         >
                           {isSelected
-                            ? "✓ Terpilih"
+                            ? `✓ ${lang === "id" ? "Terpilih" : "Selected"}`
                             : isPremium && userPlan === "FREE"
-                              ? "Upgrade ke Pro"
-                              : "Gunakan Template"}
+                              ? (lang === "id" ? "Upgrade ke Pro" : "Upgrade to Pro")
+                              : (lang === "id" ? "Gunakan Template" : "Use Template")}
                         </button>
                       </div>
                     </div>
@@ -460,14 +467,14 @@ export default function GeneratorClient({
 
               <div className="flex justify-between border-t border-ink-100 pt-4">
                 <button onClick={() => setStep(1)} className="btn-secondary text-xs flex items-center gap-1">
-                  <ArrowLeft size={14} /> Kembali
+                  <ArrowLeft size={14} /> {t("common.back")}
                 </button>
                 <button
                   onClick={() => setStep(3)}
                   disabled={!selectedTemplate}
                   className="btn-primary text-xs flex items-center gap-1 disabled:opacity-60"
                 >
-                  Lanjut <ArrowRight size={14} />
+                  {t("common.next")} <ArrowRight size={14} />
                 </button>
               </div>
             </div>
@@ -479,8 +486,8 @@ export default function GeneratorClient({
       {step === 3 && (
         <div className="card p-6 space-y-5">
           <div className="space-y-1">
-            <h2 className="font-semibold text-ink-900 text-base">Langkah 3: Unduh Template Berkas Excel</h2>
-            <p className="text-xs text-ink-500">Gunakan format Excel standar untuk meminimalkan kegagalan impor data peserta.</p>
+            <h2 className="font-semibold text-ink-900 text-base">{lang === "id" ? "Langkah 3: Unduh Template Berkas Excel" : "Step 3: Download Excel File Template"}</h2>
+            <p className="text-xs text-ink-500">{lang === "id" ? "Gunakan format Excel standar untuk meminimalkan kegagalan impor data peserta." : "Use the standard Excel format to minimize recipient import issues."}</p>
           </div>
 
           <div className="bg-ink-50 border border-ink-150 rounded-2xl p-6 text-center space-y-4">
@@ -488,28 +495,30 @@ export default function GeneratorClient({
               <Download size={24} />
             </div>
             <div className="space-y-1.5 max-w-md mx-auto">
-              <h3 className="text-sm font-bold text-ink-900">Template XLSX Resmi SertifKilat</h3>
+              <h3 className="text-sm font-bold text-ink-900">{lang === "id" ? "Template XLSX Resmi SertifKilat" : "Official SertifKilat XLSX Template"}</h3>
               <p className="text-xs text-ink-500">
-                File Excel ini memiliki 3 kolom terstruktur: <code className="bg-ink-100 px-1 py-0.5 rounded font-mono font-bold text-ink-800 text-[10px]">Full Name</code>, <code className="bg-ink-100 px-1 py-0.5 rounded font-mono font-bold text-ink-800 text-[10px]">Gmail</code>, dan <code className="bg-ink-100 px-1 py-0.5 rounded font-mono font-bold text-ink-800 text-[10px]">Certificate ID (optional)</code>.
+                {lang === "id" 
+                  ? "File Excel ini memiliki 3 kolom terstruktur: Full Name, Gmail, dan Certificate ID (optional)." 
+                  : "This Excel file has 3 structured columns: Full Name, Gmail, and Certificate ID (optional)."}
               </p>
             </div>
             <button
               onClick={downloadExcelTemplate}
               className="btn-primary text-xs bg-emerald-600 hover:bg-emerald-700 inline-flex items-center gap-1.5"
             >
-              <Download size={14} /> Unduh Template Excel (.xlsx)
+              <Download size={14} /> {lang === "id" ? "Unduh Template Excel (.xlsx)" : "Download Excel Template (.xlsx)"}
             </button>
           </div>
 
           <div className="flex justify-between">
             <button onClick={() => setStep(2)} className="btn-secondary text-xs flex items-center gap-1">
-              <ArrowLeft size={14} /> Kembali
+              <ArrowLeft size={14} /> {t("common.back")}
             </button>
             <button
               onClick={() => setStep(4)}
               className="btn-primary text-xs flex items-center gap-1"
             >
-              Lanjut <ArrowRight size={14} />
+              {t("common.next")} <ArrowRight size={14} />
             </button>
           </div>
         </div>
@@ -520,14 +529,14 @@ export default function GeneratorClient({
         <div className="card p-6 space-y-5">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <h2 className="font-semibold text-ink-900 text-base">Langkah 4: Unggah File Data Peserta</h2>
-              <p className="text-xs text-ink-500">Unggah berkas Excel yang sudah diisi lengkap sesuai format kolom template.</p>
+              <h2 className="font-semibold text-ink-900 text-base">{lang === "id" ? "Langkah 4: Unggah File Data Peserta" : "Step 4: Upload Participant Data File"}</h2>
+              <p className="text-xs text-ink-500">{lang === "id" ? "Unggah berkas Excel yang sudah diisi lengkap sesuai format kolom template." : "Upload the completed Excel file following the template columns format."}</p>
             </div>
             <button
               onClick={() => setStep(3)}
               className="text-xs text-ink-400 hover:text-ink-700 flex items-center gap-1"
             >
-              <ArrowLeft size={12} /> Kembali
+              <ArrowLeft size={12} /> {t("common.back")}
             </button>
           </div>
 
@@ -541,7 +550,7 @@ export default function GeneratorClient({
                     onClick={() => setUpgradeOpen(true)}
                     className="btn-primary text-xs bg-rose-600 hover:bg-rose-700 text-white inline-flex items-center gap-1.5 px-3 py-1.5 shadow-sm"
                   >
-                    Upgrade Sekarang
+                    {lang === "id" ? "Upgrade Sekarang" : "Upgrade Now"}
                   </button>
                 )}
               </div>
@@ -552,8 +561,8 @@ export default function GeneratorClient({
             /* Empty State */
             <div className="border border-dashed border-ink-200 rounded-2xl p-8 text-center space-y-4 bg-ink-50">
               <div className="space-y-1">
-                <p className="font-bold text-sm text-ink-800">No participants uploaded.</p>
-                <p className="text-xs text-ink-400">Silakan unduh template atau langsung unggah berkas Excel Anda di bawah.</p>
+                <p className="font-bold text-sm text-ink-800">{lang === "id" ? "Belum ada peserta yang diunggah." : "No participants uploaded."}</p>
+                <p className="text-xs text-ink-400">{lang === "id" ? "Silakan unduh template atau langsung unggah berkas Excel Anda di bawah." : "Please download the template or upload your Excel file directly below."}</p>
               </div>
               <div className="flex justify-center gap-3">
                 <button
@@ -578,14 +587,14 @@ export default function GeneratorClient({
                 onClick={() => fileRef.current?.click()}
               >
                 <UploadSimple className="w-8 h-8 text-ink-300 mx-auto mb-2" />
-                <p className="text-xs font-semibold text-ink-700">File berhasil terbaca! Klik untuk ganti file.</p>
-                <p className="text-[10px] text-ink-400 mt-0.5">Mendukung format .xlsx, .xls, .csv</p>
+                <p className="text-xs font-semibold text-ink-700">{lang === "id" ? "File berhasil terbaca! Klik untuk ganti file." : "File read successfully! Click to change file."}</p>
+                <p className="text-[10px] text-ink-400 mt-0.5">{lang === "id" ? "Mendukung format .xlsx, .xls, .csv" : "Supports .xlsx, .xls, .csv formats"}</p>
               </div>
 
               {/* Table Preview */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs font-bold text-ink-700">
-                  <span>Pratinjau Data ({participants.length} Baris)</span>
+                  <span>{lang === "id" ? `Pratinjau Data (${participants.length} Baris)` : `Data Preview (${participants.length} Rows)`}</span>
                   <button
                     onClick={() => {
                       setParticipants([]);
@@ -594,7 +603,7 @@ export default function GeneratorClient({
                     }}
                     className="text-rose-600 hover:underline flex items-center gap-1 font-normal font-sans"
                   >
-                    <X size={12} /> Hapus File
+                    <X size={12} /> {lang === "id" ? "Hapus File" : "Remove File"}
                   </button>
                 </div>
 
@@ -603,7 +612,7 @@ export default function GeneratorClient({
                     <thead className="bg-ink-50 border-b border-ink-150">
                       <tr>
                         <th className="px-3 py-2 font-semibold text-ink-500 w-12 text-center">#</th>
-                        <th className="px-3 py-2 font-semibold text-ink-500">Nama</th>
+                        <th className="px-3 py-2 font-semibold text-ink-500">{lang === "id" ? "Nama" : "Name"}</th>
                         <th className="px-3 py-2 font-semibold text-ink-500">Gmail</th>
                       </tr>
                     </thead>
@@ -611,15 +620,17 @@ export default function GeneratorClient({
                       {participants.slice(0, 5).map((p, i) => (
                         <tr key={i} className="hover:bg-ink-50">
                           <td className="px-3 py-2 text-ink-400 text-center font-mono">{i + 1}</td>
-                          <td className="px-3 py-2 font-medium text-ink-900">{p.name || <span className="text-rose-500 italic">[Kosong]</span>}</td>
-                          <td className="px-3 py-2 text-ink-600">{p.email || <span className="text-rose-500 italic">[Kosong]</span>}</td>
+                          <td className="px-3 py-2 font-medium text-ink-900">{p.name || <span className="text-rose-500 italic">{lang === "id" ? "[Kosong]" : "[Empty]"}</span>}</td>
+                          <td className="px-3 py-2 text-ink-600">{p.email || <span className="text-rose-500 italic">{lang === "id" ? "[Kosong]" : "[Empty]"}</span>}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                   {participants.length > 5 && (
                     <p className="px-3 py-2 text-[10px] text-ink-400 bg-ink-50 border-t border-ink-150">
-                      +{participants.length - 5} peserta lainnya dalam berkas.
+                      {lang === "id" 
+                        ? `+${participants.length - 5} peserta lainnya dalam berkas.` 
+                        : `+${participants.length - 5} other participants in file.`}
                     </p>
                   )}
                 </div>
@@ -637,14 +648,14 @@ export default function GeneratorClient({
 
           <div className="flex justify-between">
             <button onClick={() => setStep(3)} className="btn-secondary text-xs flex items-center gap-1">
-              <ArrowLeft size={14} /> Kembali
+              <ArrowLeft size={14} /> {t("common.back")}
             </button>
             <button
               onClick={() => setStep(5)}
               disabled={participants.length === 0}
               className="btn-primary text-xs flex items-center gap-1 disabled:opacity-60"
             >
-              Lanjut ke Review <ArrowRight size={14} />
+              {lang === "id" ? "Lanjut ke Review" : "Continue to Review"} <ArrowRight size={14} />
             </button>
           </div>
         </div>
@@ -654,34 +665,34 @@ export default function GeneratorClient({
       {step === 5 && (
         <div className="card p-6 space-y-6">
           <div className="space-y-1">
-            <h2 className="font-semibold text-ink-900 text-base">Langkah 5: Review & Validasi Data</h2>
-            <p className="text-xs text-ink-500">Verifikasi seluruh konfigurasi project sebelum berkas sertifikat diproduksi.</p>
+            <h2 className="font-semibold text-ink-900 text-base">{lang === "id" ? "Langkah 5: Review & Validasi Data" : "Step 5: Review & Validate Data"}</h2>
+            <p className="text-xs text-ink-500">{lang === "id" ? "Verifikasi seluruh konfigurasi project sebelum berkas sertifikat diproduksi." : "Verify all project configurations before certificates are generated."}</p>
           </div>
 
           {/* Project Summary Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-xl border border-ink-150 bg-ink-50 text-xs">
             <div>
-              <p className="text-ink-400">Selected Event</p>
+              <p className="text-ink-400">{lang === "id" ? "Event Terpilih" : "Selected Event"}</p>
               <p className="font-bold text-ink-800 mt-0.5 truncate">
                 {events.find(e => e.id === selectedEvent)?.name || selectedEvent}
               </p>
             </div>
             <div>
-              <p className="text-ink-400">Selected Template</p>
+              <p className="text-ink-400">{lang === "id" ? "Template Terpilih" : "Selected Template"}</p>
               <p className="font-bold text-ink-800 mt-0.5 truncate">
                 {templates.find(t => t.id === selectedTemplate)?.name || selectedTemplate}
               </p>
             </div>
             <div>
-              <p className="text-ink-400">Jumlah Peserta</p>
+              <p className="text-ink-400">{lang === "id" ? "Jumlah Peserta" : "Total Recipients"}</p>
               <p className="font-bold text-brand-600 mt-0.5">
-                {participants.length} Orang
+                {participants.length} {lang === "id" ? "Orang" : "Recipients"}
               </p>
             </div>
             <div>
-              <p className="text-ink-400">Estimasi Sertifikat</p>
+              <p className="text-ink-400">{lang === "id" ? "Estimasi Sertifikat" : "Estimated Certificates"}</p>
               <p className="font-bold text-emerald-600 mt-0.5">
-                {participants.length} File PDF/PNG
+                {participants.length} {lang === "id" ? "File PDF/PNG" : "PDF/PNG Files"}
               </p>
             </div>
           </div>
@@ -692,8 +703,12 @@ export default function GeneratorClient({
               <div className="flex items-start gap-2.5 rounded-xl bg-rose-50 border border-rose-200 px-4 py-3 text-xs text-rose-700">
                 <Warning weight="fill" className="w-4.5 h-4.5 mt-0.5 shrink-0" />
                 <div>
-                  <p className="font-bold">Ditemukan {validationErrors.length} kesalahan validasi data!</p>
-                  <p className="text-xxs mt-0.5">Silakan perbaiki file Excel Anda dan upload ulang untuk melanjutkan.</p>
+                  <p className="font-bold">
+                    {lang === "id" 
+                      ? `Ditemukan ${validationErrors.length} kesalahan validasi data!` 
+                      : `Found ${validationErrors.length} data validation errors!`}
+                  </p>
+                  <p className="text-xxs mt-0.5">{lang === "id" ? "Silakan perbaiki file Excel Anda dan upload ulang untuk melanjutkan." : "Please correct your Excel file and re-upload to continue."}</p>
                 </div>
               </div>
 
@@ -710,7 +725,7 @@ export default function GeneratorClient({
                 onClick={() => setStep(4)}
                 className="btn-secondary w-full justify-center text-xs py-2 text-rose-600 border-rose-200 hover:bg-rose-50"
               >
-                Upload Ulang File Excel
+                {lang === "id" ? "Upload Ulang File Excel" : "Re-upload Excel File"}
               </button>
             </div>
           ) : (
@@ -718,22 +733,22 @@ export default function GeneratorClient({
               <div className="flex items-start gap-2.5 rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 text-xs text-emerald-800">
                 <CheckCircle weight="fill" className="w-4.5 h-4.5 mt-0.5 shrink-0" />
                 <div>
-                  <p className="font-bold">✓ Seluruh data peserta valid!</p>
-                  <p className="text-xxs mt-0.5">Format Gmail, nama lengkap, dan keunikan baris data telah terverifikasi aman.</p>
+                  <p className="font-bold">{lang === "id" ? "✓ Seluruh data peserta valid!" : "✓ All participant data is valid!"}</p>
+                  <p className="text-xxs mt-0.5">{lang === "id" ? "Format Gmail, nama lengkap, dan keunikan baris data telah terverifikasi aman." : "Gmail format, full name, and row uniqueness have been successfully verified."}</p>
                 </div>
               </div>
 
               {/* Batch Name Input */}
               <div className="space-y-1.5">
                 <label className="block text-xs font-bold text-ink-700 mb-1">
-                  Nama Batch <span className="text-rose-500">*</span>
+                  {lang === "id" ? "Nama Batch" : "Batch Name"} <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={batchName}
                   onChange={(e) => setBatchName(e.target.value)}
                   className="input-field"
-                  placeholder="Contoh: Batch Webinar Nasional Juni 2026"
+                  placeholder={lang === "id" ? "Contoh: Batch Webinar Nasional Juni 2026" : "Example: National Webinar June 2026 Batch"}
                 />
               </div>
             </div>
@@ -747,7 +762,7 @@ export default function GeneratorClient({
 
           <div className="flex justify-between">
             <button onClick={() => setStep(4)} className="btn-secondary text-xs flex items-center gap-1">
-              <ArrowLeft size={14} /> Kembali
+              <ArrowLeft size={14} /> {t("common.back")}
             </button>
             <button
               onClick={handleGenerate}
@@ -757,12 +772,12 @@ export default function GeneratorClient({
               {isPending ? (
                 <>
                   <CircleNotch className="w-4 h-4 animate-spin" />
-                  Memulai Antrean...
+                  {lang === "id" ? "Memulai Antrean..." : "Starting Queue..."}
                 </>
               ) : (
                 <>
                   <Certificate size={14} />
-                  Mulai Generate Sertifikat
+                  {lang === "id" ? "Mulai Generate Sertifikat" : "Start Generating Certificates"}
                 </>
               )}
             </button>
@@ -777,9 +792,11 @@ export default function GeneratorClient({
             <CircleNotch size={32} className="animate-spin" />
           </div>
           <div className="space-y-2">
-            <h2 className="text-lg font-bold text-ink-900">Sedang men-generate sertifikat...</h2>
+            <h2 className="text-lg font-bold text-ink-900">{lang === "id" ? "Sedang men-generate sertifikat..." : "Generating certificates..."}</h2>
             <p className="text-xs text-ink-500 max-w-sm mx-auto leading-relaxed">
-              Sistem sedang memproses database sertifikat, menyematkan QR Code verifikasi unik, dan menyusun bundel dokumen Anda. Mohon tunggu sejenak.
+              {lang === "id" 
+                ? "Sistem sedang memproses database sertifikat, menyematkan QR Code verifikasi unik, dan menyusun bundel dokumen Anda. Mohon tunggu sejenak." 
+                : "The system is processing the certificate database, embedding unique verification QR Codes, and compiling your document bundle. Please wait."}
             </p>
           </div>
         </div>
@@ -796,7 +813,9 @@ export default function GeneratorClient({
             <h2 className="text-2xl font-bold font-display text-ink-900">🎉 Generation Successful!</h2>
             <p className="text-sm text-emerald-600 font-semibold">{result.count} Certificates Generated</p>
             <p className="text-xs text-ink-400 max-w-md mx-auto leading-relaxed">
-              Seluruh sertifikat peserta berhasil dibuat secara realtime dan disimpan ke dalam pangkalan data terverifikasi.
+              {lang === "id" 
+                ? "Seluruh sertifikat peserta berhasil dibuat secara realtime dan disimpan ke dalam pangkalan data terverifikasi." 
+                : "All participant certificates have been generated in real-time and saved to the verified database."}
             </p>
           </div>
 
@@ -830,11 +849,11 @@ export default function GeneratorClient({
 
           <div className="flex justify-center gap-4 pt-2">
             <button onClick={reset} className="text-xs font-semibold text-brand-600 hover:underline">
-              Generate Lagi
+              {lang === "id" ? "Generate Lagi" : "Generate Again"}
             </button>
             <span className="text-ink-200">|</span>
             <Link href="/dashboard" className="text-xs font-semibold text-ink-500 hover:underline">
-              Kembali ke Dashboard
+              {lang === "id" ? "Kembali ke Dashboard" : "Back to Dashboard"}
             </Link>
           </div>
         </div>
@@ -844,11 +863,12 @@ export default function GeneratorClient({
       {recentBatches.length > 0 && (
         <div className="card">
           <div className="px-5 py-4 border-b border-ink-100">
-            <h2 className="font-semibold text-ink-900">Riwayat Generate</h2>
+            <h2 className="font-semibold text-ink-900">{lang === "id" ? "Riwayat Generate" : "Generation History"}</h2>
           </div>
           <div className="divide-y divide-ink-50">
             {recentBatches.map((batch) => {
               const cfg = BATCH_STATUS[batch.status] ?? BATCH_STATUS.PENDING;
+              const statusLabel = lang === "id" ? cfg.label.id : cfg.label.en;
               return (
                 <div
                   key={batch.id}
@@ -862,7 +882,7 @@ export default function GeneratorClient({
                       {batch.name}
                     </p>
                     <p className="text-xs text-ink-400 mt-0.5 truncate">
-                      {batch.event.name} · {batch._count.certificates} sertifikat
+                      {batch.event.name} · {batch._count.certificates} {lang === "id" ? "sertifikat" : "certificates"}{" "}
                       · {formatDate(batch.createdAt)}
                     </p>
                   </div>
@@ -873,7 +893,7 @@ export default function GeneratorClient({
                           onClick={() => handleDownloadZip(batch.id, "pdf")}
                           disabled={downloadingBatchId !== null}
                           className="p-1.5 rounded-lg text-ink-400 hover:text-rose-600 hover:bg-rose-50 transition-all disabled:opacity-50"
-                          title="Unduh ZIP (PDF)"
+                          title={lang === "id" ? "Unduh ZIP (PDF)" : "Download ZIP (PDF)"}
                         >
                           {downloadingBatchId === batch.id + "-pdf" ? (
                             <CircleNotch className="w-4 h-4 animate-spin" />
@@ -885,7 +905,7 @@ export default function GeneratorClient({
                           onClick={() => handleDownloadZip(batch.id, "png")}
                           disabled={downloadingBatchId !== null}
                           className="p-1.5 rounded-lg text-ink-400 hover:text-emerald-600 hover:bg-emerald-50 transition-all disabled:opacity-50"
-                          title="Unduh ZIP (PNG)"
+                          title={lang === "id" ? "Unduh ZIP (PNG)" : "Download ZIP (PNG)"}
                         >
                           {downloadingBatchId === batch.id + "-png" ? (
                             <CircleNotch className="w-4 h-4 animate-spin" />
@@ -895,7 +915,7 @@ export default function GeneratorClient({
                         </button>
                       </div>
                     )}
-                    <span className={cfg.className}>{cfg.label}</span>
+                    <span className={cfg.className}>{statusLabel}</span>
                   </div>
                 </div>
               );

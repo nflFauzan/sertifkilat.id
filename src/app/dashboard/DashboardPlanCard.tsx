@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Sparkle, Crown } from "@phosphor-icons/react";
 import UpgradeModal from "@/components/UpgradeModal";
+import { useTranslation } from "@/lib/hooks/useTranslation";
 
 interface DashboardPlanCardProps {
   plan: string;
@@ -18,6 +19,7 @@ export default function DashboardPlanCard({
   participantsCount,
 }: DashboardPlanCardProps) {
   const [modalOpen, setModalOpen] = useState(false);
+  const { lang } = useTranslation();
 
   const limitTemplates = plan === "FREE" ? 1 : plan === "PRO" ? 5 : 999999;
   const limitParticipants = plan === "FREE" ? 25 : plan === "PRO" ? 150 : 999999;
@@ -40,7 +42,7 @@ export default function DashboardPlanCard({
             ) : (
               <Sparkle className="w-5 h-5 text-brand-500" weight="fill" />
             )}
-            <span className="font-bold text-ink-900 text-base">Detail Langganan</span>
+            <span className="font-bold text-ink-900 text-base">{lang === "id" ? "Detail Langganan" : "Subscription Details"}</span>
           </div>
           <span className={`badge uppercase tracking-wider text-[10px] font-bold ${
             isBusiness ? "bg-amber-100 text-amber-800 border-amber-200" :
@@ -55,7 +57,7 @@ export default function DashboardPlanCard({
           {/* Templates Usage */}
           <div className="space-y-1.5">
             <div className="flex justify-between text-xxs font-semibold uppercase tracking-wider text-ink-400">
-              <span>Template Aktif</span>
+              <span>{lang === "id" ? "Template Aktif" : "Active Templates"}</span>
               <span>{templatesCount} / {limitTemplates === 999999 ? "∞" : limitTemplates}</span>
             </div>
             <div className="h-2 w-full bg-ink-200 rounded-full overflow-hidden">
@@ -69,7 +71,7 @@ export default function DashboardPlanCard({
           {/* Participants Quota */}
           <div className="space-y-1.5">
             <div className="flex justify-between text-xxs font-semibold uppercase tracking-wider text-ink-400">
-              <span>Maks Peserta / Batch</span>
+              <span>{lang === "id" ? "Maks Peserta / Batch" : "Max Participants / Batch"}</span>
               <span>{limitParticipants === 999999 ? "∞" : limitParticipants}</span>
             </div>
             <div className="h-2 w-full bg-ink-200 rounded-full overflow-hidden">
@@ -83,8 +85,8 @@ export default function DashboardPlanCard({
           {/* Certificates Generated */}
           <div className="space-y-1.5">
             <div className="flex justify-between text-xxs font-semibold uppercase tracking-wider text-ink-400">
-              <span>Total Diterbitkan</span>
-              <span>{certificatesCount} sertifikat</span>
+              <span>{lang === "id" ? "Total Diterbitkan" : "Total Issued"}</span>
+              <span>{certificatesCount} {lang === "id" ? "sertifikat" : "certificates"}</span>
             </div>
             <div className="h-2 w-full bg-ink-200 rounded-full overflow-hidden">
               <div 
@@ -100,7 +102,7 @@ export default function DashboardPlanCard({
       {!isBusiness && (
         <div className="border-t border-ink-150/85 pt-3 space-y-2 relative z-10">
           <span className="text-[10px] font-bold text-ink-400 uppercase tracking-wider block">
-            Fitur Premium Terkunci
+            {lang === "id" ? "Fitur Premium Terkunci" : "Locked Premium Features"}
           </span>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {isFree && (
@@ -141,14 +143,16 @@ export default function DashboardPlanCard({
 
       <div className="flex items-center justify-between border-t border-ink-150/80 pt-4 relative z-10">
         <p className="text-[11px] text-ink-500">
-          {isFree ? "Upgrade ke Pro/Business untuk fitur tak terbatas." : "Anda telah membuka fitur-fitur premium."}
+          {isFree 
+            ? (lang === "id" ? "Upgrade ke Pro/Business untuk fitur tak terbatas." : "Upgrade to Pro/Business for unlimited features.") 
+            : (lang === "id" ? "Anda telah membuka fitur-fitur premium." : "You have unlocked premium features.")}
         </p>
         {plan !== "BUSINESS" && (
           <button 
             onClick={() => setModalOpen(true)}
             className="btn-primary text-xs py-2 px-4 shadow-sm"
           >
-            Upgrade Paket
+            {lang === "id" ? "Upgrade Paket" : "Upgrade Plan"}
           </button>
         )}
       </div>

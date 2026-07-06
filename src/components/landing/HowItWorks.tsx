@@ -2,42 +2,44 @@
 
 import { motion, useReducedMotion } from "motion/react";
 import { UploadSimple, FileXls, Lightning } from "@phosphor-icons/react";
-
-const steps = [
-  {
-    id: "step-1",
-    num: "01",
-    icon: UploadSimple,
-    title: "Unggah Template",
-    desc: "Pakai desain PNG/PDF Anda sendiri, atau pilih dari galeri template siap pakai.",
-  },
-  {
-    id: "step-2",
-    num: "02",
-    icon: FileXls,
-    title: "Import Data Peserta",
-    desc: "Tarik file Excel atau CSV berisi nama peserta, atau tambahkan manual satu per satu.",
-  },
-  {
-    id: "step-3",
-    num: "03",
-    icon: Lightning,
-    title: "Generate & Bagikan",
-    desc: "Semua sertifikat dibuat otomatis lengkap dengan QR verifikasi, siap diunduh.",
-  },
-];
+import { useTranslation } from "@/lib/hooks/useTranslation";
 
 export default function HowItWorks() {
   const reduce = useReducedMotion();
+  const { t } = useTranslation();
+
+  const steps = [
+    {
+      id: "step-1",
+      num: "01",
+      icon: UploadSimple,
+      title: t("landing.howItWorks.step1Title"),
+      desc: t("landing.howItWorks.step1Desc"),
+    },
+    {
+      id: "step-2",
+      num: "02",
+      icon: FileXls,
+      title: t("landing.howItWorks.step2Title"),
+      desc: t("landing.howItWorks.step2Desc"),
+    },
+    {
+      id: "step-3",
+      num: "03",
+      icon: Lightning,
+      title: t("landing.howItWorks.step3Title"),
+      desc: t("landing.howItWorks.step3Desc"),
+    },
+  ];
 
   return (
     <section id="cara-kerja" className="max-w-[1200px] mx-auto px-5 sm:px-8 py-20">
       <div className="text-center max-w-xl mx-auto mb-14">
         <h2 className="font-display text-3xl sm:text-4xl font-semibold text-ink-900">
-          Tiga langkah, ratusan sertifikat
+          {t("landing.howItWorks.title")}
         </h2>
         <p className="text-ink-500 mt-3 text-base">
-          Tidak perlu desain ulang satu per satu. Urutannya selalu sama, secepat apa pun jumlah pesertanya.
+          {t("landing.howItWorks.subtitle")}
         </p>
       </div>
 

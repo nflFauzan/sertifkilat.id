@@ -3,9 +3,11 @@ import Hero from "@/components/landing/Hero";
 import LogoStrip from "@/components/landing/LogoStrip";
 import HowItWorks from "@/components/landing/HowItWorks";
 import Features from "@/components/landing/Features";
+import TemplatePreview from "@/components/landing/TemplatePreview";
 import LiveSimulator from "@/components/landing/LiveSimulator";
 import Testimonials from "@/components/landing/Testimonials";
 import PricingSection from "@/components/landing/PricingSection";
+import FaqSection from "@/components/landing/FaqSection";
 import CtaBand from "@/components/landing/CtaBand";
 import Footer from "@/components/landing/Footer";
 import { prisma } from "@/lib/db";
@@ -38,15 +40,17 @@ export default async function HomePage() {
   const data = await getLandingData();
 
   return (
-    <main>
+    <main className="overflow-x-hidden">
       <Navbar />
       <Hero stats={{ totalCertificates: data.totalCertificates, totalUsers: data.totalUsers }} />
       <LogoStrip orgs={data.orgs} />
       <HowItWorks />
       <Features />
+      <TemplatePreview />
       <LiveSimulator />
       <Testimonials />
       <PricingSection />
+      <FaqSection />
       <CtaBand />
       <Footer />
     </main>

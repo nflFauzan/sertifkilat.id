@@ -18,9 +18,11 @@ import {
   House,
   Users,
   FileText,
+  Envelope,
 } from "@phosphor-icons/react";
 import { useState } from "react";
 import { getInitials } from "@/lib/utils";
+import { useTranslation } from "@/lib/hooks/useTranslation";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: House },
@@ -30,6 +32,7 @@ const navItems = [
   { href: "/dashboard/generator", label: "Generate", icon: Certificate },
   { href: "/dashboard/certificates", label: "Certificates", icon: FileText },
   { href: "/dashboard/analytics", label: "Analytics", icon: ChartBar },
+  { href: "/dashboard/email", label: "Email Center", icon: Envelope },
 ];
 
 export default function DashboardLayout({
@@ -41,6 +44,7 @@ export default function DashboardLayout({
   const params = useParams();
   const { data: session } = useSession();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { t, lang } = useTranslation();
 
   // Template editor takes over full viewport — skip dashboard chrome
   const isTemplateEditor = pathname.startsWith("/dashboard/templates/") && !!params?.id;
@@ -61,7 +65,7 @@ export default function DashboardLayout({
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 h-full bg-white border-r border-ink-100 flex flex-col transform transition-transform duration-200 lg:relative lg:translate-x-0 lg:shrink-0 ${
+         className={`fixed inset-y-0 left-0 z-50 w-64 h-full bg-white border-r border-ink-100 flex flex-col transform transition-transform duration-200 lg:relative lg:translate-x-0 lg:shrink-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -91,6 +95,18 @@ export default function DashboardLayout({
               item.href === "/dashboard"
                 ? pathname === "/dashboard"
                 : pathname.startsWith(item.href);
+            
+            // Translate navigation item label
+            let translatedLabel = item.label;
+            if (item.href === "/dashboard") translatedLabel = t("dashboard.sidebar.dashboard");
+            else if (item.href === "/dashboard/events") translatedLabel = t("dashboard.sidebar.events");
+            else if (item.href === "/dashboard/participants") translatedLabel = t("dashboard.sidebar.participants");
+            else if (item.href === "/dashboard/templates") translatedLabel = t("dashboard.sidebar.templates");
+            else if (item.href === "/dashboard/generator") translatedLabel = t("dashboard.sidebar.generate");
+            else if (item.href === "/dashboard/certificates") translatedLabel = t("dashboard.sidebar.history");
+            else if (item.href === "/dashboard/analytics") translatedLabel = t("dashboard.sidebar.analytics");
+            else if (item.href === "/dashboard/email") translatedLabel = lang === "id" ? "Pusat Email" : "Email Center";
+
             return (
               <Link
                 key={item.href}
@@ -106,7 +122,7 @@ export default function DashboardLayout({
                   className={`w-5 h-5 ${isActive ? "text-brand-500" : "text-ink-400"}`}
                   weight={isActive ? "fill" : "regular"}
                 />
-                {item.label}
+                {translatedLabel}
               </Link>
             );
           })}
@@ -119,7 +135,7 @@ export default function DashboardLayout({
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-ink-600 hover:bg-ink-50 hover:text-ink-900 transition-all"
           >
             <Gear className="w-5 h-5 text-ink-400" />
-            Pengaturan
+            {t("dashboard.sidebar.settings")}
           </Link>
           <button
             onClick={async () => {
@@ -129,20 +145,35 @@ export default function DashboardLayout({
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-ink-600 hover:bg-rose-50 hover:text-rose-600 transition-all"
           >
             <SignOut className="w-5 h-5 text-ink-400" />
-            Keluar
+            {t("dashboard.sidebar.logout")}
           </button>
 
           {/* User info */}
           <div className="flex items-center gap-3 px-3 py-3 mt-2 rounded-xl bg-ink-50">
-            <div className="w-8 h-8 rounded-full bg-brand-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+            <div className="w-8 h-8 rounded-full bg-brand-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 animate-pulse">
               {initials}
             </div>
             <div className="overflow-hidden">
-              <p className="text-xs font-semibold text-ink-900 truncate">
-                {user?.name ?? "Pengguna"}
-              </p>
-              <p className="text-xs text-ink-400 truncate">
-                {user?.email ?? ""}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <p className="text-xs font-bold text-ink-900 truncate max-w-[100px]">
+                  {user?.name ?? "Pengguna"}
+                </p>
+                {user?.plan === "BUSINESS" ? (
+                  <span className="bg-amber-500 text-white text-[8px] font-extrabold px-1.5 py-0.5 rounded tracking-wider shadow-glow-sm shrink-0">
+                    GOLD
+                  </span>
+                ) : user?.plan === "PRO" ? (
+                  <span className="bg-brand-500 text-white text-[8px] font-extrabold px-1.5 py-0.5 rounded tracking-wider shadow-glow-sm shrink-0">
+                    PRO
+                  </span>
+                ) : (
+                  <span className="bg-ink-200 text-ink-700 text-[8px] font-extrabold px-1.5 py-0.5 rounded tracking-wider shrink-0">
+                    FREE
+                  </span>
+                )}
+              </div>
+              <p className="text-[10px] text-ink-400 truncate mt-0.5">
+                {user?.plan === "FREE" ? (lang === "id" ? "Batas 25 Peserta" : "25 Limit") : (lang === "id" ? "27 Hari Tersisa" : "27 Days Left")}
               </p>
             </div>
           </div>

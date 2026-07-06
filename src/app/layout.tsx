@@ -45,8 +45,26 @@ export default function RootLayout({
   return (
     <html
       lang="id"
+      suppressHydrationWarning
       className={`${plusJakarta.variable} ${fraunces.variable} ${jetbrainsMono.variable} ${alexBrush.variable}`}
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                const theme = localStorage.getItem('settings_theme') || 'light';
+                const root = document.documentElement;
+                if (theme === 'dark') {
+                  root.classList.add('dark');
+                } else {
+                  root.classList.remove('dark');
+                }
+              } catch (e) {}
+            `
+          }}
+        />
+      </head>
       <body className="min-h-screen">
         <AuthSessionProvider>{children}</AuthSessionProvider>
       </body>

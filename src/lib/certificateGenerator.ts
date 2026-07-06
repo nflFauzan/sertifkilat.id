@@ -58,6 +58,62 @@ function loadImage(url: string): Promise<HTMLImageElement> {
   });
 }
 
+export function translateCertificateText(text: string): string {
+  if (typeof window === "undefined") return text;
+  const certLang = window.localStorage.getItem("settings_cert_lang") || "id";
+  if (certLang !== "en") return text;
+
+  const trimmedText = text.trim();
+  const lowerText = trimmedText.toLowerCase();
+
+  // Helper to preserve capitalization style (UPPERCASE vs Title/Standard Case)
+  const formatResult = (original: string, translated: string) => {
+    if (original === original.toUpperCase() && original !== original.toLowerCase()) {
+      return translated.toUpperCase();
+    }
+    return translated;
+  };
+
+  if (lowerText === "sertifikat") {
+    return formatResult(trimmedText, "Certificate");
+  }
+  if (lowerText === "diberikan kepada") {
+    return formatResult(trimmedText, "Presented To");
+  }
+  if (lowerText === "atas partisipasinya sebagai") {
+    return formatResult(trimmedText, "For Participating As");
+  }
+  if (lowerText === "dalam kegiatan") {
+    return formatResult(trimmedText, "In The Event");
+  }
+  if (lowerText === "scan untuk verifikasi") {
+    return formatResult(trimmedText, "Scan to Verify");
+  }
+  if (lowerText === "nama ketua panitia") {
+    return formatResult(trimmedText, "Committee Chairperson");
+  }
+  if (lowerText === "nama pimpinan instansi") {
+    return formatResult(trimmedText, "Institution Leader");
+  }
+  if (lowerText === "nama peserta") {
+    return formatResult(trimmedText, "Participant Name");
+  }
+  if (lowerText === "jabatan") {
+    return formatResult(trimmedText, "Title/Position");
+  }
+  if (lowerText === "nama event / kegiatan") {
+    return formatResult(trimmedText, "Event Name");
+  }
+  if (lowerText === "tanggal kegiatan") {
+    return formatResult(trimmedText, "Event Date");
+  }
+  if (lowerText === "tempat kegiatan") {
+    return formatResult(trimmedText, "Event Venue");
+  }
+
+  return text;
+}
+
 /**
  * Renders a certificate on an offscreen canvas and returns it.
  */
@@ -138,6 +194,9 @@ export async function generateCertificateCanvas(
       else if (field.key === "date") text = data.date;
       else if (field.key === "serial") text = data.serial;
       else text = field.text !== undefined ? field.text : (FIELD_FALLBACK_TEXTS[field.key] || "");
+
+      // Translate text fields dynamically if language is English
+      text = translateCertificateText(text);
 
       const fontSize = (field.fontSize || 24) * scaleX;
       const fontWeight = field.fontWeight || "normal";

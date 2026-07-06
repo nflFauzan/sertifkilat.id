@@ -8,6 +8,8 @@ import { EditorToolbar } from "./EditorToolbar";
 import { EditorSidebar } from "./EditorSidebar";
 import { Ruler, RULER_SIZE } from "./EditorRulers";
 import { SmartGuides, GridOverlay, SafeArea } from "./EditorOverlays";
+import { translateCertificateText } from "@/lib/certificateGenerator";
+import { useTranslation } from "@/lib/hooks/useTranslation";
 
 type Field = {
   key: string; x: number; y: number;
@@ -50,7 +52,9 @@ const DEFAULT_FIELDS: Field[] = [
   { key:"logo",x:970,y:120,width:80,height:80,fileUrl:"",hidden:false },
 ];
 
-export default function EditorClient({ template }: { template: Template }) {
+export default function EditorClient({ template, templates = [] }: { template: Template; templates?: Template[] }) {
+  const { lang } = useTranslation();
+  const [currentTemplate, setCurrentTemplate] = useState<Template>(template);
   const [fields, setFields] = useState<Field[]>(() => {
     const loaded = template.fields || [];
     return DEFAULT_FIELDS.map(def => {
@@ -65,15 +69,20 @@ export default function EditorClient({ template }: { template: Template }) {
   const imageRef = useRef<HTMLImageElement>(null);
   const viewportInnerRef = useRef<HTMLDivElement>(null);
 
+  // Reset imageLoaded when template background changes
+  useEffect(() => {
+    setImageLoaded(false);
+  }, [currentTemplate.fileUrl]);
+
   // Viewport size tracking
   const [vpSize, setVpSize] = useState({ w: 900, h: 600 });
 
-  const engine = useEditorEngine(template.width, template.height);
+  const engine = useEditorEngine(currentTemplate.width, currentTemplate.height);
   const { settings, viewportRef, isPanning, startPan, guides, showSmartGuides, clearGuides, snapToGridFn } = engine;
 
   const scale = settings.zoom / 100;
-  const canvasW = template.width * scale;
-  const canvasH = template.height * scale;
+  const canvasW = currentTemplate.width * scale;
+  const canvasH = currentTemplate.height * scale;
 
   // Track viewport size
   useEffect(() => {
@@ -134,8 +143,8 @@ export default function EditorClient({ template }: { template: Template }) {
         ny = snapToGridFn(ny, settings.gridSize);
       }
 
-      nx = Math.max(0, Math.min(template.width, nx));
-      ny = Math.max(0, Math.min(template.height, ny));
+      nx = Math.max(0, Math.min(currentTemplate.width, nx));
+      ny = Math.max(0, Math.min(currentTemplate.height, ny));
 
       if (settings.showGuides) {
         const others = fields.filter(f => f.key !== dragRef.current?.fieldKey);
@@ -156,7 +165,7 @@ export default function EditorClient({ template }: { template: Template }) {
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseup", onUp);
     };
-  }, [scale, fields, settings.snapToGrid, settings.gridSize, settings.showGuides, showSmartGuides, clearGuides, snapToGridFn, template.width, template.height]);
+  }, [scale, fields, settings.snapToGrid, settings.gridSize, settings.showGuides, showSmartGuides, clearGuides, snapToGridFn, currentTemplate.width, currentTemplate.height]);
 
   // Space+drag for panning
   const spaceRef = useRef(false);
@@ -179,9 +188,28 @@ export default function EditorClient({ template }: { template: Template }) {
     setFields(prev => prev.map(f => f.key === key ? { ...f, [prop]: val } : f));
   }
 
+  const handleTemplateChange = useCallback((newId: string) => {
+    const target = templates.find(t => t.id === newId);
+    if (!target) return;
+
+    setCurrentTemplate(target);
+
+    // Merge layout fields of the target template, fallback to current edits
+    const newLoaded = target.fields || [];
+    setFields(prev => {
+      return prev.map(currentField => {
+        const targetField = newLoaded.find(f => f.key === currentField.key);
+        return targetField ? { ...currentField, ...targetField } : currentField;
+      });
+    });
+
+    // Update URL via pushState to reflect active template
+    window.history.pushState(null, "", `/dashboard/templates/${target.id}`);
+  }, [templates]);
+
   function handleSave() {
     startTransition(async () => {
-      const res = await updateTemplateFieldsAction(template.id, fields);
+      const res = await updateTemplateFieldsAction(currentTemplate.id, fields);
       if (res.error) alert(res.error);
       else { setSaveSuccess(true); setTimeout(() => setSaveSuccess(false), 3000); }
     });
@@ -203,7 +231,10 @@ export default function EditorClient({ template }: { template: Template }) {
 
       {/* Toolbar */}
       <EditorToolbar
-        templateName={template.name}
+        templateName={currentTemplate.name}
+        templates={templates}
+        activeTemplateId={currentTemplate.id}
+        onTemplateChange={handleTemplateChange}
         settings={settings}
         isPending={isPending}
         saveSuccess={saveSuccess}
@@ -230,7 +261,7 @@ export default function EditorClient({ template }: { template: Template }) {
                 zoom={settings.zoom}
                 pan={canvasLeft}
                 length={vpSize.w - rulerSize}
-                canvasSize={template.width}
+                canvasSize={currentTemplate.width}
                 orientation="horizontal"
               />
             </div>
@@ -243,7 +274,7 @@ export default function EditorClient({ template }: { template: Template }) {
                 zoom={settings.zoom}
                 pan={canvasTop}
                 length={vpSize.h - rulerSize}
-                canvasSize={template.height}
+                canvasSize={currentTemplate.height}
                 orientation="vertical"
               />
             )}
@@ -279,7 +310,7 @@ export default function EditorClient({ template }: { template: Template }) {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   ref={imageRef}
-                  src={template.fileUrl || "/templates/elegan-navy-gold.svg"}
+                  src={currentTemplate.fileUrl || "/templates/elegan-navy-gold.svg"}
                   alt="Template"
                   onLoad={() => setImageLoaded(true)}
                   draggable={false}
@@ -288,17 +319,17 @@ export default function EditorClient({ template }: { template: Template }) {
 
                 {/* Grid */}
                 {settings.showGrid && (
-                  <GridOverlay gridSize={settings.gridSize} zoom={settings.zoom} canvasW={template.width} canvasH={template.height} />
+                  <GridOverlay gridSize={settings.gridSize} zoom={settings.zoom} canvasW={currentTemplate.width} canvasH={currentTemplate.height} />
                 )}
 
                 {/* Safe area */}
                 {settings.showSafeArea && (
-                  <SafeArea zoom={settings.zoom} canvasW={template.width} canvasH={template.height} />
+                  <SafeArea zoom={settings.zoom} canvasW={currentTemplate.width} canvasH={currentTemplate.height} />
                 )}
 
                 {/* Smart guides */}
                 {settings.showGuides && (
-                  <SmartGuides guides={guides} zoom={settings.zoom} panX={0} panY={0} canvasW={template.width} canvasH={template.height} />
+                  <SmartGuides guides={guides} zoom={settings.zoom} panX={0} panY={0} canvasW={currentTemplate.width} canvasH={currentTemplate.height} />
                 )}
 
                 {/* Fields */}
@@ -357,7 +388,8 @@ export default function EditorClient({ template }: { template: Template }) {
                     );
                   }
 
-                  const text = field.text ?? (FIELD_PLACEHOLDERS[field.key] ?? field.key);
+                  let text = field.text ?? (FIELD_PLACEHOLDERS[field.key] ?? field.key);
+                  text = translateCertificateText(text);
                   const fs = (field.fontSize ?? 14) * scale;
                   let transform = "translate(-50%,-50%)";
                   if (field.align === "left") transform = "translate(0,-50%)";

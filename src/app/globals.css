@@ -1,29 +1,83 @@
 @import "tailwindcss";
 
+:root {
+  --white: #ffffff;
+  --brand-50: #EFF5FF;
+  --brand-100: #DCEAFF;
+  --brand-200: #B9D6FF;
+  --brand-300: #8DBBFF;
+  --brand-400: #5C99FF;
+  --brand-500: #2F6FED;
+  --brand-600: #1F56C9;
+  --brand-700: #1A45A0;
+  --brand-800: #173A85;
+  --brand-900: #142F6B;
+
+  --ink-50: #F4F6FB;
+  --ink-100: #E7EBF3;
+  --ink-150: #CCD4E3;
+  --ink-200: #CCD4E3;
+  --ink-300: #A9B4CC;
+  --ink-400: #7C8AA5;
+  --ink-500: #5A6B8C;
+  --ink-600: #3B4A66;
+  --ink-700: #1E293F;
+  --ink-800: #131B2C;
+  --ink-900: #0B1220;
+}
+
+.dark {
+  --white: #131B2C;
+  --ink-50: #0B1220;
+  --ink-100: #1E293F;
+  --ink-150: #25314C;
+  --ink-200: #2E3B59;
+  --ink-300: #465575;
+  --ink-400: #7C8AA5;
+  --ink-500: #A2B0CD;
+  --ink-600: #CCD4E3;
+  --ink-700: #E7EBF3;
+  --ink-800: #F4F6FB;
+  --ink-900: #ffffff;
+
+  --brand-50: #142F6B;
+  --brand-100: #173A85;
+  --brand-200: #1A45A0;
+  --brand-300: #1F56C9;
+  --brand-400: #2F6FED;
+  --brand-500: #5C99FF;
+  --brand-600: #8DBBFF;
+  --brand-700: #B9D6FF;
+  --brand-800: #DCEAFF;
+  --brand-900: #EFF5FF;
+}
+
 @theme {
   /* Brand */
-  --color-brand-50: #EFF5FF;
-  --color-brand-100: #DCEAFF;
-  --color-brand-200: #B9D6FF;
-  --color-brand-300: #8DBBFF;
-  --color-brand-400: #5C99FF;
-  --color-brand-500: #2F6FED;
-  --color-brand-600: #1F56C9;
-  --color-brand-700: #1A45A0;
-  --color-brand-800: #173A85;
-  --color-brand-900: #142F6B;
+  --color-white: var(--white);
+  --color-brand-50: var(--brand-50);
+  --color-brand-100: var(--brand-100);
+  --color-brand-200: var(--brand-200);
+  --color-brand-300: var(--brand-300);
+  --color-brand-400: var(--brand-400);
+  --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600);
+  --color-brand-700: var(--brand-700);
+  --color-brand-800: var(--brand-800);
+  --color-brand-900: var(--brand-900);
 
   /* Ink */
-  --color-ink-50: #F4F6FB;
-  --color-ink-100: #E7EBF3;
-  --color-ink-200: #CCD4E3;
-  --color-ink-300: #A9B4CC;
-  --color-ink-400: #7C8AA5;
-  --color-ink-500: #5A6B8C;
-  --color-ink-600: #3B4A66;
-  --color-ink-700: #1E293F;
-  --color-ink-800: #131B2C;
-  --color-ink-900: #0B1220;
+  --color-ink-50: var(--ink-50);
+  --color-ink-100: var(--ink-100);
+  --color-ink-150: var(--ink-150);
+  --color-ink-200: var(--ink-200);
+  --color-ink-300: var(--ink-300);
+  --color-ink-400: var(--ink-400);
+  --color-ink-500: var(--ink-500);
+  --color-ink-600: var(--ink-600);
+  --color-ink-700: var(--ink-700);
+  --color-ink-800: var(--ink-800);
+  --color-ink-900: var(--ink-900);
 
   /* Gold */
   --color-gold-400: #D9B44A;

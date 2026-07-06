@@ -19,6 +19,9 @@ import { EditorSettings, ZOOM_PRESETS } from "./useEditorEngine";
 
 interface EditorToolbarProps {
   templateName: string;
+  templates: Array<{ id: string; name: string }>;
+  activeTemplateId: string;
+  onTemplateChange: (id: string) => void;
   settings: EditorSettings;
   isPending: boolean;
   saveSuccess: boolean;
@@ -34,6 +37,9 @@ interface EditorToolbarProps {
 
 export function EditorToolbar({
   templateName,
+  templates,
+  activeTemplateId,
+  onTemplateChange,
   settings,
   isPending,
   saveSuccess,
@@ -60,8 +66,8 @@ export function EditorToolbar({
         flexShrink: 0,
       }}
     >
-      {/* Left: Back + Title */}
-      <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+      {/* Left: Back + Dropdown Selector */}
+      <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
         <Link
           href="/dashboard/templates"
           style={{
@@ -73,11 +79,36 @@ export function EditorToolbar({
         >
           <CaretLeft size={16} weight="bold" />
         </Link>
-        <div style={{ minWidth: 0 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: "#0f172a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 200 }}>
-            {templateName}
-          </div>
-          <div style={{ fontSize: 10, color: "#94a3b8" }}>Template Editor</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+          <span style={{ fontSize: 9, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: 0.5 }}>Template</span>
+          <select
+            value={activeTemplateId}
+            onChange={(e) => onTemplateChange(e.target.value)}
+            style={{
+              background: "#f8fafc",
+              border: "1px solid #cbd5e1",
+              borderRadius: 8,
+              padding: "4px 28px 4px 10px",
+              fontSize: 12,
+              fontWeight: 700,
+              color: "#1e293b",
+              cursor: "pointer",
+              outline: "none",
+              appearance: "none",
+              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23475569' stroke-width='2.5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E")`,
+              backgroundRepeat: "no-repeat",
+              backgroundPosition: "right 8px center",
+              backgroundSize: "10px",
+              minWidth: 160,
+              maxWidth: 240,
+            }}
+          >
+            {templates.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 

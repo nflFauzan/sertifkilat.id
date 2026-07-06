@@ -85,3 +85,32 @@ export async function getMissingGoogleConfig() {
     missing,
   };
 }
+
+export async function updatePasswordAction(currentPass: string, newPass: string) {
+  const { auth } = await import("@/lib/auth");
+  const session = await auth();
+  if (!session || !session.user || !session.user.email) {
+    return { error: "Unauthorized / Not logged in" };
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email },
+  });
+
+  if (!user || !user.password) {
+    return { error: "User not found or logged in using external provider" };
+  }
+
+  const isValid = await bcrypt.compare(currentPass, user.password);
+  if (!isValid) {
+    return { error: "Password saat ini salah" };
+  }
+
+  const hashedPassword = await bcrypt.hash(newPass, 12);
+  await prisma.user.update({
+    where: { email: session.user.email },
+    data: { password: hashedPassword },
+  });
+
+  return { success: true };
+}

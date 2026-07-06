@@ -2,23 +2,15 @@
 
 import { useState, useTransition } from "react";
 import {
-  CalendarBlank,
-  Plus,
-  PencilSimple,
-  Trash,
-  X,
-  CircleNotch,
-  Warning,
-  Users,
-  MapPin,
+  CalendarBlank, Plus, PencilSimple, Trash, X,
+  CircleNotch, Warning, Users, MapPin
 } from "@phosphor-icons/react";
 import {
-  createEventAction,
-  updateEventAction,
-  deleteEventAction,
+  createEventAction, updateEventAction, deleteEventAction,
 } from "@/app/actions/events";
 import { formatDate } from "@/lib/utils";
 import Link from "next/link";
+import { useTranslation } from "@/lib/hooks/useTranslation";
 
 type EventWithCount = {
   id: string;
@@ -43,20 +35,20 @@ const EVENT_TYPES = [
   "LAINNYA",
 ] as const;
 
-const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
-  DRAFT: { label: "Draft", className: "badge-amber" },
-  ACTIVE: { label: "Aktif", className: "badge-brand" },
-  COMPLETED: { label: "Selesai", className: "badge-green" },
-  ARCHIVED: { label: "Diarsipkan", className: "badge" },
+const STATUS_CONFIG: Record<string, { label: { id: string; en: string }; className: string }> = {
+  DRAFT: { label: { id: "Draft", en: "Draft" }, className: "badge-amber" },
+  ACTIVE: { label: { id: "Aktif", en: "Active" }, className: "badge-brand" },
+  COMPLETED: { label: { id: "Selesai", en: "Completed" }, className: "badge-green" },
+  ARCHIVED: { label: { id: "Diarsipkan", en: "Archived" }, className: "badge" },
 };
 
-const TYPE_LABELS: Record<string, string> = {
-  WEBINAR: "Webinar",
-  PELATIHAN: "Pelatihan",
-  LOMBA: "Lomba",
-  SEMINAR: "Seminar",
-  WORKSHOP: "Workshop",
-  LAINNYA: "Lainnya",
+const TYPE_LABELS: Record<string, { id: string; en: string }> = {
+  WEBINAR: { id: "Webinar", en: "Webinar" },
+  PELATIHAN: { id: "Pelatihan", en: "Training" },
+  LOMBA: { id: "Lomba", en: "Competition" },
+  SEMINAR: { id: "Seminar", en: "Seminar" },
+  WORKSHOP: { id: "Workshop", en: "Workshop" },
+  LAINNYA: { id: "Lainnya", en: "Others" },
 };
 
 function toDateInputValue(date: Date) {
@@ -73,6 +65,7 @@ export default function EventsClient({
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
+  const { t, lang } = useTranslation();
 
   function openCreate() {
     setEditingEvent(null);
@@ -122,112 +115,112 @@ export default function EventsClient({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-ink-900">Event</h1>
+          <h1 className="text-2xl font-bold text-ink-900">{t("dashboard.sidebar.events")}</h1>
           <p className="text-sm text-ink-500 mt-1">
-            Kelola semua event dan pesertamu di sini.
+            {t("dashboard.events.subtitle")}
           </p>
         </div>
-        <button id="btn-create-event" onClick={openCreate} className="btn-primary">
+        <button id="btn-create-event" onClick={openCreate} className="btn-primary shadow-sm">
           <Plus className="w-4 h-4" />
-          Buat Event
+          {lang === "id" ? "Buat Event" : "Create Event"}
         </button>
       </div>
 
       {/* Table / List */}
       {events.length === 0 ? (
-        <div className="card p-12 text-center">
-          <div className="w-14 h-14 rounded-2xl bg-brand-50 flex items-center justify-center mx-auto mb-4">
-            <CalendarBlank className="w-7 h-7 text-brand-400" weight="fill" />
+        <div className="card p-12 text-center max-w-xl mx-auto border-2 border-dashed border-ink-150 rounded-2xl bg-white">
+          <div className="w-14 h-14 rounded-2xl bg-brand-50 flex items-center justify-center mx-auto mb-4 shadow-sm">
+            <CalendarBlank className="w-7 h-7 text-brand-500" weight="fill" />
           </div>
-          <h2 className="font-semibold text-ink-900 mb-2">Belum ada event</h2>
-          <p className="text-sm text-ink-400 mb-6 max-w-sm mx-auto">
-            Mulai dengan membuat event pertamamu. Kamu bisa mengundang peserta dan generate sertifikat dari sini.
+          <h2 className="font-bold text-ink-900 text-lg mb-2">
+            {lang === "id" ? "Belum Ada Event" : "No Events Yet"}
+          </h2>
+          <p className="text-sm text-ink-500 mb-6 max-w-sm mx-auto">
+            {t("dashboard.home.noEvents")}
           </p>
-          <button onClick={openCreate} className="btn-primary mx-auto">
+          <button onClick={openCreate} className="btn-primary mx-auto shadow-md">
             <Plus className="w-4 h-4" />
-            Buat Event Pertama
+            {lang === "id" ? "Buat Event Pertama" : "Create First Event"}
           </button>
         </div>
       ) : (
-        <div className="card overflow-hidden">
+        <div className="card overflow-hidden shadow-md border border-ink-150 rounded-2xl bg-white">
           {/* Desktop table */}
-          <div className="hidden md:block overflow-x-auto">
-            <table className="w-full text-sm">
+          <div className="hidden md:block overflow-x-auto max-h-[600px] scrollbar-thin">
+            <table className="w-full text-sm border-collapse">
               <thead>
-                <tr className="border-b border-ink-100 bg-ink-50">
-                  <th className="px-5 py-3 text-left text-xs font-semibold text-ink-500 uppercase tracking-wide">
-                    Nama Event
+                <tr className="border-b border-ink-150 bg-ink-50/75 backdrop-blur-sm sticky top-0 z-10">
+                  <th className="px-5 py-3.5 text-left text-xs font-bold text-ink-600 uppercase tracking-wider">
+                    {lang === "id" ? "Nama Event" : "Event Name"}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-ink-500 uppercase tracking-wide">
-                    Tipe
+                  <th className="px-4 py-3.5 text-left text-xs font-bold text-ink-600 uppercase tracking-wider">
+                    {lang === "id" ? "Tipe" : "Type"}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-ink-500 uppercase tracking-wide">
-                    Tanggal
+                  <th className="px-4 py-3.5 text-left text-xs font-bold text-ink-600 uppercase tracking-wider">
+                    {lang === "id" ? "Tanggal" : "Date"}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-ink-500 uppercase tracking-wide">
-                    Peserta
+                  <th className="px-4 py-3.5 text-left text-xs font-bold text-ink-600 uppercase tracking-wider">
+                    {t("dashboard.sidebar.participants")}
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-ink-500 uppercase tracking-wide">
-                    Status
+                  <th className="px-4 py-3.5 text-left text-xs font-bold text-ink-600 uppercase tracking-wider">
+                    {t("common.status")}
                   </th>
-                  <th className="px-4 py-3" />
+                  <th className="px-5 py-3.5 text-right text-xs font-bold text-ink-600 uppercase tracking-wider" />
                 </tr>
               </thead>
-              <tbody className="divide-y divide-ink-50">
+              <tbody className="divide-y divide-ink-100 bg-white">
                 {events.map((event) => {
-                  const cfg =
-                    STATUS_CONFIG[event.status] ?? STATUS_CONFIG.DRAFT;
+                  const cfg = STATUS_CONFIG[event.status] ?? STATUS_CONFIG.DRAFT;
+                  const statusLabel = lang === "id" ? cfg.label.id : cfg.label.en;
+                  const typeLabel = lang === "id" ? TYPE_LABELS[event.type]?.id : TYPE_LABELS[event.type]?.en;
                   return (
-                    <tr
-                      key={event.id}
-                      className="hover:bg-ink-50 transition-colors"
-                    >
+                    <tr key={event.id} className="hover:bg-brand-50/10 transition-colors duration-150">
                       <td className="px-5 py-4">
-                        <p className="font-medium text-ink-900 truncate max-w-xs">
+                        <p className="font-semibold text-ink-900 truncate max-w-xs">
                           {event.name}
                         </p>
                         {event.location && (
-                          <p className="text-xs text-ink-400 mt-0.5 flex items-center gap-1">
-                            <MapPin className="w-3 h-3" />
+                          <p className="text-xs text-ink-400 mt-1 flex items-center gap-1">
+                            <MapPin className="w-3.5 h-3.5 text-ink-450" />
                             {event.location}
                           </p>
                         )}
                       </td>
-                      <td className="px-4 py-4 text-ink-600">
-                        {TYPE_LABELS[event.type] ?? event.type}
+                      <td className="px-4 py-4 text-ink-600 font-medium">
+                        {typeLabel ?? event.type}
                       </td>
                       <td className="px-4 py-4 text-ink-600">
                         {formatDate(event.date)}
                       </td>
                       <td className="px-4 py-4">
-                        <span className="flex items-center gap-1 text-ink-600">
+                        <span className="flex items-center gap-1.5 font-semibold text-ink-700">
                           <Users className="w-4 h-4 text-ink-400" />
                           {event._count.participants}
                         </span>
                       </td>
                       <td className="px-4 py-4">
-                        <span className={cfg.className}>{cfg.label}</span>
+                        <span className={cfg.className}>{statusLabel}</span>
                       </td>
-                      <td className="px-4 py-4">
+                      <td className="px-5 py-4">
                         <div className="flex items-center gap-2 justify-end">
                           <Link
                             href={`/dashboard/events/${event.id}/participants`}
-                            className="p-1.5 rounded-lg text-ink-400 hover:text-brand-600 hover:bg-brand-50 transition-all"
-                            title="Kelola Peserta"
+                            className="p-2 rounded-xl text-ink-400 hover:text-brand-600 hover:bg-brand-50 border border-transparent hover:border-brand-100 shadow-sm transition-all"
+                            title={lang === "id" ? "Kelola Peserta" : "Manage Participants"}
                           >
                             <Users className="w-4 h-4" />
                           </Link>
                           <button
                             onClick={() => openEdit(event)}
-                            className="p-1.5 rounded-lg text-ink-400 hover:text-brand-600 hover:bg-brand-50 transition-all"
-                            title="Edit"
+                            className="p-2 rounded-xl text-ink-400 hover:text-brand-600 hover:bg-brand-50 border border-transparent hover:border-brand-100 shadow-sm transition-all"
+                            title={t("common.edit")}
                           >
                             <PencilSimple className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => setDeleteId(event.id)}
-                            className="p-1.5 rounded-lg text-ink-400 hover:text-rose-600 hover:bg-rose-50 transition-all"
-                            title="Hapus"
+                            className="p-2 rounded-xl text-ink-400 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-100 shadow-sm transition-all"
+                            title={t("common.delete")}
                           >
                             <Trash className="w-4 h-4" />
                           </button>
@@ -241,43 +234,45 @@ export default function EventsClient({
           </div>
 
           {/* Mobile list */}
-          <div className="md:hidden divide-y divide-ink-50">
+          <div className="md:hidden divide-y divide-ink-100 bg-white">
             {events.map((event) => {
               const cfg = STATUS_CONFIG[event.status] ?? STATUS_CONFIG.DRAFT;
+              const statusLabel = lang === "id" ? cfg.label.id : cfg.label.en;
+              const typeLabel = lang === "id" ? TYPE_LABELS[event.type]?.id : TYPE_LABELS[event.type]?.en;
               return (
-                <div key={event.id} className="p-4 space-y-2">
+                <div key={event.id} className="p-4 space-y-3">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-ink-900 text-sm truncate">
+                      <p className="font-semibold text-ink-900 text-sm truncate">
                         {event.name}
                       </p>
-                      <p className="text-xs text-ink-400 mt-0.5">
-                        {TYPE_LABELS[event.type]} · {formatDate(event.date)}
+                      <p className="text-xs text-ink-450 mt-1">
+                        {typeLabel} · {formatDate(event.date)}
                       </p>
                     </div>
-                    <span className={cfg.className}>{cfg.label}</span>
+                    <span className={cfg.className}>{statusLabel}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-ink-500 flex items-center gap-1">
-                      <Users className="w-3 h-3" />
-                      {event._count.participants} peserta
+                    <span className="text-xs text-ink-500 flex items-center gap-1.5">
+                      <Users className="w-3.5 h-3.5 text-ink-400" />
+                      {event._count.participants} {lang === "id" ? "peserta" : "participants"}
                     </span>
-                    <div className="flex gap-2">
+                    <div className="flex gap-1.5">
                       <Link
                         href={`/dashboard/events/${event.id}/participants`}
-                        className="p-1.5 rounded-lg text-ink-400 hover:text-brand-600 hover:bg-brand-50 transition-all"
+                        className="p-2 rounded-xl text-ink-400 hover:text-brand-600 hover:bg-brand-50 border border-ink-100 transition-all"
                       >
                         <Users className="w-4 h-4" />
                       </Link>
                       <button
                         onClick={() => openEdit(event)}
-                        className="p-1.5 rounded-lg text-ink-400 hover:text-brand-600 hover:bg-brand-50 transition-all"
+                        className="p-2 rounded-xl text-ink-400 hover:text-brand-600 hover:bg-brand-50 border border-ink-100 transition-all"
                       >
                         <PencilSimple className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => setDeleteId(event.id)}
-                        className="p-1.5 rounded-lg text-ink-400 hover:text-rose-600 hover:bg-rose-50 transition-all"
+                        className="p-2 rounded-xl text-ink-400 hover:text-rose-600 hover:bg-rose-50 border border-ink-100 transition-all"
                       >
                         <Trash className="w-4 h-4" />
                       </button>
@@ -297,14 +292,16 @@ export default function EventsClient({
             className="absolute inset-0 bg-ink-900/50 backdrop-blur-sm"
             onClick={closeModal}
           />
-          <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-xl">
+          <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between px-6 py-4 border-b border-ink-100">
-              <h2 className="font-semibold text-ink-900">
-                {editingEvent ? "Edit Event" : "Buat Event Baru"}
+              <h2 className="font-bold text-ink-900 text-base">
+                {editingEvent 
+                  ? (lang === "id" ? "Ubah Event" : "Edit Event") 
+                  : t("dashboard.events.createTitle")}
               </h2>
               <button
                 onClick={closeModal}
-                className="p-1.5 rounded-lg text-ink-400 hover:text-ink-700 hover:bg-ink-50"
+                className="p-1.5 rounded-lg text-ink-400 hover:text-ink-700 hover:bg-ink-50 transition-all"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -319,8 +316,8 @@ export default function EventsClient({
               )}
 
               <div>
-                <label className="block text-sm font-medium text-ink-700 mb-1.5">
-                  Nama Event <span className="text-rose-500">*</span>
+                <label className="block text-sm font-semibold text-ink-700 mb-1.5">
+                  {lang === "id" ? "Nama Event" : "Event Name"} <span className="text-rose-500">*</span>
                 </label>
                 <input
                   name="name"
@@ -333,8 +330,8 @@ export default function EventsClient({
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-ink-700 mb-1.5">
-                    Tipe <span className="text-rose-500">*</span>
+                  <label className="block text-sm font-semibold text-ink-700 mb-1.5">
+                    {lang === "id" ? "Tipe" : "Type"} <span className="text-rose-500">*</span>
                   </label>
                   <select
                     name="type"
@@ -342,16 +339,16 @@ export default function EventsClient({
                     defaultValue={editingEvent?.type ?? "WEBINAR"}
                     className="input-field"
                   >
-                    {EVENT_TYPES.map((t) => (
-                      <option key={t} value={t}>
-                        {TYPE_LABELS[t]}
+                    {EVENT_TYPES.map((typeKey) => (
+                      <option key={typeKey} value={typeKey}>
+                        {lang === "id" ? TYPE_LABELS[typeKey]?.id : TYPE_LABELS[typeKey]?.en}
                       </option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-ink-700 mb-1.5">
-                    Tanggal <span className="text-rose-500">*</span>
+                  <label className="block text-sm font-semibold text-ink-700 mb-1.5">
+                    {lang === "id" ? "Tanggal" : "Date"} <span className="text-rose-500">*</span>
                   </label>
                   <input
                     name="date"
@@ -368,8 +365,8 @@ export default function EventsClient({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-ink-700 mb-1.5">
-                  Lokasi
+                <label className="block text-sm font-semibold text-ink-700 mb-1.5">
+                  {lang === "id" ? "Lokasi" : "Location"}
                 </label>
                 <input
                   name="location"
@@ -380,8 +377,8 @@ export default function EventsClient({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-ink-700 mb-1.5">
-                  Deskripsi
+                <label className="block text-sm font-semibold text-ink-700 mb-1.5">
+                  {lang === "id" ? "Deskripsi" : "Description"}
                 </label>
                 <textarea
                   name="description"
@@ -398,7 +395,7 @@ export default function EventsClient({
                   onClick={closeModal}
                   className="btn-secondary flex-1 justify-center"
                 >
-                  Batal
+                  {t("common.cancel")}
                 </button>
                 <button
                   type="submit"
@@ -408,12 +405,12 @@ export default function EventsClient({
                   {isPending ? (
                     <>
                       <CircleNotch className="w-4 h-4 animate-spin" />
-                      Menyimpan...
+                      {t("common.loading")}
                     </>
                   ) : editingEvent ? (
-                    "Simpan Perubahan"
+                    (lang === "id" ? "Simpan Perubahan" : "Save Changes")
                   ) : (
-                    "Buat Event"
+                    (lang === "id" ? "Buat Event" : "Create Event")
                   )}
                 </button>
               </div>
@@ -429,30 +426,32 @@ export default function EventsClient({
             className="absolute inset-0 bg-ink-900/50 backdrop-blur-sm"
             onClick={() => setDeleteId(null)}
           />
-          <div className="relative w-full max-w-sm bg-white rounded-2xl shadow-xl p-6 text-center">
+          <div className="relative w-full max-w-sm bg-white rounded-2xl shadow-xl p-6 text-center animate-in fade-in zoom-in-95 duration-200">
             <div className="w-12 h-12 rounded-full bg-rose-100 flex items-center justify-center mx-auto mb-4">
               <Trash className="w-6 h-6 text-rose-600" weight="fill" />
             </div>
-            <h2 className="font-semibold text-ink-900 mb-2">Hapus Event?</h2>
-            <p className="text-sm text-ink-500 mb-6">
-              Semua peserta dan sertifikat terkait akan ikut terhapus. Tindakan ini tidak dapat dibatalkan.
+            <h2 className="font-bold text-ink-900 text-lg mb-2">
+              {lang === "id" ? "Hapus Event?" : "Delete Event?"}
+            </h2>
+            <p className="text-sm text-ink-500 mb-6 leading-relaxed">
+              {t("dashboard.events.deleteConfirm")}
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setDeleteId(null)}
                 className="btn-secondary flex-1 justify-center"
               >
-                Batal
+                {t("common.cancel")}
               </button>
               <button
                 onClick={() => handleDelete(deleteId)}
                 disabled={isPending}
-                className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-rose-500 text-white px-5 py-2.5 text-sm font-semibold hover:bg-rose-600 transition-all disabled:opacity-60"
+                className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-rose-500 text-white px-5 py-2.5 text-sm font-semibold hover:bg-rose-600 transition-all disabled:opacity-60 cursor-pointer"
               >
                 {isPending ? (
                   <CircleNotch className="w-4 h-4 animate-spin" />
                 ) : (
-                  "Hapus"
+                  t("common.delete")
                 )}
               </button>
             </div>
