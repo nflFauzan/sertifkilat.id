@@ -72,7 +72,7 @@ function LoginForm() {
         </div>
 
         {/* Card */}
-        <div className="card p-8 shadow-soft bg-white">
+        <div className="card p-8 shadow-soft">
           {isRegistered && !error && (
             <div className="mb-5 flex items-start gap-3 rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-700">
               <CheckCircle weight="fill" className="w-4 h-4 mt-0.5 shrink-0" />
@@ -154,7 +154,7 @@ function LoginForm() {
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-ink-100" />
             </div>
-            <div className="relative flex justify-center text-xs text-ink-400 bg-white px-2">
+            <div className="relative flex justify-center text-xs text-ink-400 bg-bg-card px-2">
               {lang === "id" ? "Atau lanjutkan dengan" : "Or continue with"}
             </div>
           </div>
@@ -234,7 +234,7 @@ export default function LoginPage() {
     <Suspense
       fallback={
         <div className="min-h-screen bg-ink-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-md text-center card p-8 shadow-soft flex flex-col items-center justify-center bg-white">
+          <div className="w-full max-w-md text-center card p-8 shadow-soft flex flex-col items-center justify-center">
             <div className="w-6 h-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
             <p className="text-sm text-ink-500 mt-4">{t("common.loading")}</p>
           </div>

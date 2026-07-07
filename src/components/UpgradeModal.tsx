@@ -129,8 +129,8 @@ export default function UpgradeModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink-900/60 backdrop-blur-sm overflow-y-auto">
-      <div className="w-full max-w-4xl bg-white rounded-3xl shadow-glow overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col md:flex-row my-8 max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
+      <div className="w-full max-w-4xl bg-bg-card rounded-3xl shadow-glow overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col md:flex-row my-8 max-h-[90vh]">
         {/* Left Side: Pricing Info & Current Plan comparison */}
         <div className="w-full md:w-5/12 bg-ink-50 p-6 md:p-8 border-r border-ink-150 flex flex-col justify-between overflow-y-auto">
           <div className="space-y-6">
@@ -139,7 +139,7 @@ export default function UpgradeModal({
               <span className="font-display font-bold text-ink-900 text-lg">SertifKilat Subscription</span>
             </div>
 
-            <div className="bg-white rounded-2xl p-5 border border-ink-250 space-y-3">
+            <div className="bg-bg-card rounded-2xl p-5 border border-ink-200 space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-xs font-semibold text-ink-400 uppercase tracking-wider">Paket Saat Ini</span>
                 <span className="badge badge-brand text-xxs font-bold uppercase">{currentPlan}</span>
@@ -210,7 +210,7 @@ export default function UpgradeModal({
                   onClick={() => setBillingPeriod("monthly")}
                   className={`flex-1 text-center py-2 text-xs font-semibold rounded-lg transition-all ${
                     billingPeriod === "monthly"
-                      ? "bg-white text-ink-900 shadow-sm"
+                      ? "bg-bg-card text-ink-900 shadow-sm"
                       : "text-ink-500 hover:text-ink-900"
                   }`}
                 >
@@ -221,7 +221,7 @@ export default function UpgradeModal({
                   onClick={() => setBillingPeriod("yearly")}
                   className={`flex-1 text-center py-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
                     billingPeriod === "yearly"
-                      ? "bg-white text-ink-900 shadow-sm"
+                      ? "bg-bg-card text-ink-900 shadow-sm"
                       : "text-ink-500 hover:text-ink-900"
                   }`}
                 >
@@ -396,7 +396,7 @@ export default function UpgradeModal({
                     {paymentMethod === "qris" && (
                       <div className="text-center space-y-2">
                         <div className="w-28 h-28 border border-ink-200 rounded-xl mx-auto flex items-center justify-center bg-white p-2 relative shadow-sm">
-                          <svg className="w-full h-full text-ink-900" viewBox="0 0 100 100" fill="currentColor">
+                          <svg className="w-full h-full text-slate-900" viewBox="0 0 100 100" fill="currentColor">
                             <rect width="100" height="100" fill="#ffffff" />
                             <rect x="5" y="5" width="20" height="20" />
                             <rect x="8" y="8" width="14" height="14" fill="#ffffff" />
@@ -454,7 +454,7 @@ export default function UpgradeModal({
                             <button
                               type="button"
                               onClick={() => handleCopy("8040928311")}
-                              className="text-xxs text-ink-500 hover:text-brand-600 hover:bg-white px-2 py-1 rounded border border-ink-200 transition-all font-semibold flex items-center gap-1 shrink-0"
+                              className="text-xxs text-ink-500 hover:text-brand-600 hover:bg-bg-card px-2 py-1 rounded border border-ink-200 transition-all font-semibold flex items-center gap-1 shrink-0"
                             >
                               <Copy className="w-3 h-3" />
                               {copiedText ? "Tersalin" : "Salin"}
@@ -481,7 +481,7 @@ export default function UpgradeModal({
                           <button
                             type="button"
                             onClick={() => handleCopy("8801208123456789")}
-                            className="text-xxs text-ink-500 hover:text-brand-600 hover:bg-white px-2 py-1 rounded border border-ink-200 transition-all font-semibold flex items-center gap-1 shrink-0"
+                            className="text-xxs text-ink-500 hover:text-brand-600 hover:bg-bg-card px-2 py-1 rounded border border-ink-200 transition-all font-semibold flex items-center gap-1 shrink-0"
                           >
                             <Copy className="w-3 h-3" />
                             {copiedText ? "Tersalin" : "Salin"}

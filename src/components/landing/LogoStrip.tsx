@@ -13,7 +13,7 @@ export default function LogoStrip({ orgs }: LogoStripProps) {
   if (orgs.length === 0) return null;
 
   return (
-    <div className="border-t border-ink-100 bg-white">
+    <div className="border-t border-ink-100 dark:border-ink-850 bg-bg-card">
       <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-10">
         <p className="text-center text-xs text-ink-400 mb-6 font-medium tracking-wider uppercase">
           {lang === "id" 
@@ -24,7 +24,7 @@ export default function LogoStrip({ orgs }: LogoStripProps) {
           {orgs.map((org) => (
             <span
               key={org.id}
-              className="font-display text-base text-ink-300 hover:text-ink-400 transition-colors select-none"
+              className="font-display text-base text-ink-600 dark:text-ink-400 hover:text-ink-800 dark:hover:text-ink-200 transition-colors select-none"
             >
               {org.name}
             </span>

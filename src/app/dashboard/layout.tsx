@@ -58,14 +58,14 @@ export default function DashboardLayout({
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-ink-900/50 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar */}
       <aside
-         className={`fixed inset-y-0 left-0 z-50 w-64 h-full bg-white border-r border-ink-100 flex flex-col transform transition-transform duration-200 lg:relative lg:translate-x-0 lg:shrink-0 ${
+         className={`fixed inset-y-0 left-0 z-50 w-64 h-full bg-bg-card border-r border-ink-100 flex flex-col transform transition-transform duration-200 lg:relative lg:translate-x-0 lg:shrink-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -129,7 +129,7 @@ export default function DashboardLayout({
         </nav>
 
         {/* User (Always pinned at the bottom) */}
-        <div className="flex-shrink-0 px-3 py-4 border-t border-ink-100 space-y-1 bg-white">
+        <div className="flex-shrink-0 px-3 py-4 border-t border-ink-100 space-y-1 bg-bg-card">
           <Link
             href="/dashboard/settings"
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-ink-600 hover:bg-ink-50 hover:text-ink-900 transition-all"
@@ -183,7 +183,7 @@ export default function DashboardLayout({
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
         {/* Top bar (mobile) */}
-        <header className="flex-shrink-0 flex items-center gap-4 px-4 h-14 bg-white border-b border-ink-100 lg:hidden">
+        <header className="flex-shrink-0 flex items-center gap-4 px-4 h-14 bg-bg-card border-b border-ink-100 lg:hidden">
           <button
             onClick={() => setSidebarOpen(true)}
             className="p-2 rounded-lg text-ink-600 hover:bg-ink-50"

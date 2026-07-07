@@ -194,7 +194,7 @@ export default function TemplatesClient({
       const aMeta = getMeta(a.fileUrl);
       const bMeta = getMeta(b.fileUrl);
       if (aMeta.badge === "premium" && bMeta.badge !== "premium") return -1;
-      if (aMeta.badge !== "premium" && aMeta.badge === "premium") return 1;
+      if (aMeta.badge !== "premium" && bMeta.badge === "premium") return 1;
       return 0;
     }
     if (sortOption === "free_first") {
@@ -295,7 +295,7 @@ export default function TemplatesClient({
   return (
     <div className="space-y-6">
       {/* ── Professional Canva-Style Header ── */}
-      <div className="bg-white border border-ink-150 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+      <div className="card p-6 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-6">
         <div className="space-y-1">
           <h1 className="text-2xl font-extrabold text-ink-950 tracking-tight flex items-center gap-2">
             <Compass className="w-6 h-6 text-brand-600" />
@@ -315,7 +315,7 @@ export default function TemplatesClient({
       </div>
 
       {/* ── Live Advanced Search & Sorting Filter Bar ── */}
-      <div className="flex flex-col sm:flex-row items-center gap-4 bg-white border border-ink-150 p-4 rounded-xl shadow-sm">
+      <div className="flex flex-col sm:flex-row items-center gap-4 bg-bg-card border border-ink-150 p-4 rounded-xl shadow-sm">
         {/* Search */}
         <div className="relative w-full sm:flex-1">
           <MagnifyingGlass className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-400" />
@@ -324,7 +324,7 @@ export default function TemplatesClient({
             value={searchQuery}
             onChange={e => handleSearchChange(e.target.value)}
             placeholder={lang === "id" ? "Cari nama template, kategori, deskripsi..." : "Search by template name, category, description..."}
-            className="w-full pl-10 pr-4 py-2 text-xs font-semibold bg-ink-50 border border-ink-150 rounded-xl focus:border-brand-500 focus:bg-white focus:outline-none transition-all placeholder:text-ink-400 text-ink-900"
+            className="w-full pl-10 pr-4 py-2 text-xs font-semibold bg-ink-50 border border-ink-150 rounded-xl focus:border-brand-500 focus:bg-bg-card focus:outline-none transition-all placeholder:text-ink-400 text-ink-900"
           />
           {searchQuery && (
             <button
@@ -344,7 +344,7 @@ export default function TemplatesClient({
           <select
             value={sortOption}
             onChange={e => setSortOption(e.target.value as SortOption)}
-            className="px-3 py-2 text-xs font-bold bg-white border border-ink-150 rounded-xl focus:outline-none focus:border-brand-500 text-ink-700 cursor-pointer w-full sm:w-auto"
+            className="px-3 py-2 text-xs font-bold bg-bg-card border border-ink-150 rounded-xl focus:outline-none focus:border-brand-500 text-ink-700 cursor-pointer w-full sm:w-auto"
           >
             {(Object.entries(SORT_OPTIONS) as [SortOption, { id: string; en: string }][]).map(([opt, labelObj]) => (
               <option key={opt} value={opt}>
@@ -368,7 +368,7 @@ export default function TemplatesClient({
               className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all border whitespace-nowrap cursor-pointer ${
                 active
                   ? "bg-brand-600 text-white border-brand-600 shadow-md shadow-brand-500/20"
-                  : "bg-white text-ink-550 border-ink-150 hover:bg-ink-50 hover:text-ink-900"
+                  : "bg-bg-card text-ink-550 border-ink-150 hover:bg-ink-50 hover:text-ink-900"
               }`}
             >
               {cat === "favorites" && <Heart className="w-3.5 h-3.5" weight="fill" />}
@@ -399,7 +399,7 @@ export default function TemplatesClient({
                 <div
                   key={`recent-${t.id}`}
                   onClick={() => setSelectedId(t.id)}
-                  className={`bg-white border rounded-xl p-3 flex flex-col gap-2 cursor-pointer transition-all hover:scale-[1.02] shadow-sm relative ${
+                  className={`bg-bg-card border rounded-xl p-3 flex flex-col gap-2 cursor-pointer transition-all hover:scale-[1.02] shadow-sm relative ${
                     isAct ? "border-brand-500 shadow-brand-500/10 shadow-md" : "border-ink-150 hover:border-ink-200"
                   }`}
                 >
@@ -433,7 +433,7 @@ export default function TemplatesClient({
           {isLoadingSkeletons ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
               {[1, 2, 3].map(i => (
-                <div key={i} className="bg-white border border-ink-150 rounded-2xl p-4 space-y-4 animate-pulse">
+                <div key={i} className="card p-4 space-y-4 animate-pulse">
                   <div className="aspect-[1122/794] bg-ink-100 rounded-xl w-full" />
                   <div className="space-y-2">
                     <div className="h-4 bg-ink-100 rounded w-2/3" />
@@ -448,7 +448,7 @@ export default function TemplatesClient({
             </div>
           ) : sorted.length === 0 ? (
             /* Empty State */
-            <div className="text-center py-16 bg-white border border-ink-150 rounded-2xl shadow-sm max-w-lg mx-auto">
+            <div className="text-center py-16 card shadow-sm max-w-lg mx-auto">
               <div className="w-16 h-16 rounded-2xl bg-brand-50 flex items-center justify-center mx-auto mb-4 border border-brand-100 shadow-inner">
                 <ImageIcon className="w-8 h-8 text-brand-500" />
               </div>
@@ -501,7 +501,7 @@ export default function TemplatesClient({
                   <div
                     key={`rec-${t.id}`}
                     onClick={() => setSelectedId(t.id)}
-                    className="group bg-white border border-ink-150 rounded-2xl p-4 flex flex-col gap-3 cursor-pointer hover:border-brand-300 hover:shadow-md transition-all duration-300"
+                    className="group card p-4 flex flex-col gap-3 cursor-pointer hover:border-brand-300 hover:shadow-md transition-all duration-300"
                   >
                     <div className="relative aspect-[16/11] bg-ink-50 rounded-xl overflow-hidden group-hover:scale-[1.01] transition-transform">
                       <Image
@@ -529,7 +529,7 @@ export default function TemplatesClient({
 
         {/* Selected Info Panel Sidebar (Moves below on mobile/tablet) */}
         {selectedTemplate && (
-          <div className="w-full lg:w-96 shrink-0 bg-white border border-ink-150 rounded-2xl p-5 space-y-5 shadow-lg lg:sticky lg:top-6 animate-in fade-in slide-in-from-right-4 duration-300">
+          <div className="w-full lg:w-96 shrink-0 card p-5 space-y-5 shadow-lg lg:sticky lg:top-6 animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="flex items-center justify-between border-b border-ink-100 pb-3">
               <h2 className="font-extrabold text-ink-900 text-sm flex items-center gap-2">
                 <Info className="w-4 h-4 text-brand-600" />
@@ -553,7 +553,7 @@ export default function TemplatesClient({
               />
               <button
                 onClick={() => setPreviewTemplate(selectedTemplate)}
-                className="absolute inset-0 bg-ink-900/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white text-xs font-bold gap-2 transition-all cursor-pointer backdrop-blur-[2px]"
+                className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white text-xs font-bold gap-2 transition-all cursor-pointer backdrop-blur-[2px]"
               >
                 <Plus className="w-5 h-5 bg-white/20 p-1 rounded-full text-white" />
                 {lang === "id" ? "Buka Pratinjau Penuh" : "Open Full Preview"}
@@ -703,11 +703,11 @@ export default function TemplatesClient({
       {showUploadModal && (
         <div
           onClick={() => setShowUploadModal(false)}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink-900/60 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
         >
           <div
             onClick={e => e.stopPropagation()}
-            className="w-full max-w-lg bg-white rounded-2xl shadow-soft overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+            className="w-full max-w-lg bg-bg-card border border-ink-150 rounded-2xl shadow-soft overflow-hidden animate-in fade-in zoom-in-95 duration-200"
           >
             {/* Modal Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-ink-100">
@@ -789,7 +789,7 @@ export default function TemplatesClient({
                         setSelectedFile(null);
                         setPreviewUrl(null);
                       }}
-                      className="absolute top-2 right-2 p-1 bg-ink-900/60 hover:bg-ink-900/80 text-white rounded-full transition-all cursor-pointer"
+                      className="absolute top-2 right-2 p-1 bg-black/60 hover:bg-black/80 text-white rounded-full transition-all cursor-pointer"
                     >
                       <Trash className="w-4 h-4" />
                     </button>

@@ -27,7 +27,7 @@ const testimonials = [
     role: "Founder",
     org: "KelasOnline.id",
     initials: "BS",
-    color: "from-ink-700 to-ink-900",
+    color: "from-slate-700 to-slate-900",
   },
   {
     id: "testimonial-putri",
@@ -64,7 +64,7 @@ export default function Testimonials() {
   };
 
   return (
-    <section id="testimoni" className="bg-gradient-to-b from-white to-blue-50/10 dark:from-ink-950 dark:to-ink-900 py-24 border-t border-ink-100 dark:border-ink-800 relative overflow-hidden">
+    <section id="testimoni" className="bg-gradient-to-b from-white to-blue-50/10 dark:from-ink-950 dark:to-ink-950 py-24 border-t border-ink-100 dark:border-ink-800 relative overflow-hidden">
       
       {/* Background decoration blur glows */}
       <div className="absolute top-1/2 left-0 w-96 h-96 bg-brand-500/5 rounded-full blur-3xl pointer-events-none -z-10" />
@@ -102,7 +102,7 @@ export default function Testimonials() {
                     position: isActive ? "relative" : "absolute",
                     pointerEvents: isActive ? "auto" : "none",
                   }}
-                  className="w-full bg-white dark:bg-ink-900 border border-ink-150 dark:border-ink-800 rounded-3xl p-8 sm:p-10 shadow-lg flex flex-col justify-between"
+                  className="w-full card rounded-3xl p-8 sm:p-10 shadow-lg flex flex-col justify-between"
                 >
                   <div className="space-y-4">
                     {/* Star Rating */}
@@ -141,7 +141,7 @@ export default function Testimonials() {
           <div className="flex items-center justify-center gap-4 mt-8">
             <button
               onClick={handlePrev}
-              className="w-10 h-10 rounded-full border border-ink-150 dark:border-ink-800 bg-white dark:bg-ink-900 hover:bg-ink-50 dark:hover:bg-ink-800 text-ink-600 dark:text-ink-400 flex items-center justify-center shadow-sm hover:scale-105 active:scale-95 transition-all"
+              className="w-10 h-10 rounded-full card hover:bg-ink-50 dark:hover:bg-ink-850 text-ink-600 dark:text-ink-400 flex items-center justify-center shadow-sm hover:scale-105 active:scale-95 transition-all"
               aria-label="Previous testimonial"
             >
               <CaretLeft className="w-5 h-5" />
@@ -165,7 +165,7 @@ export default function Testimonials() {
 
             <button
               onClick={handleNext}
-              className="w-10 h-10 rounded-full border border-ink-150 dark:border-ink-800 bg-white dark:bg-ink-900 hover:bg-ink-50 dark:hover:bg-ink-800 text-ink-600 dark:text-ink-400 flex items-center justify-center shadow-sm hover:scale-105 active:scale-95 transition-all"
+              className="w-10 h-10 rounded-full card hover:bg-ink-50 dark:hover:bg-ink-850 text-ink-600 dark:text-ink-400 flex items-center justify-center shadow-sm hover:scale-105 active:scale-95 transition-all"
               aria-label="Next testimonial"
             >
               <CaretRight className="w-5 h-5" />

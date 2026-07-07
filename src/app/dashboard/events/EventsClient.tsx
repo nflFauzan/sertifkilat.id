@@ -128,7 +128,7 @@ export default function EventsClient({
 
       {/* Table / List */}
       {events.length === 0 ? (
-        <div className="card p-12 text-center max-w-xl mx-auto border-2 border-dashed border-ink-150 rounded-2xl bg-white">
+        <div className="card p-12 text-center max-w-xl mx-auto border-2 border-dashed border-ink-150 rounded-2xl">
           <div className="w-14 h-14 rounded-2xl bg-brand-50 flex items-center justify-center mx-auto mb-4 shadow-sm">
             <CalendarBlank className="w-7 h-7 text-brand-500" weight="fill" />
           </div>
@@ -144,7 +144,7 @@ export default function EventsClient({
           </button>
         </div>
       ) : (
-        <div className="card overflow-hidden shadow-md border border-ink-150 rounded-2xl bg-white">
+        <div className="card overflow-hidden shadow-md border border-ink-150 rounded-2xl">
           {/* Desktop table */}
           <div className="hidden md:block overflow-x-auto max-h-[600px] scrollbar-thin">
             <table className="w-full text-sm border-collapse">
@@ -168,7 +168,7 @@ export default function EventsClient({
                   <th className="px-5 py-3.5 text-right text-xs font-bold text-ink-600 uppercase tracking-wider" />
                 </tr>
               </thead>
-              <tbody className="divide-y divide-ink-100 bg-white">
+              <tbody className="divide-y divide-ink-100 bg-bg-card">
                 {events.map((event) => {
                   const cfg = STATUS_CONFIG[event.status] ?? STATUS_CONFIG.DRAFT;
                   const statusLabel = lang === "id" ? cfg.label.id : cfg.label.en;
@@ -234,7 +234,7 @@ export default function EventsClient({
           </div>
 
           {/* Mobile list */}
-          <div className="md:hidden divide-y divide-ink-100 bg-white">
+          <div className="md:hidden divide-y divide-ink-100 bg-bg-card">
             {events.map((event) => {
               const cfg = STATUS_CONFIG[event.status] ?? STATUS_CONFIG.DRAFT;
               const statusLabel = lang === "id" ? cfg.label.id : cfg.label.en;
@@ -289,10 +289,10 @@ export default function EventsClient({
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
-            className="absolute inset-0 bg-ink-900/50 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={closeModal}
           />
-          <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+          <div className="relative w-full max-w-lg bg-bg-card border border-ink-150 rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between px-6 py-4 border-b border-ink-100">
               <h2 className="font-bold text-ink-900 text-base">
                 {editingEvent 
@@ -423,10 +423,10 @@ export default function EventsClient({
       {deleteId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
-            className="absolute inset-0 bg-ink-900/50 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => setDeleteId(null)}
           />
-          <div className="relative w-full max-w-sm bg-white rounded-2xl shadow-xl p-6 text-center animate-in fade-in zoom-in-95 duration-200">
+          <div className="relative w-full max-w-sm bg-bg-card border border-ink-150 rounded-2xl shadow-xl p-6 text-center animate-in fade-in zoom-in-95 duration-200">
             <div className="w-12 h-12 rounded-full bg-rose-100 flex items-center justify-center mx-auto mb-4">
               <Trash className="w-6 h-6 text-rose-600" weight="fill" />
             </div>

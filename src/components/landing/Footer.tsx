@@ -76,10 +76,10 @@ export default function Footer() {
             {lang === "id" ? "Sumber Daya" : "Resources"}
           </h4>
           <ul className="space-y-2 text-xs sm:text-sm text-ink-500 dark:text-ink-400 font-semibold">
-            <li><span className="text-ink-300 dark:text-ink-600 cursor-default">{lang === "id" ? "Panduan API" : "API Guide"}</span></li>
-            <li><span className="text-ink-300 dark:text-ink-600 cursor-default">{lang === "id" ? "Status Server" : "Server Status"}</span></li>
-            <li><span className="text-ink-300 dark:text-ink-600 cursor-default">{lang === "id" ? "Dokumentasi" : "Documentation"}</span></li>
-            <li><span className="text-ink-300 dark:text-ink-600 cursor-default">Changelog</span></li>
+            <li><span className="text-ink-500 dark:text-ink-450 cursor-default">{lang === "id" ? "Panduan API" : "API Guide"}</span></li>
+            <li><span className="text-ink-500 dark:text-ink-450 cursor-default">{lang === "id" ? "Status Server" : "Server Status"}</span></li>
+            <li><span className="text-ink-500 dark:text-ink-450 cursor-default">{lang === "id" ? "Dokumentasi" : "Documentation"}</span></li>
+            <li><span className="text-ink-500 dark:text-ink-450 cursor-default">Changelog</span></li>
           </ul>
         </div>
 
@@ -89,8 +89,8 @@ export default function Footer() {
             Legal
           </h4>
           <ul className="space-y-2 text-xs sm:text-sm text-ink-500 dark:text-ink-400 font-semibold">
-            <li><span className="text-ink-300 dark:text-ink-600 cursor-default">{lang === "id" ? "Kebijakan Privasi" : "Privacy Policy"}</span></li>
-            <li><span className="text-ink-300 dark:text-ink-600 cursor-default">{lang === "id" ? "Syarat Layanan" : "Terms of Service"}</span></li>
+            <li><span className="text-ink-500 dark:text-ink-450 cursor-default">{lang === "id" ? "Kebijakan Privasi" : "Privacy Policy"}</span></li>
+            <li><span className="text-ink-500 dark:text-ink-450 cursor-default">{lang === "id" ? "Syarat Layanan" : "Terms of Service"}</span></li>
             <li>
               <a href="mailto:support@sertifkilat.id" className="hover:text-brand-500 transition-colors">
                 {lang === "id" ? "Hubungi Kami" : "Contact Us"}

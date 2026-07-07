@@ -567,7 +567,7 @@ export default function GeneratorClient({
               <div className="flex justify-center gap-3">
                 <button
                   onClick={downloadExcelTemplate}
-                  className="btn-secondary text-xs flex items-center gap-1 bg-white"
+                  className="btn-secondary text-xs flex items-center gap-1"
                 >
                   <Download size={14} /> Download Excel Template
                 </button>
@@ -583,7 +583,7 @@ export default function GeneratorClient({
             /* Active Uploader / Drag Area & Preview */
             <div className="space-y-4">
               <div
-                className="border-2 border-dashed border-ink-200 rounded-2xl p-6 text-center hover:border-brand-400 hover:bg-brand-50/10 transition-all cursor-pointer bg-white"
+                className="border-2 border-dashed border-ink-200 rounded-2xl p-6 text-center hover:border-brand-400 hover:bg-brand-50/10 transition-all cursor-pointer bg-bg-card"
                 onClick={() => fileRef.current?.click()}
               >
                 <UploadSimple className="w-8 h-8 text-ink-300 mx-auto mb-2" />
@@ -616,7 +616,7 @@ export default function GeneratorClient({
                         <th className="px-3 py-2 font-semibold text-ink-500">Gmail</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-ink-100 bg-white">
+                    <tbody className="divide-y divide-ink-100 bg-bg-card">
                       {participants.slice(0, 5).map((p, i) => (
                         <tr key={i} className="hover:bg-ink-50">
                           <td className="px-3 py-2 text-ink-400 text-center font-mono">{i + 1}</td>
@@ -712,7 +712,7 @@ export default function GeneratorClient({
                 </div>
               </div>
 
-              <div className="max-h-48 overflow-y-auto border border-rose-150 rounded-xl divide-y divide-rose-100 bg-white">
+              <div className="max-h-48 overflow-y-auto border border-rose-150 rounded-xl divide-y divide-rose-100 bg-bg-card">
                 {validationErrors.map((err, idx) => (
                   <div key={idx} className="px-4 py-2 text-xxs text-rose-800 hover:bg-rose-50/50 flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" />

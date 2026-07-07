@@ -13,7 +13,7 @@ export default function DashboardLoading() {
       {/* Stats Grid Skeleton */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="bg-white border border-ink-150 rounded-2xl p-5 flex items-center justify-between">
+          <div key={i} className="card p-5 flex items-center justify-between">
             <div className="space-y-2">
               <div className="h-3.5 w-20 bg-ink-100 rounded" />
               <div className="h-8 w-14 bg-ink-200 rounded-lg" />
@@ -27,7 +27,7 @@ export default function DashboardLoading() {
       {/* Content Grid Skeleton */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {[1, 2].map((card) => (
-          <div key={card} className="bg-white border border-ink-150 rounded-2xl overflow-hidden">
+          <div key={card} className="card overflow-hidden">
             <div className="px-5 py-4 border-b border-ink-100 flex justify-between items-center">
               <div className="h-5 w-32 bg-ink-200 rounded" />
               <div className="h-4 w-16 bg-ink-100 rounded" />

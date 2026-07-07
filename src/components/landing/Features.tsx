@@ -80,7 +80,7 @@ export default function Features() {
             return (
               <motion.div
                 key={feat.id}
-                className="bg-white dark:bg-ink-900 border border-ink-150 dark:border-ink-800 rounded-3xl p-6.5 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-brand-300 dark:hover:border-brand-900 group"
+                className="card rounded-3xl p-6.5 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-brand-300 dark:hover:border-brand-900 group"
                 initial={reduce ? false : { opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.15 }}

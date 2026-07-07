@@ -176,7 +176,7 @@ export default function EmailCenterPage() {
         {toasts.map(toast => (
           <div
             key={toast.id}
-            className="flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-white dark:bg-ink-900 border border-ink-150 dark:border-ink-800 text-ink-900 dark:text-white shadow-lg pointer-events-auto min-w-[280px] transition-all duration-300 animate-in slide-in-from-top-4"
+            className="flex items-center gap-3 px-4 py-3.5 card text-ink-900 dark:text-white shadow-lg pointer-events-auto min-w-[280px] transition-all duration-300 animate-in slide-in-from-top-4"
           >
             <div className="w-5 h-5 rounded-full bg-brand-500 flex items-center justify-center text-white shrink-0">
               <CheckCircle className="w-4 h-4" weight="fill" />
@@ -197,17 +197,17 @@ export default function EmailCenterPage() {
       {isDrawerOpen && selectedEmail && (
         <div className="fixed inset-0 z-[8000] flex justify-end bg-ink-950/40 backdrop-blur-xs animate-in fade-in duration-200">
           <div
-            className="w-full max-w-lg bg-white dark:bg-ink-900 h-full shadow-2xl flex flex-col justify-between p-6 overflow-y-auto animate-in slide-in-from-right duration-250 border-l border-ink-150 dark:border-ink-800"
+            className="w-full max-w-lg bg-bg-card h-full shadow-2xl flex flex-col justify-between p-6 overflow-y-auto animate-in slide-in-from-right duration-250 border-l border-ink-150"
           >
             <div className="space-y-6 flex-1">
               <div className="flex justify-between items-center pb-4 border-b border-ink-100 dark:border-ink-800">
                 <div>
-                  <span className="text-[10px] font-bold text-ink-400 uppercase tracking-widest">Detail Log Email</span>
-                  <h3 className="text-base font-extrabold text-ink-900 dark:text-white">{selectedEmail.id}</h3>
+                  <span className="text-[10px] font-bold text-ink-600 uppercase tracking-widest">Detail Log Email</span>
+                  <h3 className="text-base font-extrabold text-ink-900">{selectedEmail.id}</h3>
                 </div>
                 <button
                   onClick={() => setIsDrawerOpen(false)}
-                  className="p-1.5 rounded-xl hover:bg-ink-50 dark:hover:bg-ink-800 text-ink-400 hover:text-ink-700 transition-all"
+                  className="p-1.5 rounded-xl hover:bg-ink-50 dark:hover:bg-ink-800 text-ink-600 hover:text-ink-900 transition-all"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -216,12 +216,12 @@ export default function EmailCenterPage() {
               {/* Status Header Badge details */}
               <div className="grid grid-cols-2 gap-4 bg-ink-50 dark:bg-ink-850 p-4 rounded-xl border border-ink-100 dark:border-ink-800">
                 <div>
-                  <span className="text-[9px] font-bold text-ink-400 uppercase tracking-wider block">Recipient</span>
-                  <p className="text-xs font-bold text-ink-900 dark:text-white truncate">{selectedEmail.participant}</p>
-                  <p className="text-[10px] text-ink-400 truncate">{selectedEmail.email}</p>
+                  <span className="text-[9px] font-bold text-ink-600 uppercase tracking-wider block">Recipient</span>
+                  <p className="text-xs font-bold text-ink-900 truncate">{selectedEmail.participant}</p>
+                  <p className="text-[10px] text-ink-600 truncate">{selectedEmail.email}</p>
                 </div>
                 <div>
-                  <span className="text-[9px] font-bold text-ink-400 uppercase tracking-wider block">Status</span>
+                  <span className="text-[9px] font-bold text-ink-600 uppercase tracking-wider block">Status</span>
                   <span className={`inline-flex px-2 py-0.5 rounded text-[9px] font-bold uppercase mt-1 ${
                     selectedEmail.status === "Opened" ? "bg-emerald-100 text-emerald-800 border border-emerald-200" :
                     selectedEmail.status === "Delivered" ? "bg-blue-100 text-blue-800 border border-blue-200" :
@@ -236,37 +236,37 @@ export default function EmailCenterPage() {
 
               {/* Technical logs */}
               <div className="space-y-3">
-                <h4 className="text-xs font-bold text-ink-700 dark:text-ink-300 uppercase tracking-wider">Log Metadata</h4>
+                <h4 className="text-xs font-bold text-ink-700 uppercase tracking-wider">Log Metadata</h4>
                 <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div className="p-3 bg-white dark:bg-ink-900 border border-ink-150 dark:border-ink-800 rounded-xl space-y-1">
-                    <span className="text-[9px] text-ink-400 block">Event</span>
-                    <span className="font-semibold text-ink-800 dark:text-ink-200 block truncate">{selectedEmail.event}</span>
+                  <div className="p-3 card rounded-xl space-y-1">
+                    <span className="text-[9px] text-ink-600 block">Event</span>
+                    <span className="font-semibold text-ink-800 block truncate">{selectedEmail.event}</span>
                   </div>
-                  <div className="p-3 bg-white dark:bg-ink-900 border border-ink-150 dark:border-ink-800 rounded-xl space-y-1">
-                    <span className="text-[9px] text-ink-400 block">Certificate ID</span>
-                    <span className="font-semibold text-ink-800 dark:text-ink-200 block truncate">{selectedEmail.certificate}</span>
+                  <div className="p-3 card rounded-xl space-y-1">
+                    <span className="text-[9px] text-ink-600 block">Certificate ID</span>
+                    <span className="font-semibold text-ink-800 block truncate">{selectedEmail.certificate}</span>
                   </div>
-                  <div className="p-3 bg-white dark:bg-ink-900 border border-ink-150 dark:border-ink-800 rounded-xl space-y-1">
-                    <span className="text-[9px] text-ink-400 block">Delivery Speed</span>
-                    <span className="font-semibold text-ink-800 dark:text-ink-200 block">{selectedEmail.deliveryTime}</span>
+                  <div className="p-3 card rounded-xl space-y-1">
+                    <span className="text-[9px] text-ink-600 block">Delivery Speed</span>
+                    <span className="font-semibold text-ink-800 block">{selectedEmail.deliveryTime}</span>
                   </div>
-                  <div className="p-3 bg-white dark:bg-ink-900 border border-ink-150 dark:border-ink-800 rounded-xl space-y-1">
-                    <span className="text-[9px] text-ink-400 block">Sent Timestamp</span>
-                    <span className="font-semibold text-ink-800 dark:text-ink-200 block">{selectedEmail.sentAt}</span>
+                  <div className="p-3 card rounded-xl space-y-1">
+                    <span className="text-[9px] text-ink-600 block">Sent Timestamp</span>
+                    <span className="font-semibold text-ink-800 block">{selectedEmail.sentAt}</span>
                   </div>
                 </div>
               </div>
 
               {/* Delivery Timeline Node list */}
               <div className="space-y-4">
-                <h4 className="text-xs font-bold text-ink-700 dark:text-ink-300 uppercase tracking-wider">Timeline Proses Pengiriman</h4>
+                <h4 className="text-xs font-bold text-ink-700 uppercase tracking-wider">Timeline Proses Pengiriman</h4>
                 <div className="space-y-3.5 pl-2 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-ink-150 dark:before:bg-ink-800">
                   {getTimelineSteps(selectedEmail.status).map((step, idx) => (
                     <div key={idx} className="flex items-start gap-4 relative">
                       <div className={`w-2.5 h-2.5 rounded-full mt-1.5 shrink-0 z-10 ${
                         step.done ? "bg-brand-500 ring-4 ring-brand-100 dark:ring-brand-950/40" : "bg-ink-250 dark:bg-ink-700"
                       }`} />
-                      <span className={`text-xs ${step.done ? "font-bold text-ink-900 dark:text-white" : "text-ink-400"}`}>
+                      <span className={`text-xs ${step.done ? "font-bold text-ink-900" : "text-ink-600"}`}>
                         {step.label}
                       </span>
                     </div>
@@ -276,15 +276,15 @@ export default function EmailCenterPage() {
 
               {/* Email Content Preview */}
               <div className="space-y-3">
-                <h4 className="text-xs font-bold text-ink-700 dark:text-ink-300 uppercase tracking-wider">Visual Preview Email</h4>
+                <h4 className="text-xs font-bold text-ink-700 uppercase tracking-wider">Visual Preview Email</h4>
                 <div className="border border-ink-200 dark:border-ink-800 rounded-xl p-4 bg-ink-50 dark:bg-ink-950/60 font-sans text-xs space-y-4 shadow-inner">
-                  <div className="border-b border-ink-200 dark:border-ink-850 pb-2 text-[10px] text-ink-450 dark:text-ink-500 space-y-1">
+                  <div className="border-b border-ink-200 dark:border-ink-850 pb-2 text-[10px] text-ink-600 space-y-1">
                     <div><strong>Subject:</strong> {selectedEmail.subject}</div>
                     <div><strong>From:</strong> SertifKilat Auto-mailer &lt;no-reply@sertifkilat.id&gt;</div>
                   </div>
-                  <div className="space-y-2 text-ink-700 dark:text-ink-300">
+                  <div className="space-y-2 text-ink-750">
                     <p>Halo {selectedEmail.participant},</p>
-                    <p>Selamat! Anda telah dinyatakan lulus dan berhak menerima sertifikat penghargaan untuk partisipasi Anda dalam kegiatan <strong>{selectedEmail.event}</strong>.</p>
+                    <p>Selamat! Anda telah dinyatakan lulus and berhak menerima sertifikat penghargaan untuk partisipasi Anda dalam kegiatan <strong>{selectedEmail.event}</strong>.</p>
                     <p>Sertifikat digital Anda dapat diakses dan diunduh secara resmi melalui tautan di bawah ini.</p>
                     <div className="py-2.5">
                       <span className="inline-block px-4 py-2 bg-brand-500 text-white rounded-lg font-bold text-[10px] uppercase shadow-sm">
@@ -292,7 +292,7 @@ export default function EmailCenterPage() {
                       </span>
                     </div>
                   </div>
-                  <div className="border-t border-ink-200 dark:border-ink-850 pt-2 text-[9px] text-ink-400 italic">
+                  <div className="border-t border-ink-200 dark:border-ink-850 pt-2 text-[9px] text-ink-600 italic">
                     Sent securely via SertifKilat.id
                   </div>
                 </div>
@@ -314,7 +314,7 @@ export default function EmailCenterPage() {
                   showToast(lang === "id" ? "Proses pengiriman dibatalkan." : "Delivery process cancelled.", "warning");
                   setIsDrawerOpen(false);
                 }}
-                className="px-4 py-2 rounded-xl border border-ink-250 dark:border-ink-800 text-ink-600 dark:text-ink-300 font-bold text-xs hover:bg-rose-50 dark:hover:bg-rose-950/20 hover:text-rose-600 transition-all flex-1 text-center"
+                className="px-4 py-2 rounded-xl border border-ink-250 dark:border-ink-800 text-ink-700 font-bold text-xs hover:bg-rose-50 dark:hover:bg-rose-950/20 hover:text-rose-600 transition-all flex-1 text-center"
               >
                 Cancel Email
               </button>
@@ -357,11 +357,11 @@ export default function EmailCenterPage() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-ink-100 dark:border-ink-800 pb-6 mb-8 gap-4">
         <div>
-          <h1 className="text-2xl font-display font-extrabold tracking-tight flex items-center gap-2">
+          <h1 className="text-2xl font-display font-extrabold tracking-tight flex items-center gap-2 text-ink-900">
             <Envelope className="w-6.5 h-6.5 text-brand-500" />
             {lang === "id" ? "Pusat Pengiriman Email" : "Email Delivery Center"}
           </h1>
-          <p className="text-xs text-ink-400 dark:text-ink-50 mt-1">
+          <p className="text-xs text-ink-600 mt-1">
             {lang === "id" 
               ? "Kirim sertifikat langsung ke email peserta, pantau log antrean, dan kelola template pesan." 
               : "Deliver certificates directly to participants' inboxes, check delivery queues, and style email bodies."}
@@ -382,8 +382,8 @@ export default function EmailCenterPage() {
               onClick={() => setActiveTab(tab.id as never)}
               className={`px-3.5 py-2 rounded-xl text-xxs font-bold transition-all shrink-0 ${
                 activeTab === tab.id 
-                  ? "bg-white dark:bg-ink-900 text-brand-500 shadow-sm" 
-                  : "text-ink-500 hover:text-ink-800 dark:hover:text-white"
+                  ? "bg-bg-card text-brand-500 shadow-sm" 
+                  : "text-ink-600 hover:text-ink-950"
               }`}
             >
               {tab.label}
@@ -404,12 +404,12 @@ export default function EmailCenterPage() {
               { text: "Email campaign 'AI Webinar' finished", type: "info" },
               { text: "Manual queue retry complete", type: "success" }
             ].map((noti, idx) => (
-              <div key={idx} className="p-3 bg-white dark:bg-ink-900 border border-ink-150 dark:border-ink-800 rounded-xl flex items-start gap-2.5 shadow-sm">
+              <div key={idx} className="p-3 card rounded-xl flex items-start gap-2.5 shadow-sm">
                 <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${
                   noti.type === "success" ? "bg-emerald-500" :
                   noti.type === "warning" ? "bg-rose-500" : "bg-brand-500"
                 }`} />
-                <span className="text-[10px] font-bold text-ink-600 dark:text-ink-300 leading-normal">{noti.text}</span>
+                <span className="text-[10px] font-bold text-ink-700 leading-normal">{noti.text}</span>
               </div>
             ))}
           </div>
@@ -426,12 +426,12 @@ export default function EmailCenterPage() {
               return (
                 <div
                   key={i}
-                  className="bg-white dark:bg-ink-900 border border-ink-150 dark:border-ink-800 shadow-sm rounded-2xl p-5 hover:-translate-y-1.5 hover:shadow-soft hover:border-brand-500/50 transition-all duration-200"
+                  className="card shadow-sm p-5 hover:-translate-y-1.5 hover:shadow-soft hover:border-brand-500/50 transition-all duration-200"
                 >
                   <div className="flex justify-between items-start">
                     <div className="space-y-1">
-                      <span className="text-[10px] font-bold text-ink-400 uppercase tracking-widest block">{stat.title}</span>
-                      <p className="text-2xl font-black tracking-tight text-ink-900 dark:text-white">{stat.num}</p>
+                      <span className="text-[10px] font-bold text-ink-600 uppercase tracking-widest block">{stat.title}</span>
+                      <p className="text-2xl font-black tracking-tight text-ink-900">{stat.num}</p>
                     </div>
                     <div className="w-8 h-8 rounded-lg bg-brand-50 dark:bg-brand-950/30 flex items-center justify-center text-brand-500 shrink-0">
                       <Icon className="w-4.5 h-4.5" />
@@ -439,7 +439,7 @@ export default function EmailCenterPage() {
                   </div>
                   <div className="mt-3 flex items-center gap-1.5 text-xxs font-bold">
                     <span className={stat.trendColor}>{stat.trend}</span>
-                    <span className="text-ink-400 font-semibold">{lang === "id" ? "vs bulan lalu" : "vs last month"}</span>
+                    <span className="text-ink-650 font-semibold">{lang === "id" ? "vs bulan lalu" : "vs last month"}</span>
                   </div>
                 </div>
               );
@@ -448,8 +448,8 @@ export default function EmailCenterPage() {
 
           {/* Delivery success progress stats */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-6 bg-white dark:bg-ink-900 border border-ink-150 dark:border-ink-800 shadow-sm rounded-2xl space-y-4">
-              <h4 className="text-xs font-bold text-ink-700 dark:text-ink-300 uppercase tracking-wider">{lang === "id" ? "Rasio Pengiriman & Open Rate" : "Delivery & Open Rates"}</h4>
+            <div className="p-6 card shadow-sm space-y-4">
+              <h4 className="text-xs font-bold text-ink-700 uppercase tracking-wider">{lang === "id" ? "Rasio Pengiriman & Open Rate" : "Delivery & Open Rates"}</h4>
               
               <div className="space-y-4">
                 <div className="space-y-1">
@@ -475,14 +475,14 @@ export default function EmailCenterPage() {
             </div>
 
             {/* Delivery Analytics chart placeholder (Requirement 8) */}
-            <div className="p-6 bg-white dark:bg-ink-900 border border-ink-150 dark:border-ink-800 shadow-sm rounded-2xl space-y-4 md:col-span-2">
+            <div className="p-6 card shadow-sm space-y-4 md:col-span-2">
               <div className="flex justify-between items-center">
-                <h4 className="text-xs font-bold text-ink-700 dark:text-ink-300 uppercase tracking-wider">{lang === "id" ? "Volume Pengiriman Email" : "Email Sent Volume"}</h4>
+                <h4 className="text-xs font-bold text-ink-700 uppercase tracking-wider">{lang === "id" ? "Volume Pengiriman Email" : "Email Sent Volume"}</h4>
                 <div className="flex items-center gap-1.5 bg-ink-50 dark:bg-ink-800 p-0.5 rounded-xl">
                   {["Daily", "Weekly", "Monthly"].map(filter => (
                     <button
                       key={filter}
-                      className="px-2.5 py-1 text-[9px] font-bold text-ink-500 hover:text-ink-900 rounded-lg hover:bg-white dark:hover:bg-ink-900 transition-all"
+                      className="px-2.5 py-1 text-[9px] font-bold text-ink-650 hover:text-ink-950 rounded-lg hover:bg-bg-card transition-all"
                     >
                       {filter}
                     </button>
@@ -506,7 +506,7 @@ export default function EmailCenterPage() {
                       className="w-full bg-brand-500/85 hover:bg-brand-500 rounded-t-md transition-all duration-200 shadow-soft"
                       style={{ height: bar.height }}
                     />
-                    <span className="text-[9px] font-bold text-ink-400 group-hover:text-ink-700 shrink-0">{bar.label}</span>
+                    <span className="text-[9px] font-bold text-ink-600 group-hover:text-ink-900 shrink-0">{bar.label}</span>
                   </div>
                 ))}
               </div>
@@ -522,14 +522,14 @@ export default function EmailCenterPage() {
           {/* Interactive Demo State Toggler for Empty States */}
           <div className="flex justify-between items-center bg-ink-50 dark:bg-ink-850 p-4 rounded-2xl border border-ink-100 dark:border-ink-800 flex-wrap gap-4">
             <div>
-              <span className="text-xs font-extrabold text-ink-800 dark:text-ink-200 block">
+              <span className="text-xs font-extrabold text-ink-900 block">
                 {lang === "id" ? "Simulasi Halaman Kosong (Empty States)" : "Simulate Page Empty States"}
               </span>
-              <p className="text-[10px] text-ink-400 mt-0.5">
+              <p className="text-[10px] text-ink-600 mt-0.5">
                 {lang === "id" ? "Gunakan tombol simulator untuk menguji tampilan data kosong." : "Toggle state configurations to preview empty queue illustrations."}
               </p>
             </div>
-            <div className="flex items-center gap-1.5 bg-white dark:bg-ink-900 p-1 rounded-xl border border-ink-150 dark:border-ink-800">
+            <div className="flex items-center gap-1.5 bg-bg-card p-1 rounded-xl border border-ink-150">
               {[
                 { key: "none", label: "With Queue Data" },
                 { key: "no_emails", label: "No Emails" },
@@ -542,7 +542,7 @@ export default function EmailCenterPage() {
                   className={`px-2.5 py-1 text-[9px] font-extrabold rounded-lg transition-all ${
                     emptyStateMode === opt.key 
                       ? "bg-brand-500 text-white" 
-                      : "text-ink-400 hover:text-ink-700"
+                      : "text-ink-600 hover:text-ink-950"
                   }`}
                 >
                   {opt.label}
@@ -553,14 +553,14 @@ export default function EmailCenterPage() {
 
           {/* Render Empty States illustrations (Requirement 13) */}
           {emptyStateMode === "no_emails" && (
-            <div className="text-center py-20 bg-white dark:bg-ink-900 border border-ink-150 dark:border-ink-800 rounded-3xl space-y-4 max-w-lg mx-auto shadow-sm animate-in zoom-in-95 duration-150">
-              <div className="w-16 h-16 rounded-full bg-ink-50 dark:bg-ink-800 flex items-center justify-center mx-auto text-ink-400">
+            <div className="text-center py-20 card rounded-3xl space-y-4 max-w-lg mx-auto shadow-sm animate-in zoom-in-95 duration-150">
+              <div className="w-16 h-16 rounded-full bg-ink-50 dark:bg-ink-800 flex items-center justify-center mx-auto text-ink-500">
                 <Envelope className="w-8 h-8" />
               </div>
               <div className="space-y-1">
-                <h4 className="font-extrabold text-ink-900 dark:text-white text-base">No Emails in Queue</h4>
-                <p className="text-xs text-ink-500 dark:text-ink-400 max-w-xs mx-auto leading-relaxed">
-                  You haven't initiated any email delivery campaign yet. Open the Batch Send tab to send your first batch.
+                <h4 className="font-extrabold text-ink-900 text-base">No Emails in Queue</h4>
+                <p className="text-xs text-ink-600 max-w-xs mx-auto leading-relaxed">
+                  You haven&apos;t initiated any email delivery campaign yet. Open the Batch Send tab to send your first batch.
                 </p>
               </div>
               <div>
@@ -575,20 +575,20 @@ export default function EmailCenterPage() {
           )}
 
           {emptyStateMode === "no_failed" && (
-            <div className="text-center py-20 bg-white dark:bg-ink-900 border border-ink-150 dark:border-ink-800 rounded-3xl space-y-4 max-w-lg mx-auto shadow-sm animate-in zoom-in-95 duration-150">
+            <div className="text-center py-20 card rounded-3xl space-y-4 max-w-lg mx-auto shadow-sm animate-in zoom-in-95 duration-150">
               <div className="w-16 h-16 rounded-full bg-emerald-50 dark:bg-emerald-950/20 flex items-center justify-center mx-auto text-emerald-500">
                 <CheckCircle className="w-8 h-8" />
               </div>
               <div className="space-y-1">
-                <h4 className="font-extrabold text-ink-900 dark:text-white text-base">All Clear! No Failed Deliveries</h4>
-                <p className="text-xs text-ink-500 dark:text-ink-400 max-w-xs mx-auto leading-relaxed">
+                <h4 className="font-extrabold text-ink-900 text-base">All Clear! No Failed Deliveries</h4>
+                <p className="text-xs text-ink-600 max-w-xs mx-auto leading-relaxed">
                   Excellent! Every single email has been successfully queued or accepted by recipient servers.
                 </p>
               </div>
               <div>
                 <button
                   onClick={() => setEmptyStateMode("none")}
-                  className="px-4 py-2 border border-ink-200 dark:border-ink-800 rounded-xl text-xs font-bold text-ink-600 dark:text-ink-300 hover:bg-ink-50 dark:hover:bg-ink-800 transition-all"
+                  className="px-4 py-2 border border-ink-200 dark:border-ink-800 rounded-xl text-xs font-bold text-ink-700 hover:bg-ink-50 dark:hover:bg-ink-800 transition-all"
                 >
                   Back to Queue
                 </button>
@@ -597,13 +597,13 @@ export default function EmailCenterPage() {
           )}
 
           {emptyStateMode === "no_scheduled" && (
-            <div className="text-center py-20 bg-white dark:bg-ink-900 border border-ink-150 dark:border-ink-800 rounded-3xl space-y-4 max-w-lg mx-auto shadow-sm animate-in zoom-in-95 duration-150">
-              <div className="w-16 h-16 rounded-full bg-ink-50 dark:bg-ink-800 flex items-center justify-center mx-auto text-ink-400">
+            <div className="text-center py-20 card rounded-3xl space-y-4 max-w-lg mx-auto shadow-sm animate-in zoom-in-95 duration-150">
+              <div className="w-16 h-16 rounded-full bg-ink-50 dark:bg-ink-800 flex items-center justify-center mx-auto text-ink-500">
                 <Calendar className="w-8 h-8" />
               </div>
               <div className="space-y-1">
-                <h4 className="font-extrabold text-ink-900 dark:text-white text-base">No Scheduled Campaigns</h4>
-                <p className="text-xs text-ink-500 dark:text-ink-400 max-w-xs mx-auto leading-relaxed">
+                <h4 className="font-extrabold text-ink-900 text-base">No Scheduled Campaigns</h4>
+                <p className="text-xs text-ink-600 max-w-xs mx-auto leading-relaxed">
                   There are no campaigns waiting for temporal triggers. Schedule one under Send Batch options.
                 </p>
               </div>
@@ -620,11 +620,11 @@ export default function EmailCenterPage() {
 
           {/* Standard Queue Table Data */}
           {emptyStateMode === "none" && (
-            <div className="bg-white dark:bg-ink-900 border border-ink-150 dark:border-ink-800 rounded-2xl overflow-hidden shadow-sm">
+            <div className="card overflow-hidden shadow-sm">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="border-b border-ink-100 dark:border-ink-850 text-ink-400 font-bold uppercase tracking-wider text-[10px] bg-ink-50/50 dark:bg-ink-950/20">
+                    <tr className="border-b border-ink-100 dark:border-ink-850 text-ink-600 font-bold uppercase tracking-wider text-[10px] bg-ink-50/50 dark:bg-ink-950/20">
                       <th className="p-4">Participant</th>
                       <th className="p-4">Event</th>
                       <th className="p-4">Certificate</th>
@@ -637,12 +637,12 @@ export default function EmailCenterPage() {
                     {queue.map((row) => (
                       <tr
                         key={row.id}
-                        className="border-b border-ink-50 dark:border-ink-850 hover:bg-ink-50/40 dark:hover:bg-ink-950/20 text-ink-700 dark:text-ink-300 transition-colors"
+                        className="border-b border-ink-50 dark:border-ink-850 hover:bg-ink-50/40 dark:hover:bg-ink-950/20 text-ink-700 transition-colors"
                       >
                         <td className="p-4">
                           <div>
-                            <p className="font-extrabold text-ink-900 dark:text-white">{row.participant}</p>
-                            <p className="text-[10px] text-ink-400 font-mono mt-0.5">{row.email}</p>
+                            <p className="font-extrabold text-ink-900">{row.participant}</p>
+                            <p className="text-[10px] text-ink-600 font-mono mt-0.5">{row.email}</p>
                           </div>
                         </td>
                         <td className="p-4 font-semibold max-w-[150px] truncate">{row.event}</td>
@@ -653,19 +653,19 @@ export default function EmailCenterPage() {
                             row.status === "Delivered" ? "bg-blue-50 text-blue-600 border-blue-100" :
                             row.status === "Failed" ? "bg-rose-50 text-rose-600 border-rose-150" :
                             row.status === "Sending" ? "bg-amber-50 text-amber-600 border-amber-100 animate-pulse" :
-                            "bg-ink-100 text-ink-500 border-ink-150"
+                            "bg-ink-100 text-ink-600 border-ink-150"
                           }`}>
                             {row.status}
                           </span>
                         </td>
-                        <td className="p-4 text-ink-400">{row.sentAt}</td>
+                        <td className="p-4 text-ink-600">{row.sentAt}</td>
                         <td className="p-4 text-right space-x-2.5">
                           <button
                             onClick={() => {
                               setSelectedEmail(row);
                               setIsDrawerOpen(true);
                             }}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xxs font-bold bg-ink-50 dark:bg-ink-800 text-ink-600 dark:text-ink-300 rounded-lg hover:bg-ink-100 hover:text-ink-900 transition-all border border-ink-200 dark:border-ink-700 cursor-pointer"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xxs font-bold bg-ink-50 dark:bg-ink-800 text-ink-700 rounded-lg hover:bg-ink-100 hover:text-ink-900 transition-all border border-ink-200 dark:border-ink-700 cursor-pointer"
                           >
                             <Eye className="w-3.5 h-3.5" /> Detail
                           </button>
@@ -693,15 +693,15 @@ export default function EmailCenterPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in duration-200">
           
           {/* Scheduling UI configuration */}
-          <form onSubmit={handleBatchSendSubmit} className="lg:col-span-2 bg-white dark:bg-ink-900 border border-ink-150 dark:border-ink-800 shadow-sm rounded-2xl p-6 md:p-8 space-y-6">
-            <h3 className="text-base font-extrabold text-ink-900 dark:text-white flex items-center gap-2 border-b border-ink-100 dark:border-ink-800 pb-4">
+          <form onSubmit={handleBatchSendSubmit} className="lg:col-span-2 card shadow-sm p-6 md:p-8 space-y-6">
+            <h3 className="text-base font-extrabold text-ink-900 flex items-center gap-2 border-b border-ink-100 dark:border-ink-800 pb-4">
               <PaperPlaneTilt className="w-5 h-5 text-brand-500" />
               {lang === "id" ? "Konfigurasi Kampanye Pengiriman" : "Configure Batch Campaign"}
             </h3>
 
             {/* Target Options */}
             <div className="space-y-3">
-              <label className="text-xs font-bold text-ink-700 dark:text-ink-300 block">{lang === "id" ? "Penerima Sertifikat" : "Target Recipients"}</label>
+              <label className="text-xs font-bold text-ink-700 block">{lang === "id" ? "Penerima Sertifikat" : "Target Recipients"}</label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {[
                   { key: "all", title: "All Participants", desc: "Send to all registered batch participants (150 recipients)" },
@@ -719,14 +719,14 @@ export default function EmailCenterPage() {
                     }`}
                   >
                     <div className="flex justify-between items-center">
-                      <span className="text-xs font-bold text-ink-900 dark:text-white">{opt.title}</span>
+                      <span className="text-xs font-bold text-ink-900">{opt.title}</span>
                       <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${
                         targetAudience === opt.key ? "border-brand-500 bg-brand-500" : "border-ink-300"
                       }`}>
                         {targetAudience === opt.key && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
                       </div>
                     </div>
-                    <p className="text-[10px] text-ink-400 mt-1 leading-normal">{opt.desc}</p>
+                    <p className="text-[10px] text-ink-600 mt-1 leading-normal">{opt.desc}</p>
                   </div>
                 ))}
               </div>
@@ -735,7 +735,7 @@ export default function EmailCenterPage() {
             {/* Test Email Field if selected */}
             {targetAudience === "test" && (
               <div className="space-y-2 p-4 bg-ink-50 dark:bg-ink-850 rounded-xl border border-ink-150 animate-in slide-in-from-top-3">
-                <label className="text-xxs font-bold text-ink-700 dark:text-ink-300 uppercase block">Test Email Address</label>
+                <label className="text-xxs font-bold text-ink-700 uppercase block">Test Email Address</label>
                 <input
                   type="email"
                   value={testEmailAddress}
@@ -748,7 +748,7 @@ export default function EmailCenterPage() {
 
             {/* Delivery Schedule Options (Requirement 7) */}
             <div className="space-y-4">
-              <label className="text-xs font-bold text-ink-700 dark:text-ink-300 block">{lang === "id" ? "Waktu Pengiriman" : "Scheduling & Timing"}</label>
+              <label className="text-xs font-bold text-ink-700 block">{lang === "id" ? "Waktu Pengiriman" : "Scheduling & Timing"}</label>
               
               <div className="flex gap-4 border-b border-ink-150 pb-3">
                 {[
@@ -762,7 +762,7 @@ export default function EmailCenterPage() {
                     className={`pb-2 text-xs font-bold border-b-2 transition-all ${
                       deliveryMethod === method.key 
                         ? "border-brand-500 text-brand-600" 
-                        : "border-transparent text-ink-450 hover:text-ink-700"
+                        : "border-transparent text-ink-500 hover:text-ink-900"
                     }`}
                   >
                     {method.label}
@@ -773,7 +773,7 @@ export default function EmailCenterPage() {
               {deliveryMethod === "later" && (
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 animate-in slide-in-from-top-3">
                   <div>
-                    <label className="text-[10px] font-bold text-ink-500 uppercase block mb-1.5">Date Picker</label>
+                    <label className="text-[10px] font-bold text-ink-650 uppercase block mb-1.5">Date Picker</label>
                     <input
                       type="date"
                       value={scheduleDate}
@@ -782,7 +782,7 @@ export default function EmailCenterPage() {
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] font-bold text-ink-500 uppercase block mb-1.5">Time Picker</label>
+                    <label className="text-[10px] font-bold text-ink-650 uppercase block mb-1.5">Time Picker</label>
                     <input
                       type="time"
                       value={scheduleTime}
@@ -791,7 +791,7 @@ export default function EmailCenterPage() {
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] font-bold text-ink-500 uppercase block mb-1.5">Timezone</label>
+                    <label className="text-[10px] font-bold text-ink-650 uppercase block mb-1.5">Timezone</label>
                     <select
                       value={scheduleTimezone}
                       onChange={e => setScheduleTimezone(e.target.value)}
@@ -811,7 +811,7 @@ export default function EmailCenterPage() {
               <button
                 type="button"
                 onClick={() => showToast(lang === "id" ? "Pratinjau email sedang dimuat." : "Email preview loading.", "info")}
-                className="px-4 py-2 rounded-xl border border-ink-250 dark:border-ink-700 text-ink-600 dark:text-ink-300 font-bold text-xs hover:bg-ink-50 dark:hover:bg-ink-800 transition-all cursor-pointer"
+                className="px-4 py-2 rounded-xl border border-ink-250 dark:border-ink-700 text-ink-600 font-bold text-xs hover:bg-ink-50 dark:hover:bg-ink-800 transition-all cursor-pointer"
               >
                 Preview Mail
               </button>
@@ -825,9 +825,9 @@ export default function EmailCenterPage() {
           </form>
 
           {/* Quick tips panel sidebar */}
-          <div className="p-6 bg-white dark:bg-ink-900 border border-ink-150 dark:border-ink-800 rounded-2xl space-y-4 shadow-sm h-fit">
-            <h4 className="text-xs font-bold text-ink-900 dark:text-white uppercase tracking-wider">{lang === "id" ? "Bantuan Pengiriman" : "Delivery Checklist"}</h4>
-            <ul className="space-y-3.5 text-xs text-ink-500 leading-relaxed">
+          <div className="p-6 card space-y-4 shadow-sm h-fit">
+            <h4 className="text-xs font-bold text-ink-900 uppercase tracking-wider">{lang === "id" ? "Bantuan Pengiriman" : "Delivery Checklist"}</h4>
+            <ul className="space-y-3.5 text-xs text-ink-700 leading-relaxed">
               <li className="flex gap-2">
                 <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" weight="fill" />
                 <span>Make sure all recipient rows contain valid email addresses.</span>
@@ -850,15 +850,15 @@ export default function EmailCenterPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-in fade-in duration-200">
           
           {/* Template Edit inputs (Requirement 5) */}
-          <div className="bg-white dark:bg-ink-900 border border-ink-150 dark:border-ink-800 shadow-sm rounded-2xl p-6 md:p-8 space-y-6">
-            <h3 className="text-base font-extrabold text-ink-900 dark:text-white flex items-center gap-2 border-b border-ink-100 dark:border-ink-800 pb-4">
+          <div className="card shadow-sm p-6 md:p-8 space-y-6">
+            <h3 className="text-base font-extrabold text-ink-900 flex items-center gap-2 border-b border-ink-100 dark:border-ink-800 pb-4">
               <Gear className="w-5 h-5 text-brand-500" />
               {lang === "id" ? "Penyunting Template Email" : "Email Template Editor"}
             </h3>
 
             {/* Variable injectors tags */}
             <div className="space-y-2">
-              <label className="text-xxs font-bold text-ink-400 uppercase tracking-wider block">Sisipkan Variabel (Click to inject)</label>
+              <label className="text-xxs font-bold text-ink-600 uppercase tracking-wider block">Sisipkan Variabel (Click to inject)</label>
               <div className="flex flex-wrap gap-2">
                 {[
                   { key: "participant", label: "{{participant}}" },
@@ -881,7 +881,7 @@ export default function EmailCenterPage() {
 
             {/* Subject text input */}
             <div className="space-y-2">
-              <label className="text-xs font-bold text-ink-700 dark:text-ink-300 block">Email Subject</label>
+              <label className="text-xs font-bold text-ink-700 block">Email Subject</label>
               <input
                 type="text"
                 value={templateSubject}
@@ -893,7 +893,7 @@ export default function EmailCenterPage() {
 
             {/* Greeting input */}
             <div className="space-y-2">
-              <label className="text-xs font-bold text-ink-700 dark:text-ink-300 block">Greeting Header</label>
+              <label className="text-xs font-bold text-ink-700 block">Greeting Header</label>
               <input
                 type="text"
                 value={templateGreeting}
@@ -905,7 +905,7 @@ export default function EmailCenterPage() {
 
             {/* Body textarea */}
             <div className="space-y-2">
-              <label className="text-xs font-bold text-ink-700 dark:text-ink-300 block">Email Body Message</label>
+              <label className="text-xs font-bold text-ink-700 block">Email Body Message</label>
               <textarea
                 value={templateBody}
                 onChange={e => setTemplateBody(e.target.value)}
@@ -916,7 +916,7 @@ export default function EmailCenterPage() {
 
             {/* Footer textarea */}
             <div className="space-y-2">
-              <label className="text-xs font-bold text-ink-700 dark:text-ink-300 block">Email Footer Signature</label>
+              <label className="text-xs font-bold text-ink-700 block">Email Footer Signature</label>
               <textarea
                 value={templateFooter}
                 onChange={e => setTemplateFooter(e.target.value)}
@@ -938,18 +938,18 @@ export default function EmailCenterPage() {
 
           {/* Real-time live preview box */}
           <div className="space-y-4 h-full">
-            <h4 className="text-xs font-bold text-ink-700 dark:text-ink-300 uppercase tracking-wider">{lang === "id" ? "Pratinjau Email Real-time" : "Real-time Live Preview"}</h4>
+            <h4 className="text-xs font-bold text-ink-700 uppercase tracking-wider">{lang === "id" ? "Pratinjau Email Real-time" : "Real-time Live Preview"}</h4>
             
-            <div className="bg-white dark:bg-ink-900 border border-ink-200 dark:border-ink-800 rounded-3xl p-6 shadow-sm space-y-6">
+            <div className="card rounded-3xl p-6 shadow-sm space-y-6">
               {/* Fake Email client header */}
-              <div className="border-b border-ink-100 dark:border-ink-850 pb-4 space-y-1.5 text-xs text-ink-450">
-                <div><span className="font-semibold text-ink-700 dark:text-ink-300">Subject:</span> {templateSubject.replace("{{event}}", "Webinar AI 2026")}</div>
-                <div><span className="font-semibold text-ink-700 dark:text-ink-300">From:</span> SertifKilat Auto-mailer &lt;no-reply@sertifkilat.id&gt;</div>
-                <div><span className="font-semibold text-ink-700 dark:text-ink-300">To:</span> rahma.fitria@gmail.com</div>
+              <div className="border-b border-ink-100 dark:border-ink-850 pb-4 space-y-1.5 text-xs text-ink-600">
+                <div><span className="font-semibold text-ink-700">Subject:</span> {templateSubject.replace("{{event}}", "Webinar AI 2026")}</div>
+                <div><span className="font-semibold text-ink-700">From:</span> SertifKilat Auto-mailer &lt;no-reply@sertifkilat.id&gt;</div>
+                <div><span className="font-semibold text-ink-700">To:</span> rahma.fitria@gmail.com</div>
               </div>
 
               {/* Email Content body styled */}
-              <div className="space-y-4 font-sans text-xs text-ink-700 dark:text-ink-300 leading-relaxed">
+              <div className="space-y-4 font-sans text-xs text-ink-700 leading-relaxed">
                 <p>{templateGreeting.replace("{{participant}}", "Rahma Fitria")}</p>
                 <p className="whitespace-pre-line">
                   {templateBody
@@ -968,7 +968,7 @@ export default function EmailCenterPage() {
                   </span>
                 </div>
 
-                <p className="whitespace-pre-line text-ink-450 text-[10px] border-t border-ink-100 dark:border-ink-850 pt-4">
+                <p className="whitespace-pre-line text-ink-600 text-[10px] border-t border-ink-100 dark:border-ink-850 pt-4">
                   {templateFooter}
                 </p>
               </div>
@@ -979,15 +979,15 @@ export default function EmailCenterPage() {
 
       {/* TAB CONTENT 5: EMAIL SETTINGS */}
       {activeTab === "settings" && (
-        <div className="bg-white dark:bg-ink-900 border border-ink-150 dark:border-ink-800 shadow-sm rounded-2xl p-6 md:p-8 space-y-8 animate-in fade-in duration-200">
+        <div className="card shadow-sm p-6 md:p-8 space-y-8 animate-in fade-in duration-200">
           
           <div className="flex justify-between items-start border-b border-ink-100 dark:border-ink-800 pb-4 gap-4 flex-wrap">
             <div>
-              <h3 className="text-base font-extrabold text-ink-900 dark:text-white flex items-center gap-2">
+              <h3 className="text-base font-extrabold text-ink-900 flex items-center gap-2">
                 <Gear className="w-5 h-5 text-brand-500" />
                 SMTP & Brand Settings
               </h3>
-              <p className="text-[10px] text-ink-400 dark:text-ink-500 mt-0.5">
+              <p className="text-[10px] text-ink-600 mt-0.5">
                 Configure your custom delivery address, reply inbox, branding, and SMTP server integrations.
               </p>
             </div>
@@ -1001,10 +1001,10 @@ export default function EmailCenterPage() {
             
             {/* Sender configurations */}
             <div className="space-y-4">
-              <h4 className="text-xs font-bold text-ink-700 dark:text-ink-300 uppercase tracking-wider">Sender Info</h4>
+              <h4 className="text-xs font-bold text-ink-700 uppercase tracking-wider">Sender Info</h4>
               <div className="space-y-3">
                 <div>
-                  <label className="text-xs font-bold text-ink-600 dark:text-ink-400 block mb-1.5">Sender Name</label>
+                  <label className="text-xs font-bold text-ink-700 block mb-1.5">Sender Name</label>
                   <input
                     type="text"
                     value={senderName}
@@ -1013,7 +1013,7 @@ export default function EmailCenterPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-ink-600 dark:text-ink-400 block mb-1.5">Reply-to Email Address</label>
+                  <label className="text-xs font-bold text-ink-700 block mb-1.5">Reply-to Email Address</label>
                   <input
                     type="email"
                     value={replyEmail}
@@ -1022,7 +1022,7 @@ export default function EmailCenterPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-ink-600 dark:text-ink-400 block mb-1.5">Signature Footer Default</label>
+                  <label className="text-xs font-bold text-ink-700 block mb-1.5">Signature Footer Default</label>
                   <input
                     type="text"
                     value={emailSignature}
@@ -1035,10 +1035,10 @@ export default function EmailCenterPage() {
 
             {/* Branding configurations */}
             <div className="space-y-4">
-              <h4 className="text-xs font-bold text-ink-700 dark:text-ink-300 uppercase tracking-wider">Email Branding</h4>
+              <h4 className="text-xs font-bold text-ink-700 uppercase tracking-wider">Email Branding</h4>
               <div className="space-y-3">
                 <div>
-                  <label className="text-xs font-bold text-ink-600 dark:text-ink-400 block mb-1.5">Brand Accent Color</label>
+                  <label className="text-xs font-bold text-ink-700 block mb-1.5">Brand Accent Color</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
@@ -1055,10 +1055,10 @@ export default function EmailCenterPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-ink-600 dark:text-ink-400 block mb-1.5">Upload Logo Header</label>
+                  <label className="text-xs font-bold text-ink-700 block mb-1.5">Upload Logo Header</label>
                   <div className="border border-dashed border-ink-200 dark:border-ink-800 rounded-xl p-4 text-center hover:border-brand-500 transition-all cursor-pointer">
-                    <span className="text-[10px] text-ink-500 font-bold block">Choose Logo Image File</span>
-                    <span className="text-[8px] text-ink-400 block mt-0.5">PNG, JPG up to 1MB</span>
+                    <span className="text-[10px] text-ink-700 font-bold block">Choose Logo Image File</span>
+                    <span className="text-[8px] text-ink-600 block mt-0.5">PNG, JPG up to 1MB</span>
                   </div>
                 </div>
               </div>
@@ -1067,12 +1067,12 @@ export default function EmailCenterPage() {
 
           {/* SMTP Details coming soon */}
           <div className="border-t border-ink-100 dark:border-ink-800 pt-6 space-y-4">
-            <h4 className="text-xs font-bold text-ink-700 dark:text-ink-300 uppercase tracking-wider">SMTP Server Settings (Locked)</h4>
-            <div className="p-4 bg-ink-50 dark:bg-ink-850 rounded-xl border border-ink-150 dark:border-ink-800 text-xs text-ink-500 leading-normal flex items-start gap-3">
-              <Lock className="w-5 h-5 text-ink-400 shrink-0 mt-0.5" />
+            <h4 className="text-xs font-bold text-ink-700 uppercase tracking-wider">SMTP Server Settings (Locked)</h4>
+            <div className="p-4 bg-ink-50 dark:bg-ink-850 rounded-xl border border-ink-150 dark:border-ink-800 text-xs text-ink-700 leading-normal flex items-start gap-3">
+              <Lock className="w-5 h-5 text-ink-500 shrink-0 mt-0.5" />
               <div>
                 <strong>Custom SMTP configuration is coming in next release.</strong>
-                <p className="text-[10px] text-ink-400 mt-1">
+                <p className="text-[10px] text-ink-600 mt-1">
                   You will be able to input your own custom SMTP servers (Host, Port, User, Password) to route emails through Amazon SES, Mailgun, SendGrid, or direct host mailers.
                 </p>
               </div>

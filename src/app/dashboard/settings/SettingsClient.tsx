@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   User as UserIcon, Palette,
   Calendar, Clock, SignOut,
@@ -218,6 +218,7 @@ export default function SettingsClient({ user }: { user: UserType }) {
   const [toasts, setToasts] = useState<ToastType[]>([]);
   const [showResetModal, setShowResetModal] = useState(false);
   const [activeSection, setActiveSection] = useState("appearance");
+  const isManualScrollRef = useRef(false);
 
   // Subscription Modal & Locks states
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -247,9 +248,17 @@ export default function SettingsClient({ user }: { user: UserType }) {
   // Update visual appearance scroll active section highlighting
   useEffect(() => {
     const handleScroll = () => {
+      if (isManualScrollRef.current) return;
       const sections = ["appearance", "regional", "application", "account", "subscription", "advanced"];
-      const scrollPos = window.scrollY + 200;
+      
+      // Check if we are scrolled to the bottom of the page
+      const isAtBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 50;
+      if (isAtBottom) {
+        setActiveSection("advanced");
+        return;
+      }
 
+      const scrollPos = window.scrollY + 200;
       for (const section of sections) {
         const el = document.getElementById(section);
         if (el) {
@@ -360,9 +369,14 @@ export default function SettingsClient({ user }: { user: UserType }) {
 
   // Scroll handler helper
   const scrollToId = (id: string) => {
+    setActiveSection(id);
+    isManualScrollRef.current = true;
     const el = document.getElementById(id);
     if (el) {
       el.scrollIntoView({ behavior: "smooth", block: "start" });
+      setTimeout(() => {
+        isManualScrollRef.current = false;
+      }, 800);
     }
   };
 
@@ -379,7 +393,7 @@ export default function SettingsClient({ user }: { user: UserType }) {
         {toasts.map(toast => (
           <div
             key={toast.id}
-            className="flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-white dark:bg-ink-900 border border-ink-150 dark:border-ink-800 text-ink-900 dark:text-white shadow-lg pointer-events-auto min-w-[280px] transition-all duration-300 animate-in slide-in-from-top-4"
+            className="flex items-center gap-3 px-4 py-3.5 card text-ink-900 dark:text-white shadow-lg pointer-events-auto min-w-[280px] transition-all duration-300 animate-in slide-in-from-top-4"
           >
             <div className="w-5 h-5 rounded-full bg-brand-500 flex items-center justify-center text-white shrink-0">
               <Check className="w-3.5 h-3.5" weight="bold" />
@@ -392,17 +406,17 @@ export default function SettingsClient({ user }: { user: UserType }) {
       {/* Modern Reset Confirmation Modal */}
       {showResetModal && (
         <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-ink-950/60 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-white dark:bg-ink-900 border border-ink-150 dark:border-ink-800 rounded-2xl p-6 shadow-lg overflow-hidden animate-in zoom-in-95 duration-150">
-            <h3 className="text-lg font-bold text-ink-900 dark:text-white mb-2">
+          <div className="w-full max-w-md card p-6 shadow-lg overflow-hidden animate-in zoom-in-95 duration-150">
+            <h3 className="text-lg font-bold text-ink-900 mb-2">
               {t.modalTitle}
             </h3>
-            <p className="text-xs text-ink-500 dark:text-ink-400 mb-6 leading-relaxed">
+            <p className="text-xs text-ink-600 mb-6 leading-relaxed">
               {t.modalDesc}
             </p>
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setShowResetModal(false)}
-                className="px-4 py-2 border border-ink-200 dark:border-ink-700 text-ink-700 dark:text-ink-300 rounded-xl text-xs font-bold hover:bg-ink-50 dark:hover:bg-ink-800 transition-all"
+                className="px-4 py-2 border border-ink-250 dark:border-ink-700 text-ink-750 rounded-xl text-xs font-bold hover:bg-ink-50 dark:hover:bg-ink-800 transition-all"
               >
                 {t.modalCancel}
               </button>
@@ -427,15 +441,15 @@ export default function SettingsClient({ user }: { user: UserType }) {
       {/* Premium Feature Lock Modal */}
       {showLockModal && (
         <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-ink-950/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-md bg-white dark:bg-ink-900 border border-ink-150 dark:border-ink-800 rounded-3xl p-6 md:p-8 shadow-2xl text-center space-y-5 animate-in zoom-in-95 duration-200">
+          <div className="w-full max-w-md card rounded-3xl p-6 md:p-8 shadow-2xl text-center space-y-5 animate-in zoom-in-95 duration-200">
             <div className="w-14 h-14 rounded-full bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50 flex items-center justify-center mx-auto text-amber-500">
               <Lock className="w-6 h-6" weight="bold" />
             </div>
             <div className="space-y-2">
-              <h3 className="text-lg font-extrabold text-ink-900 dark:text-white">
+              <h3 className="text-lg font-extrabold text-ink-900">
                 {lang === "id" ? `Fitur "${lockedFeatureName}" Terkunci` : `"${lockedFeatureName}" is Available in PRO`}
               </h3>
-              <p className="text-xs text-ink-500 dark:text-ink-400 leading-relaxed">
+              <p className="text-xs text-ink-600 leading-relaxed">
                 {lang === "id" 
                   ? "Tingkatkan akun Anda ke paket PRO untuk membuka fitur premium ini dan nikmati batas cetak tak terbatas." 
                   : "Upgrade your workspace to our PRO plan to unlock this advanced feature and generate massive high-quality certificates."}
@@ -453,7 +467,7 @@ export default function SettingsClient({ user }: { user: UserType }) {
               </button>
               <button
                 onClick={() => setShowLockModal(false)}
-                className="px-4 py-2.5 rounded-xl border border-ink-200 dark:border-ink-800 text-ink-600 dark:text-ink-300 font-bold text-xs hover:bg-ink-50 dark:hover:bg-ink-800 transition-all w-full"
+                className="px-4 py-2.5 rounded-xl border border-ink-250 dark:border-ink-700 text-ink-650 font-bold text-xs hover:bg-ink-50 dark:hover:bg-ink-800 transition-all w-full"
               >
                 {lang === "id" ? "Nanti Saja" : "Maybe Later"}
               </button>
@@ -464,8 +478,8 @@ export default function SettingsClient({ user }: { user: UserType }) {
 
       {/* Header Banner */}
       <div className="border-b border-ink-100 dark:border-ink-800 pb-6 mb-8">
-        <h1 className="text-2xl font-display font-extrabold tracking-tight">{t.title}</h1>
-        <p className="text-sm text-ink-400 dark:text-ink-50 mt-1">{t.subtitle}</p>
+        <h1 className="text-2xl font-display font-extrabold tracking-tight text-ink-900">{t.title}</h1>
+        <p className="text-sm text-ink-500 mt-1">{t.subtitle}</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -490,7 +504,7 @@ export default function SettingsClient({ user }: { user: UserType }) {
                     w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all text-left
                     ${isSelected 
                       ? "bg-brand-500 text-white shadow-sm" 
-                      : "text-ink-500 dark:text-ink-400 hover:bg-ink-100 dark:hover:bg-ink-800 hover:text-ink-900 dark:hover:text-ink-100"
+                      : "text-ink-500 hover:bg-ink-100 dark:hover:bg-ink-800 hover:text-ink-900"
                     }
                   `}
                 >
@@ -506,22 +520,22 @@ export default function SettingsClient({ user }: { user: UserType }) {
         <div className="lg:col-span-3 space-y-8">
           
           {/* Section 1: Appearance */}
-          <section id="appearance" className="bg-white dark:bg-ink-900 border border-ink-150 dark:border-ink-800 shadow-sm rounded-2xl p-6 md:p-8 space-y-6">
+          <section id="appearance" className="card shadow-sm p-6 md:p-8 space-y-6">
             <div className="flex items-start gap-4 pb-4 border-b border-ink-100 dark:border-ink-800">
               <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-900/30 flex items-center justify-center text-brand-500 shrink-0">
                 <Palette className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-lg font-extrabold text-ink-900 dark:text-white">{t.appearanceTitle}</h2>
-                <p className="text-xs text-ink-400 dark:text-ink-500 mt-0.5">{t.appearanceDesc}</p>
+                <h2 className="text-lg font-extrabold text-ink-900">{t.appearanceTitle}</h2>
+                <p className="text-xs text-ink-600 mt-0.5">{t.appearanceDesc}</p>
               </div>
             </div>
 
             {/* Theme Preference Settings */}
             <div className="space-y-3">
               <div>
-                <label className="text-sm font-bold text-ink-800 dark:text-ink-200 block">{t.themeLabel}</label>
-                <span className="text-xxs text-ink-400 dark:text-ink-500 block mt-0.5">{t.themeDesc}</span>
+                <label className="text-sm font-bold text-ink-800 block">{t.themeLabel}</label>
+                <span className="text-xxs text-ink-600 block mt-0.5">{t.themeDesc}</span>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 {[
@@ -538,7 +552,7 @@ export default function SettingsClient({ user }: { user: UserType }) {
                         flex items-center justify-center gap-2 p-3 rounded-xl border text-xs font-bold transition-all cursor-pointer
                         ${active 
                           ? "bg-brand-500 border-brand-500 text-white shadow-sm" 
-                          : "border-ink-200 dark:border-ink-800 text-ink-600 dark:text-ink-300 hover:bg-ink-50 dark:hover:bg-ink-800"
+                          : "border-ink-200 dark:border-ink-800 text-ink-600 hover:bg-ink-50 dark:hover:bg-ink-800"
                         }
                       `}
                     >
@@ -553,8 +567,8 @@ export default function SettingsClient({ user }: { user: UserType }) {
             {/* Application Interface Language */}
             <div className="space-y-3">
               <div>
-                <label className="text-sm font-bold text-ink-800 dark:text-ink-200 block">{t.appLangLabel}</label>
-                <span className="text-xxs text-ink-400 dark:text-ink-500 block mt-0.5">{t.appLangDesc}</span>
+                <label className="text-sm font-bold text-ink-800 block">{t.appLangLabel}</label>
+                <span className="text-xxs text-ink-600 block mt-0.5">{t.appLangDesc}</span>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 {[
@@ -570,7 +584,7 @@ export default function SettingsClient({ user }: { user: UserType }) {
                         p-3 rounded-xl border text-xs font-bold transition-all cursor-pointer text-center
                         ${active 
                           ? "bg-brand-500 border-brand-500 text-white shadow-sm" 
-                          : "border-ink-200 dark:border-ink-800 text-ink-600 dark:text-ink-300 hover:bg-ink-50 dark:hover:bg-ink-800"
+                          : "border-ink-200 dark:border-ink-800 text-ink-600 hover:bg-ink-50 dark:hover:bg-ink-800"
                         }
                       `}
                     >
@@ -584,8 +598,8 @@ export default function SettingsClient({ user }: { user: UserType }) {
             {/* Default Certificate Language */}
             <div className="space-y-3">
               <div>
-                <label className="text-sm font-bold text-ink-800 dark:text-ink-200 block">{t.certLangLabel}</label>
-                <span className="text-xxs text-ink-400 dark:text-ink-500 block mt-0.5">{t.certLangDesc}</span>
+                <label className="text-sm font-bold text-ink-800 block">{t.certLangLabel}</label>
+                <span className="text-xxs text-ink-600 block mt-0.5">{t.certLangDesc}</span>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 {[
@@ -601,7 +615,7 @@ export default function SettingsClient({ user }: { user: UserType }) {
                         p-3 rounded-xl border text-xs font-bold transition-all cursor-pointer text-center
                         ${active 
                           ? "bg-brand-500 border-brand-500 text-white shadow-sm" 
-                          : "border-ink-200 dark:border-ink-800 text-ink-600 dark:text-ink-300 hover:bg-ink-50 dark:hover:bg-ink-800"
+                          : "border-ink-200 dark:border-ink-800 text-ink-600 hover:bg-ink-50 dark:hover:bg-ink-800"
                         }
                       `}
                     >
@@ -614,22 +628,22 @@ export default function SettingsClient({ user }: { user: UserType }) {
           </section>
 
           {/* Section 2: Regional */}
-          <section id="regional" className="bg-white dark:bg-ink-900 border border-ink-150 dark:border-ink-800 shadow-sm rounded-2xl p-6 md:p-8 space-y-6">
+          <section id="regional" className="card shadow-sm p-6 md:p-8 space-y-6">
             <div className="flex items-start gap-4 pb-4 border-b border-ink-100 dark:border-ink-800">
               <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-900/30 flex items-center justify-center text-brand-500 shrink-0">
                 <Clock className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-lg font-extrabold text-ink-900 dark:text-white">{t.regionalTitle}</h2>
-                <p className="text-xs text-ink-400 dark:text-ink-500 mt-0.5">{t.regionalDesc}</p>
+                <h2 className="text-lg font-extrabold text-ink-900">{t.regionalTitle}</h2>
+                <p className="text-xs text-ink-600 mt-0.5">{t.regionalDesc}</p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Date Format Select Dropdown */}
               <div className="space-y-2">
-                <label className="text-sm font-bold text-ink-800 dark:text-ink-200 block">{t.dateFormatLabel}</label>
-                <span className="text-xxs text-ink-400 dark:text-ink-500 block leading-normal">{t.dateFormatDesc}</span>
+                <label className="text-sm font-bold text-ink-800 block">{t.dateFormatLabel}</label>
+                <span className="text-xxs text-ink-600 block leading-normal">{t.dateFormatDesc}</span>
                 <select
                   value={dateFormat}
                   onChange={e => handleDateFormatChange(e.target.value)}
@@ -643,8 +657,8 @@ export default function SettingsClient({ user }: { user: UserType }) {
 
               {/* Timezone Select Dropdown */}
               <div className="space-y-2">
-                <label className="text-sm font-bold text-ink-800 dark:text-ink-200 block">{t.timezoneLabel}</label>
-                <span className="text-xxs text-ink-400 dark:text-ink-500 block leading-normal">{t.timezoneDesc}</span>
+                <label className="text-sm font-bold text-ink-800 block">{t.timezoneLabel}</label>
+                <span className="text-xxs text-ink-600 block leading-normal">{t.timezoneDesc}</span>
                 <select
                   value={timezone}
                   onChange={e => handleTimezoneChange(e.target.value)}
@@ -659,14 +673,14 @@ export default function SettingsClient({ user }: { user: UserType }) {
           </section>
 
           {/* Section 3: Application */}
-          <section id="application" className="bg-white dark:bg-ink-900 border border-ink-150 dark:border-ink-800 shadow-sm rounded-2xl p-6 md:p-8 space-y-6">
+          <section id="application" className="card shadow-sm p-6 md:p-8 space-y-6">
             <div className="flex items-start gap-4 pb-4 border-b border-ink-100 dark:border-ink-800">
               <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-900/30 flex items-center justify-center text-brand-500 shrink-0">
                 <Cpu className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-lg font-extrabold text-ink-900 dark:text-white">{t.appTitle}</h2>
-                <p className="text-xs text-ink-400 dark:text-ink-500 mt-0.5">{t.appDesc}</p>
+                <h2 className="text-lg font-extrabold text-ink-900">{t.appTitle}</h2>
+                <p className="text-xs text-ink-600 mt-0.5">{t.appDesc}</p>
               </div>
             </div>
 
@@ -685,14 +699,14 @@ export default function SettingsClient({ user }: { user: UserType }) {
                 { label: lang === "id" ? "Penyimpanan" : "Storage", value: "Local Storage" },
               ].map((spec, index) => (
                 <div key={index} className="p-4 bg-ink-50/50 dark:bg-ink-800/40 border border-ink-100 dark:border-ink-800/60 rounded-xl space-y-1">
-                  <span className="text-[10px] font-bold text-ink-400 uppercase tracking-wider block">{spec.label}</span>
+                  <span className="text-[10px] font-bold text-ink-500 uppercase tracking-wider block">{spec.label}</span>
                   {spec.isStatus ? (
                     <span className="text-xs font-extrabold text-emerald-600 flex items-center gap-1">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                       {spec.value}
                     </span>
                   ) : (
-                    <span className="text-xs font-extrabold text-ink-800 dark:text-ink-200 block truncate">{spec.value}</span>
+                    <span className="text-xs font-extrabold text-ink-800 block truncate">{spec.value}</span>
                   )}
                 </div>
               ))}
@@ -700,21 +714,21 @@ export default function SettingsClient({ user }: { user: UserType }) {
           </section>
 
           {/* Section 4: Account */}
-          <section id="account" className="bg-white dark:bg-ink-900 border border-ink-150 dark:border-ink-800 shadow-sm rounded-2xl p-6 md:p-8 space-y-8">
+          <section id="account" className="card shadow-sm p-6 md:p-8 space-y-8">
             <div className="flex items-start gap-4 pb-4 border-b border-ink-100 dark:border-ink-800">
               <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-900/30 flex items-center justify-center text-brand-500 shrink-0">
                 <UserIcon className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-lg font-extrabold text-ink-900 dark:text-white">{t.accountTitle}</h2>
-                <p className="text-xs text-ink-400 dark:text-ink-500 mt-0.5">{t.accountDesc}</p>
+                <h2 className="text-lg font-extrabold text-ink-900">{t.accountTitle}</h2>
+                <p className="text-xs text-ink-600 mt-0.5">{t.accountDesc}</p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Profile Card Summary */}
               <div className="p-6 bg-ink-50/50 dark:bg-ink-800/40 border border-ink-100 dark:border-ink-800/60 rounded-2xl flex flex-col items-center text-center space-y-4">
-                <span className="text-[10px] font-bold text-ink-400 uppercase tracking-wider block self-start">{t.profileCardTitle}</span>
+                <span className="text-[10px] font-bold text-ink-500 uppercase tracking-wider block self-start">{t.profileCardTitle}</span>
                 
                 {profilePic ? (
                   <img
@@ -729,23 +743,23 @@ export default function SettingsClient({ user }: { user: UserType }) {
                 )}
 
                 <div className="space-y-1">
-                  <h4 className="font-extrabold text-sm text-ink-900 dark:text-white leading-tight">{fullName}</h4>
-                  <p className="text-[10px] text-ink-400 font-mono truncate max-w-[170px]">{user.email}</p>
+                  <h4 className="font-extrabold text-sm text-ink-900 leading-tight">{fullName}</h4>
+                  <p className="text-[10px] text-ink-500 font-mono truncate max-w-[170px]">{user.email}</p>
                   <span className="inline-flex px-2 py-0.5 rounded-md bg-brand-50 dark:bg-brand-950/30 border border-brand-100 dark:border-brand-900 text-brand-700 dark:text-brand-400 font-extrabold text-[9px] uppercase tracking-wider">
                     {user.plan}
                   </span>
                 </div>
 
-                <div className="w-full border-t border-ink-100 dark:border-ink-800 pt-3 text-[10px] text-ink-450 dark:text-ink-500 space-y-1 text-left">
+                <div className="w-full border-t border-ink-100 dark:border-ink-800 pt-3 text-[10px] text-ink-500 space-y-1 text-left">
                   <div className="flex justify-between">
                     <span>{t.createdAt}</span>
-                    <span className="font-semibold text-ink-700 dark:text-ink-300">{formatDate(user.createdAt)}</span>
+                    <span className="font-semibold text-ink-700">{formatDate(user.createdAt)}</span>
                   </div>
                 </div>
 
                 <button
                   onClick={handleUploadPic}
-                  className="w-full px-3 py-2 rounded-xl border border-ink-200 dark:border-ink-700 hover:bg-ink-100 dark:hover:bg-ink-800 font-bold text-xxs transition-all cursor-pointer"
+                  className="w-full px-3 py-2 rounded-xl border border-ink-250 dark:border-ink-700 hover:bg-ink-100 dark:hover:bg-ink-800 font-bold text-xxs transition-all cursor-pointer"
                 >
                   {t.picChange}
                 </button>
@@ -755,7 +769,7 @@ export default function SettingsClient({ user }: { user: UserType }) {
               <div className="md:col-span-2 space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-ink-700 dark:text-ink-300 mb-1.5">{t.fullName}</label>
+                    <label className="block text-xs font-bold text-ink-700 mb-1.5">{t.fullName}</label>
                     <input
                       type="text"
                       value={fullName}
@@ -764,19 +778,19 @@ export default function SettingsClient({ user }: { user: UserType }) {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-ink-700 dark:text-ink-300 mb-1.5">{t.email}</label>
+                    <label className="block text-xs font-bold text-ink-700 mb-1.5">{t.email}</label>
                     <input
                       type="email"
                       disabled
                       value={user.email}
-                      className="input-field opacity-60 bg-ink-50 dark:bg-ink-800 cursor-not-allowed"
+                      className="input-field bg-ink-100/40 dark:bg-ink-800/50 text-ink-500 cursor-not-allowed border border-ink-200 dark:border-ink-800"
                     />
                   </div>
                 </div>
 
                 {/* Login Method info */}
                 <div className="pt-2">
-                  <span className="block text-xs font-bold text-ink-700 dark:text-ink-300 mb-1.5">{t.loginMethod}</span>
+                  <span className="block text-xs font-bold text-ink-700 mb-1.5">{t.loginMethod}</span>
                   {user.provider === "google" ? (
                     <div className="p-3 bg-rose-50/20 dark:bg-rose-950/10 border border-rose-100/50 dark:border-rose-900/30 rounded-xl flex items-center justify-between gap-3">
                       <div className="flex items-center gap-2 text-xs font-bold text-rose-700 dark:text-rose-450">
@@ -785,8 +799,8 @@ export default function SettingsClient({ user }: { user: UserType }) {
                       </div>
                     </div>
                   ) : (
-                    <div className="p-3 bg-ink-50/50 dark:bg-ink-800/40 border border-ink-150 dark:border-ink-800/60 rounded-xl flex items-center gap-2 text-xs font-bold text-ink-500 dark:text-ink-400">
-                      <Key className="w-4 h-4 text-ink-400" />
+                    <div className="p-3 bg-ink-50/50 dark:bg-ink-800/40 border border-ink-150 dark:border-ink-800/60 rounded-xl flex items-center gap-2 text-xs font-bold text-ink-600">
+                      <Key className="w-4 h-4 text-ink-500" />
                       {lang === "id" ? "Pendaftaran via Email & Kata Sandi" : "Registered via Email & Password"}
                     </div>
                   )}
@@ -807,7 +821,7 @@ export default function SettingsClient({ user }: { user: UserType }) {
             {/* Password Section */}
             <div className="border-t border-ink-100 dark:border-ink-800 pt-6 space-y-4">
               <div>
-                <h3 className="font-extrabold text-sm text-ink-900 dark:text-white flex items-center gap-2">
+                <h3 className="font-extrabold text-sm text-ink-900 flex items-center gap-2">
                   <Key className="w-4.5 h-4.5 text-brand-500" />
                   {t.passwordTitle}
                 </h3>
@@ -816,32 +830,32 @@ export default function SettingsClient({ user }: { user: UserType }) {
               <form onSubmit={handleUpdatePassword} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-ink-700 dark:text-ink-300 mb-1.5">{t.currentPass}</label>
+                    <label className="block text-xs font-bold text-ink-700 mb-1.5">{t.currentPass}</label>
                     <input
                       type="password"
                       value={currentPassword}
                       onChange={e => setCurrentPassword(e.target.value)}
-                      className="input-field"
+                      className="input-field placeholder:text-ink-400 dark:placeholder:text-ink-500"
                       placeholder="••••••••"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-ink-700 dark:text-ink-300 mb-1.5">{t.newPass}</label>
+                    <label className="block text-xs font-bold text-ink-700 mb-1.5">{t.newPass}</label>
                     <input
                       type="password"
                       value={newPassword}
                       onChange={e => setNewPassword(e.target.value)}
-                      className="input-field"
+                      className="input-field placeholder:text-ink-400 dark:placeholder:text-ink-500"
                       placeholder="••••••••"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-ink-700 dark:text-ink-300 mb-1.5">{t.confirmNewPass}</label>
+                    <label className="block text-xs font-bold text-ink-700 mb-1.5">{t.confirmNewPass}</label>
                     <input
                       type="password"
                       value={confirmPassword}
                       onChange={e => setConfirmPassword(e.target.value)}
-                      className="input-field"
+                      className="input-field placeholder:text-ink-400 dark:placeholder:text-ink-500"
                       placeholder="••••••••"
                     />
                   </div>
@@ -860,19 +874,19 @@ export default function SettingsClient({ user }: { user: UserType }) {
             {/* Logout warning style card */}
             <div className="border-t border-ink-100 dark:border-ink-800 pt-6 space-y-4">
               <div>
-                <h3 className="font-extrabold text-sm text-ink-900 dark:text-white flex items-center gap-2">
+                <h3 className="font-extrabold text-sm text-ink-900 flex items-center gap-2">
                   <SignOut className="w-4.5 h-4.5 text-rose-500" />
                   {t.logoutTitle}
                 </h3>
               </div>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 border border-rose-150 dark:border-rose-900/40 bg-rose-50/20 dark:bg-rose-950/10 rounded-xl">
-                <p className="text-xxs text-rose-700 dark:text-rose-450 leading-relaxed max-w-md">
+                <p className="text-xxs text-rose-700 dark:text-rose-400 leading-relaxed max-w-md">
                   {t.logoutDesc}
                 </p>
                 <button
                   onClick={async () => {
-                    await signOut({ redirect: false });
-                    window.location.href = "/";
+                     await signOut({ redirect: false });
+                     window.location.href = "/";
                   }}
                   className="px-4 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs shadow-sm transition-all cursor-pointer self-start sm:self-auto shrink-0"
                 >
@@ -883,14 +897,14 @@ export default function SettingsClient({ user }: { user: UserType }) {
           </section>
 
           {/* Section 5: Subscription & Billing Management */}
-          <section id="subscription" className="bg-white dark:bg-ink-900 border border-ink-150 dark:border-ink-800 shadow-sm rounded-2xl p-6 md:p-8 space-y-8">
+          <section id="subscription" className="card shadow-sm p-6 md:p-8 space-y-8">
             <div className="flex items-start gap-4 pb-4 border-b border-ink-100 dark:border-ink-800">
               <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-900/30 flex items-center justify-center text-brand-500 shrink-0">
                 <CreditCard className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-lg font-extrabold text-ink-900 dark:text-white">{lang === "id" ? "Langganan & Tagihan" : "Subscription & Billing"}</h2>
-                <p className="text-xs text-ink-400 dark:text-ink-500 mt-0.5">
+                <h2 className="text-lg font-extrabold text-ink-900">{lang === "id" ? "Langganan & Tagihan" : "Subscription & Billing"}</h2>
+                <p className="text-xs text-ink-600 mt-0.5">
                   {lang === "id" ? "Kelola paket langganan Anda, pantau riwayat tagihan, dan lihat kuota penggunaan fitur." : "Manage your subscription packages, view billing histories, and inspect feature usage metrics."}
                 </p>
               </div>
@@ -900,7 +914,7 @@ export default function SettingsClient({ user }: { user: UserType }) {
             {user.plan !== "FREE" && (
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <h4 className="text-xs font-bold text-ink-700 dark:text-ink-300 uppercase tracking-wider">
+                  <h4 className="text-xs font-bold text-ink-700 uppercase tracking-wider">
                     {lang === "id" ? "Simulasi Banner Kedaluwarsa" : "Simulate Expiration Warning Banner"}
                   </h4>
                   <div className="flex items-center gap-1.5 bg-ink-50 dark:bg-ink-800 p-1 rounded-xl">
@@ -914,7 +928,7 @@ export default function SettingsClient({ user }: { user: UserType }) {
                         key={btn.days ?? "none"}
                         onClick={() => setSimulatedWarningDays(btn.days)}
                         className={`px-2 py-1 rounded-lg text-[9px] font-bold transition-all ${
-                          simulatedWarningDays === btn.days ? btn.color : "text-ink-400 hover:text-ink-700"
+                          simulatedWarningDays === btn.days ? btn.color : "text-ink-500 hover:text-ink-900"
                         }`}
                       >
                         {btn.label}
@@ -924,7 +938,7 @@ export default function SettingsClient({ user }: { user: UserType }) {
                 </div>
 
                 {simulatedWarningDays === 7 && (
-                  <div className="flex items-center justify-between gap-3 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-300 animate-in slide-in-from-top-4">
+                  <div className="flex items-center justify-between gap-3 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-850 dark:text-amber-400 animate-in slide-in-from-top-4">
                     <div className="flex items-center gap-2.5 text-xs font-bold">
                       <Warning className="w-5 h-5 text-amber-500 shrink-0" />
                       <span>
@@ -943,7 +957,7 @@ export default function SettingsClient({ user }: { user: UserType }) {
                 )}
 
                 {simulatedWarningDays === 3 && (
-                  <div className="flex items-center justify-between gap-3 p-4 rounded-xl bg-orange-500/10 border border-orange-500/30 text-orange-850 dark:text-orange-350 animate-in slide-in-from-top-4">
+                  <div className="flex items-center justify-between gap-3 p-4 rounded-xl bg-orange-500/10 border border-orange-500/30 text-orange-850 dark:text-orange-400 animate-in slide-in-from-top-4">
                     <div className="flex items-center gap-2.5 text-xs font-bold">
                       <Warning className="w-5 h-5 text-orange-500 shrink-0" />
                       <span>
@@ -962,7 +976,7 @@ export default function SettingsClient({ user }: { user: UserType }) {
                 )}
 
                 {simulatedWarningDays === 0 && (
-                  <div className="flex items-center justify-between gap-3 p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-800 dark:text-rose-350 animate-in slide-in-from-top-4">
+                  <div className="flex items-center justify-between gap-3 p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-800 dark:text-rose-400 animate-in slide-in-from-top-4">
                     <div className="flex items-center gap-2.5 text-xs font-bold">
                       <Warning className="w-5 h-5 text-rose-500 shrink-0" />
                       <span>
@@ -1022,7 +1036,7 @@ export default function SettingsClient({ user }: { user: UserType }) {
 
               {/* Usage stats grids */}
               <div className="md:col-span-2 space-y-4">
-                <h4 className="text-xs font-bold text-ink-700 dark:text-ink-300 uppercase tracking-wider">
+                <h4 className="text-xs font-bold text-ink-700 uppercase tracking-wider">
                   {lang === "id" ? "Statistik Penggunaan Fitur" : "Feature Usage Statistics"}
                 </h4>
                 
@@ -1040,9 +1054,9 @@ export default function SettingsClient({ user }: { user: UserType }) {
                     return (
                       <div key={i} className="p-4 bg-ink-50/50 dark:bg-ink-800/40 border border-ink-100 dark:border-ink-850 rounded-xl space-y-2">
                         <div className="flex justify-between items-center">
-                          <span className="text-[10px] font-bold text-ink-550 dark:text-ink-400">{stat.label}</span>
-                          <span className="text-xs font-extrabold text-ink-800 dark:text-ink-200">
-                            {stat.current} <span className="text-[10px] text-ink-400 font-semibold">/ {stat.limit}</span>
+                          <span className="text-[10px] font-bold text-ink-650">{stat.label}</span>
+                          <span className="text-xs font-extrabold text-ink-800">
+                            {stat.current} <span className="text-[10px] text-ink-500 font-semibold">/ {stat.limit}</span>
                           </span>
                         </div>
                         {isPercentage && (
@@ -1064,7 +1078,7 @@ export default function SettingsClient({ user }: { user: UserType }) {
                   </button>
                   <button
                     onClick={() => triggerProLock("Email Delivery Service")}
-                    className="px-4 py-2 text-xs font-bold text-brand-600 hover:bg-brand-50/50 rounded-xl border border-brand-200/60 transition-all flex items-center gap-1.5"
+                    className="px-4 py-2 text-xs font-bold text-brand-600 hover:bg-brand-50/50 rounded-xl border border-brand-200/60 transition-all flex items-center gap-1.5 cursor-pointer"
                   >
                     <Lock className="w-3.5 h-3.5" />
                     <span>{lang === "id" ? "Uji Fitur PRO" : "Test PRO Feature Lock"}</span>
@@ -1077,10 +1091,10 @@ export default function SettingsClient({ user }: { user: UserType }) {
             <div className="border-t border-ink-100 dark:border-ink-800 pt-6 space-y-4">
               <div className="flex justify-between items-center">
                 <div>
-                  <h4 className="text-xs font-bold text-ink-700 dark:text-ink-300 uppercase tracking-wider">
+                  <h4 className="text-xs font-bold text-ink-700 uppercase tracking-wider">
                     {lang === "id" ? "Fitur Eksklusif PRO & BUSINESS" : "Exclusive PRO & BUSINESS Features"}
                   </h4>
-                  <p className="text-[10px] text-ink-400 dark:text-ink-500 mt-0.5">
+                  <p className="text-[10px] text-ink-600 mt-0.5">
                     {lang === "id" ? "Klik fitur untuk melihat detail lisensi dan membuka batasan." : "Click on features to view licensing options and trigger the lock preview."}
                   </p>
                 </div>
@@ -1096,15 +1110,15 @@ export default function SettingsClient({ user }: { user: UserType }) {
                   <div
                     key={idx}
                     onClick={() => triggerProLock(feat.name)}
-                    className="p-4 bg-white dark:bg-ink-900 border border-ink-150 dark:border-ink-800 rounded-xl flex items-center justify-between cursor-pointer hover:border-brand-500/50 hover:shadow-soft transition-all"
+                    className="p-4 card rounded-xl flex items-center justify-between cursor-pointer hover:border-brand-500/50 hover:shadow-soft transition-all"
                   >
                     <div className="space-y-0.5">
-                      <p className="text-xs font-extrabold text-ink-800 dark:text-ink-200">{feat.name}</p>
+                      <p className="text-xs font-extrabold text-ink-800">{feat.name}</p>
                       <span className="text-[9px] font-bold text-amber-600 bg-amber-50 dark:bg-amber-950/20 px-2 py-0.5 rounded border border-amber-100/30">
                         {feat.plan}
                       </span>
                     </div>
-                    <Lock className="w-4 h-4 text-ink-400 shrink-0" />
+                    <Lock className="w-4 h-4 text-ink-550 shrink-0" />
                   </div>
                 ))}
               </div>
@@ -1114,11 +1128,11 @@ export default function SettingsClient({ user }: { user: UserType }) {
             <div className="border-t border-ink-100 dark:border-ink-800 pt-6 space-y-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <h3 className="font-extrabold text-sm text-ink-900 dark:text-white flex items-center gap-2">
+                  <h3 className="font-extrabold text-sm text-ink-900 flex items-center gap-2">
                     <Receipt className="w-4.5 h-4.5 text-indigo-500" />
                     {lang === "id" ? "Informasi Tagihan & Metode Pembayaran" : "Billing Info & Payment Options"}
                   </h3>
-                  <p className="text-[10px] text-ink-450 dark:text-ink-500 mt-1 leading-normal">
+                  <p className="text-[10px] text-ink-600 mt-1 leading-normal">
                     {lang === "id" ? "Rincian metode pembayaran utama dan siklus penagihan reguler Anda." : "Overview of primary billing cycles and registered payment options."}
                   </p>
                 </div>
@@ -1130,7 +1144,7 @@ export default function SettingsClient({ user }: { user: UserType }) {
               {/* Payment Gateway Announcement */}
               <div className="p-4 border border-brand-100 bg-brand-50/15 rounded-xl text-brand-700 dark:text-brand-350 text-xs font-semibold leading-relaxed">
                 🚀 {lang === "id" ? "Integrasi Gateway Pembayaran (Payment Gateway Coming Soon)" : "Payment Gateway Integration (Coming Soon)"}
-                <p className="text-xxs text-ink-400 mt-1">
+                <p className="text-xxs text-ink-500 mt-1">
                   {lang === "id"
                     ? "Kami sedang mengintegrasikan Xendit & Midtrans untuk pembayaran otomatis. Saat ini Anda dapat memicu simulasi upgrade paket menggunakan menu Pembayaran Manual di atas."
                     : "We are actively integrating Stripe, Xendit, and Midtrans for automated transactions. In the meantime, you can simulate upgrades using manual payment proof verification."}
@@ -1139,20 +1153,20 @@ export default function SettingsClient({ user }: { user: UserType }) {
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 <div className="p-4 bg-ink-50/40 dark:bg-ink-800/25 border border-ink-100 dark:border-ink-850 rounded-xl space-y-1.5">
-                  <span className="text-[9px] font-bold text-ink-400 uppercase tracking-wider block">Siklus Penagihan</span>
-                  <span className="text-xs font-extrabold text-ink-800 dark:text-ink-200 block">
+                  <span className="text-[9px] font-bold text-ink-500 uppercase tracking-wider block">Siklus Penagihan</span>
+                  <span className="text-xs font-extrabold text-ink-800 block">
                     {user.plan === "FREE" ? "Tidak Ada" : "Bulanan (Billed Monthly)"}
                   </span>
                 </div>
                 <div className="p-4 bg-ink-50/40 dark:bg-ink-800/25 border border-ink-100 dark:border-ink-850 rounded-xl space-y-1.5">
-                  <span className="text-[9px] font-bold text-ink-400 uppercase tracking-wider block">Metode Pembayaran</span>
-                  <span className="text-xs font-extrabold text-ink-800 dark:text-ink-200 block">
+                  <span className="text-[9px] font-bold text-ink-500 uppercase tracking-wider block">Metode Pembayaran</span>
+                  <span className="text-xs font-extrabold text-ink-800 block">
                     {user.plan === "FREE" ? "None" : "QRIS / Bank Transfer"}
                   </span>
                 </div>
                 <div className="p-4 bg-ink-50/40 dark:bg-ink-800/25 border border-ink-100 dark:border-ink-850 rounded-xl space-y-1.5">
-                  <span className="text-[9px] font-bold text-ink-400 uppercase tracking-wider block">Nominal Tagihan</span>
-                  <span className="text-xs font-extrabold text-ink-800 dark:text-ink-200 block">
+                  <span className="text-[9px] font-bold text-ink-500 uppercase tracking-wider block">Nominal Tagihan</span>
+                  <span className="text-xs font-extrabold text-ink-800 block">
                     {user.plan === "FREE" ? "Rp0" : "Rp149.000 / month"}
                   </span>
                 </div>
@@ -1161,14 +1175,14 @@ export default function SettingsClient({ user }: { user: UserType }) {
 
             {/* Subscription Invoice History table */}
             <div className="border-t border-ink-100 dark:border-ink-800 pt-6 space-y-4">
-              <h4 className="text-xs font-bold text-ink-700 dark:text-ink-300 uppercase tracking-wider">
+              <h4 className="text-xs font-bold text-ink-700 uppercase tracking-wider">
                 {lang === "id" ? "Riwayat Transaksi & Invoice" : "Transaction & Invoice History"}
               </h4>
               
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="border-b border-ink-100 dark:border-ink-800 text-ink-400 font-bold uppercase tracking-wider text-[10px]">
+                    <tr className="border-b border-ink-100 dark:border-ink-800 text-ink-500 font-bold uppercase tracking-wider text-[10px]">
                       <th className="py-2.5">Invoice ID</th>
                       <th className="py-2.5">Plan</th>
                       <th className="py-2.5">Started</th>
@@ -1179,7 +1193,7 @@ export default function SettingsClient({ user }: { user: UserType }) {
                   </thead>
                   <tbody>
                     {DUMMY_HISTORY.map((row, i) => (
-                      <tr key={i} className="border-b border-ink-50 dark:border-ink-850 text-ink-700 dark:text-ink-300">
+                      <tr key={i} className="border-b border-ink-50 dark:border-ink-850 text-ink-700">
                         <td className="py-3 font-mono font-bold text-brand-600">{row.id}</td>
                         <td className="py-3 font-bold">{row.plan}</td>
                         <td className="py-3">{row.started}</td>
@@ -1203,21 +1217,21 @@ export default function SettingsClient({ user }: { user: UserType }) {
           </section>
 
           {/* Section 6: Advanced */}
-          <section id="advanced" className="bg-white dark:bg-ink-900 border border-ink-150 dark:border-ink-800 shadow-sm rounded-2xl p-6 md:p-8 space-y-6">
+          <section id="advanced" className="card shadow-sm p-6 md:p-8 space-y-6">
             <div className="flex items-start gap-4 pb-4 border-b border-ink-100 dark:border-ink-800">
               <div className="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-900/30 flex items-center justify-center text-brand-500 shrink-0">
                 <Sliders className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-lg font-extrabold text-ink-900 dark:text-white">{t.advancedTitle}</h2>
-                <p className="text-xs text-ink-400 dark:text-ink-500 mt-0.5">{t.advancedDesc}</p>
+                <h2 className="text-lg font-extrabold text-ink-900">{t.advancedTitle}</h2>
+                <p className="text-xs text-ink-600 mt-0.5">{t.advancedDesc}</p>
               </div>
             </div>
 
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 border border-ink-200 dark:border-ink-800 bg-ink-50/30 dark:bg-ink-800/10 rounded-xl">
               <div className="max-w-md">
-                <span className="text-xs font-bold text-ink-800 dark:text-ink-200 block">{lang === "id" ? "Kembalikan Preferensi Default" : "Restore Default Preferences"}</span>
-                <p className="text-xxs text-ink-400 dark:text-ink-500 mt-1 leading-relaxed">
+                <span className="text-xs font-bold text-ink-800 block">{lang === "id" ? "Kembalikan Preferensi Default" : "Restore Default Preferences"}</span>
+                <p className="text-xxs text-ink-600 mt-1 leading-relaxed">
                   {lang === "id" 
                     ? "Tindakan ini akan mengatur ulang tema, bahasa, format tanggal, dan zona waktu ke setelan awal." 
                     : "This action will reset theme, language, date format, and timezone back to defaults."}

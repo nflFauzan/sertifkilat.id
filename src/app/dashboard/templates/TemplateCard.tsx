@@ -109,9 +109,9 @@ export function TemplateCard({
 
   return (
     <div style={{
-      background: "#fff",
+      background: "var(--bg-card)",
       borderRadius: 16,
-      border: `2px solid ${isActive ? "#2563eb" : isSelected ? "#3b82f6" : "#e2e8f0"}`,
+      border: `2px solid ${isActive ? "#2563eb" : isSelected ? "#3b82f6" : "var(--ink-150)"}`,
       overflow: "hidden",
       display: "flex",
       flexDirection: "column",
@@ -140,7 +140,7 @@ export function TemplateCard({
       }}
     >
       {/* Preview image */}
-      <div style={{ position: "relative", aspectRatio: "1122/794", background: "#f8fafc", overflow: "hidden" }}>
+      <div style={{ position: "relative", aspectRatio: "1122/794", background: "var(--ink-50)", overflow: "hidden" }}>
         <Image
           src={template.fileUrl}
           alt={template.name}
@@ -213,8 +213,8 @@ export function TemplateCard({
             width: 30,
             height: 30,
             borderRadius: "50%",
-            background: "rgba(255, 255, 255, 0.95)",
-            border: "1px solid #e2e8f0",
+            background: "var(--bg-card)",
+            border: "1px solid var(--ink-200)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -244,7 +244,7 @@ export function TemplateCard({
             style={{
               position: "absolute", bottom: 10, right: 10, zIndex: 10,
               width: 30, height: 30, borderRadius: 8,
-              background: "rgba(255,255,255,0.9)", border: "1px solid #e2e8f0",
+              background: "var(--bg-card)", border: "1px solid var(--ink-200)",
               cursor: "pointer", color: "#ef4444",
               display: "flex", alignItems: "center", justifyContent: "center",
               opacity: 0, transition: "opacity 0.2s",
@@ -259,8 +259,8 @@ export function TemplateCard({
       {/* Card body */}
       <div style={{ padding: "14px 16px 16px", display: "flex", flexDirection: "column", gap: 8, flex: 1 }}>
         <div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: "#0f172a" }}>{template.name}</div>
-          <div style={{ fontSize: 11, color: "#64748b", marginTop: 3 }}>{localizedDesc}</div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "var(--ink-900)" }}>{template.name}</div>
+          <div style={{ fontSize: 11, color: "var(--ink-500)", marginTop: 3 }}>{localizedDesc}</div>
         </div>
 
         {/* Meta badges (Category, Dimensions, SVG format) */}
@@ -277,7 +277,7 @@ export function TemplateCard({
           )}
         </div>
 
-        <div style={{ fontSize: 10, color: "#94a3b8", display: "flex", alignItems: "center", gap: 4 }}>
+        <div style={{ fontSize: 10, color: "var(--ink-400)", display: "flex", alignItems: "center", gap: 4 }}>
           <Star size={10} />
           {localizedUsage}
         </div>
@@ -287,9 +287,9 @@ export function TemplateCard({
           <button
             onClick={(e) => { e.stopPropagation(); onPreview(template); }}
             style={{
-              flex: 0, padding: "7px 12px", borderRadius: 9, border: "1px solid #e2e8f0",
-              background: "#f8fafc", fontSize: 11, fontWeight: 600, cursor: "pointer",
-              color: "#475569", display: "flex", alignItems: "center", gap: 5,
+              flex: 0, padding: "7px 12px", borderRadius: 9, border: "1px solid var(--ink-200)",
+              background: "var(--ink-50)", fontSize: 11, fontWeight: 600, cursor: "pointer",
+              color: "var(--ink-700)", display: "flex", alignItems: "center", gap: 5,
             }}
           >
             <Eye size={13} /> {lang === "id" ? "Preview" : "Preview"}
@@ -325,8 +325,8 @@ export function TemplateCard({
 
 const tagStyle: React.CSSProperties = {
   display: "inline-block", padding: "2px 8px", borderRadius: 20,
-  fontSize: 10, fontWeight: 600, background: "#f1f5f9",
-  color: "#475569", border: "1px solid #e2e8f0",
+  fontSize: 10, fontWeight: 600, background: "var(--ink-100)",
+  color: "var(--ink-700)", border: "1px solid var(--ink-200)",
 };
 
 export function PremiumCard() {

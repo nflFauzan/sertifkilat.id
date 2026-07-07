@@ -85,7 +85,7 @@ export default function PricingSection() {
   ];
 
   return (
-    <section id="harga" className="bg-gradient-to-b from-white to-blue-50/20 dark:from-ink-950 dark:to-ink-900 border-t border-ink-150 dark:border-ink-850 relative overflow-hidden">
+    <section id="harga" className="bg-gradient-to-b from-white to-blue-50/20 dark:from-ink-950 dark:to-ink-950 border-t border-ink-150 dark:border-ink-850 relative overflow-hidden">
       {/* Upgrade Checkout Modal */}
       <UpgradeModal
         isOpen={showUpgradeModal}
@@ -190,8 +190,8 @@ export default function PricingSection() {
                 key={plan.id}
                 className={`rounded-3xl p-8 flex flex-col relative transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl ${
                   isHighlighted
-                    ? "bg-white dark:bg-ink-900 border-2 border-brand-500 dark:border-brand-500 shadow-xl scale-[1.03] md:scale-[1.05] z-10"
-                    : "bg-white dark:bg-ink-900 border border-ink-150 dark:border-ink-800 shadow-sm"
+                    ? "bg-bg-card border-2 border-brand-500 dark:border-brand-500 shadow-xl scale-[1.03] md:scale-[1.05] z-10"
+                    : "card shadow-sm"
                 }`}
               >
                 {isHighlighted && (

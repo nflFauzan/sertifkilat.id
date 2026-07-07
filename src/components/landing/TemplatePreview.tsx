@@ -1,69 +1,48 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
+import { Cards, NotePencil, Lightning, ArrowRight } from "@phosphor-icons/react";
 import Link from "next/link";
-import { Sparkle, ArrowRight, Palette } from "@phosphor-icons/react";
 import { useTranslation } from "@/lib/hooks/useTranslation";
 
 export default function TemplatePreview() {
   const { lang } = useTranslation();
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
 
-  const templates = [
+  const features = [
     {
-      id: "navy-gold",
-      name: lang === "id" ? "Elegan Navy Gold" : "Elegant Navy Gold",
-      src: "/templates/elegan-navy-gold.svg",
-      badge: "FREE",
-      badgeColor: "bg-ink-100 text-ink-700 border-ink-200",
-      description: lang === "id" ? "Desain klasik bernuansa emas dan biru gelap untuk seminar formal." : "Classic gold and deep blue design suited for formal seminars.",
+      id: "pro-templates",
+      icon: Cards,
+      title: lang === "id" ? "Professional Templates" : "Professional Templates",
+      desc: lang === "id" 
+        ? "Template sertifikat profesional siap pakai untuk: Webinar, Seminar, Workshop, Pelatihan, Sertifikasi."
+        : "Professional certificate templates ready to use for: Webinars, Seminars, Workshops, Trainings, Certifications.",
+      color: "from-blue-500/10 to-indigo-500/10 dark:from-blue-500/5 dark:to-indigo-500/5",
+      iconColor: "text-brand-500 dark:text-brand-400 bg-brand-50 dark:bg-brand-950/40 border-brand-100 dark:border-brand-900",
     },
     {
-      id: "modern-appreciation",
-      name: lang === "id" ? "Modern Appreciation" : "Modern Appreciation",
-      src: "/templates/modern-appreciation.svg",
-      badge: "FREE",
-      badgeColor: "bg-ink-100 text-ink-700 border-ink-200",
-      description: lang === "id" ? "Desain minimalis modern dengan warna bersih untuk pelatihan kerja." : "Modern minimalist layout with clean styles for professional training.",
+      id: "easy-editor",
+      icon: NotePencil,
+      title: lang === "id" ? "Easy Certificate Editor" : "Easy Certificate Editor",
+      desc: lang === "id" 
+        ? "Editor langsung di browser. Dapat mengubah: Nama, QR Code, Tanda tangan, Tanggal, Elemen lainnya tanpa aplikasi desain."
+        : "Editor directly in your browser. Can modify: Name, QR Code, Signature, Date, and other elements without design software.",
+      color: "from-emerald-500/10 to-teal-500/10 dark:from-emerald-500/5 dark:to-teal-500/5",
+      iconColor: "text-emerald-500 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-100 dark:border-emerald-900",
     },
     {
-      id: "luxury-achievement",
-      name: lang === "id" ? "Luxury Achievement" : "Luxury Achievement",
-      src: "/templates/luxury-achievement.svg",
-      badge: "PRO",
-      badgeColor: "bg-amber-100 text-amber-800 border-amber-200",
-      description: lang === "id" ? "Desain mewah berornamen khusus untuk penghargaan tinggi." : "Luxurious design with intricate border patterns for prestigious awards.",
-    },
-    {
-      id: "elegant-gold",
-      name: lang === "id" ? "Elegant Gold Premium" : "Elegant Gold Premium",
-      src: "/templates/elegant-gold.svg",
-      badge: "PRO",
-      badgeColor: "bg-amber-100 text-amber-800 border-amber-200",
-      description: lang === "id" ? "Desain bersertifikat emas mengkilap untuk kelulusan lembaga." : "Shining gold layout tailored for institutional academic graduations.",
-    },
-    {
-      id: "sertifikat-formal",
-      name: lang === "id" ? "Sertifikat Formal Biru" : "Formal Corporate Blue",
-      src: "/templates/sertifikat1.svg",
-      badge: "BUSINESS",
-      badgeColor: "bg-brand-100 text-brand-800 border-brand-200",
-      description: lang === "id" ? "Desain korporat resmi dengan ruang tanda tangan ganda." : "Official corporate structure supporting multiple verification signers.",
-    },
-    {
-      id: "sertifikat-modern-dua",
-      name: lang === "id" ? "Sertifikat Minimalis Merah" : "Minimalist Coral Red",
-      src: "/templates/sertifikat2.svg",
-      badge: "BUSINESS",
-      badgeColor: "bg-brand-100 text-brand-800 border-brand-200",
-      description: lang === "id" ? "Desain cerah modern untuk kompetisi kreatif dan hackathon." : "Vibrant template best for creative design hackathons & workshops.",
+      id: "instant-generation",
+      icon: Lightning,
+      title: lang === "id" ? "Instant Certificate Generation" : "Instant Certificate Generation",
+      desc: lang === "id" 
+        ? "Generate ratusan sertifikat dalam hitungan detik. Ekspor ke format: PNG, PDF, ZIP."
+        : "Generate hundreds of certificates in seconds. Export to format: PNG, PDF, ZIP.",
+      color: "from-purple-500/10 to-pink-500/10 dark:from-purple-500/5 dark:to-pink-500/5",
+      iconColor: "text-purple-500 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/40 border-purple-100 dark:border-purple-900",
     },
   ];
 
   return (
-    <section id="templates" className="bg-gradient-to-b from-white to-blue-50/10 dark:from-ink-950 dark:to-ink-900 py-24 border-t border-ink-100 dark:border-ink-800 relative overflow-hidden">
-      {/* Radial blur glows */}
+    <section id="features-highlights" className="bg-gradient-to-b from-white to-blue-50/10 dark:from-ink-950 dark:to-ink-950 py-24 border-t border-ink-150 dark:border-ink-850 relative overflow-hidden">
+      {/* Radial blur background glows */}
       <div className="absolute top-1/4 right-0 w-96 h-96 bg-brand-500/5 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-1/4 left-0 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
 
@@ -71,66 +50,54 @@ export default function TemplatePreview() {
         
         {/* Section Header */}
         <div className="text-center max-w-xl mx-auto mb-16 space-y-4">
-          <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-brand-50 dark:bg-brand-950/30 border border-brand-100 dark:border-brand-900 text-brand-700 dark:text-brand-400 text-xxs font-bold uppercase tracking-wider">
-            <Palette className="w-3.5 h-3.5" />
-            {lang === "id" ? "Pustaka Desain" : "Design Library"}
+          <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-brand-50 dark:bg-brand-950/45 border border-brand-100 dark:border-brand-900 text-brand-700 dark:text-brand-400 text-xs font-extrabold tracking-wide uppercase shadow-sm">
+            {lang === "id" ? "Keunggulan Sistem" : "Core Capabilities"}
           </div>
           <h2 className="font-sans text-3xl sm:text-4xl font-extrabold text-ink-900 dark:text-white tracking-tight">
-            {lang === "id" ? "Pilih Template Desain Profesional" : "Choose From Professional Layouts"}
+            {lang === "id" ? "Fitur Utama SertifKilat.id" : "Why Choose SertifKilat.id"}
           </h2>
-          <p className="text-ink-500 dark:text-ink-400 text-sm sm:text-base leading-relaxed">
+          <p className="text-ink-700 dark:text-ink-300 text-sm sm:text-base leading-relaxed font-medium">
             {lang === "id" 
-              ? "Sesuaikan tata letak dengan mudah langsung dari browser Anda tanpa aplikasi desain luar."
-              : "Customize coordinates, sizes, fonts and QR codes instantly using our built-in canvas editor."}
+              ? "Platform modern yang dirancang untuk mempercepat pembuatan, validasi, dan pendistribusian sertifikat Anda."
+              : "A production-grade engine built to speed up the drafting, approval and layout workflows."}
           </p>
         </div>
 
-        {/* Templates Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {templates.map((tpl) => {
-            const isHovered = hoveredId === tpl.id;
+        {/* Feature Cards Grid (3 Cards) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {features.map((feat) => {
+            const Icon = feat.icon;
             return (
               <div
-                key={tpl.id}
-                onMouseEnter={() => setHoveredId(tpl.id)}
-                onMouseLeave={() => setHoveredId(null)}
-                className="bg-white dark:bg-ink-900 border border-ink-150 dark:border-ink-800 rounded-3xl p-5 hover:shadow-xl transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1 relative"
+                key={feat.id}
+                className="card rounded-3xl p-8 hover:shadow-xl transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1 relative backdrop-blur-md"
               >
-                {/* Image Container with Hover Zoom */}
-                <div className="aspect-[1.41/1] w-full rounded-2xl bg-ink-50 dark:bg-ink-950 relative overflow-hidden border border-ink-100 dark:border-ink-800 shadow-inner">
-                  <Image
-                    src={tpl.src}
-                    alt={tpl.name}
-                    fill
-                    className="object-cover transition-transform duration-500 ease-out"
-                    style={{
-                      transform: isHovered ? "scale(1.08)" : "scale(1.01)",
-                    }}
-                  />
-                  <div className="absolute top-3 left-3">
-                    <span className={`px-2.5 py-1 text-[9px] font-extrabold uppercase rounded-full border tracking-widest ${tpl.badgeColor} shadow-sm`}>
-                      {tpl.badge}
-                    </span>
+                {/* Visual Glass Glow Background */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${feat.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl -z-10`} />
+
+                <div className="space-y-6">
+                  {/* Large Icon Container */}
+                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 border ${feat.iconColor} group-hover:scale-110 transition-transform duration-300 shadow-sm`}>
+                    <Icon size={28} weight="bold" />
+                  </div>
+
+                  <div className="space-y-3">
+                    <h3 className="font-extrabold text-lg text-ink-900 dark:text-white transition-colors group-hover:text-brand-500 dark:group-hover:text-brand-400">
+                      {feat.title}
+                    </h3>
+                    <p className="text-sm text-ink-700 dark:text-ink-300 leading-relaxed font-medium">
+                      {feat.desc}
+                    </p>
                   </div>
                 </div>
 
-                {/* Info and button */}
-                <div className="space-y-4 mt-5">
-                  <div className="space-y-1">
-                    <h3 className="font-extrabold text-sm text-ink-900 dark:text-white flex items-center gap-1.5 group-hover:text-brand-500 transition-colors">
-                      {tpl.name}
-                    </h3>
-                    <p className="text-[11px] text-ink-450 dark:text-ink-550 leading-relaxed min-h-[32px]">
-                      {tpl.description}
-                    </p>
-                  </div>
-
+                <div className="mt-8 pt-4 border-t border-ink-100 dark:border-ink-850/50">
                   <Link
-                    href="/dashboard/templates"
-                    className="w-full py-2.5 rounded-xl border border-ink-150 dark:border-ink-750 text-ink-700 dark:text-ink-200 hover:text-white hover:bg-brand-500 hover:border-brand-500 transition-all font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm active:scale-95 duration-200"
+                    href="/auth/register"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 transition-colors group-hover:translate-x-1 duration-200"
                   >
-                    <span>{lang === "id" ? "Gunakan Template" : "Use Template"}</span>
-                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                    <span>{lang === "id" ? "Mulai Sekarang" : "Get Started"}</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                 </div>
               </div>

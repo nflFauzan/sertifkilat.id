@@ -63,7 +63,7 @@ export default function VerifyClient({
         </div>
 
         {/* Verification Card */}
-        <div className="card overflow-hidden shadow-soft bg-white">
+        <div className="card overflow-hidden shadow-soft">
           {/* Status Bar */}
           <div
             className={`px-6 py-5 flex items-center gap-3 transition-colors ${
@@ -103,8 +103,8 @@ export default function VerifyClient({
                   </p>
                 </div>
                 <div>
-                  <span className="bg-emerald-50 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1.5 shadow-sm border border-emerald-200">
-                    <CheckCircle className="w-4 h-4 text-emerald-600" weight="fill" />
+                  <span className="badge-green border border-emerald-200 dark:border-emerald-900/30 shadow-sm">
+                    <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" weight="fill" />
                     VALID
                   </span>
                 </div>
@@ -160,17 +160,17 @@ export default function VerifyClient({
               </div>
 
               {/* Trust Stamp Badge */}
-              <div className="flex flex-col items-center justify-center gap-2 rounded-xl bg-emerald-50 border border-emerald-100 py-3.5 px-4">
+              <div className="flex flex-col items-center justify-center gap-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900/30 py-3.5 px-4">
                 <div className="flex items-center gap-2">
-                  <CheckCircle weight="fill" className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                  <span className="text-xs font-semibold text-emerald-700 text-center leading-normal">
+                  <CheckCircle weight="fill" className="w-4 h-4 text-emerald-500 dark:text-emerald-400 flex-shrink-0" />
+                  <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-300 text-center leading-normal">
                     {lang === "id" 
                       ? "Dokumen ini sah dan terdaftar secara resmi di SertifKilat.id." 
                       : "This document is valid and officially registered with SertifKilat.id."}
                   </span>
                 </div>
                 {isFromDatabase && (
-                  <span className="text-[10px] text-emerald-600 font-medium">
+                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
                     {lang === "id" ? "(Diverifikasi real-time dari database)" : "(Verified real-time from database)"}
                   </span>
                 )}
@@ -178,8 +178,8 @@ export default function VerifyClient({
             </div>
           ) : (
             <div className="p-8 text-center space-y-5">
-              <div className="w-16 h-16 rounded-full bg-rose-100 flex items-center justify-center mx-auto">
-                <XCircle className="w-8 h-8 text-rose-500" weight="fill" />
+              <div className="w-16 h-16 rounded-full bg-rose-100 dark:bg-rose-950/30 flex items-center justify-center mx-auto border border-rose-200 dark:border-rose-900/30">
+                <XCircle className="w-8 h-8 text-rose-500 dark:text-rose-400" weight="fill" />
               </div>
               <div className="space-y-2">
                 <p className="text-sm font-semibold text-ink-800">

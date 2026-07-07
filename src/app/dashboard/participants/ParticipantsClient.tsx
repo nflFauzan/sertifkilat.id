@@ -32,7 +32,7 @@ export default function ParticipantsClient({
       </div>
 
       {participants.length === 0 ? (
-        <div className="card p-12 text-center max-w-xl mx-auto border-2 border-dashed border-ink-150 rounded-2xl bg-white">
+        <div className="card p-12 text-center max-w-xl mx-auto border-2 border-dashed border-ink-150 rounded-2xl">
           <div className="w-14 h-14 rounded-2xl bg-brand-50 flex items-center justify-center mx-auto mb-4 shadow-sm">
             <Users className="w-7 h-7 text-brand-500" weight="fill" />
           </div>
@@ -49,7 +49,7 @@ export default function ParticipantsClient({
           </Link>
         </div>
       ) : (
-        <div className="card overflow-hidden shadow-md border border-ink-150 rounded-2xl bg-white">
+        <div className="card overflow-hidden shadow-md border border-ink-150 rounded-2xl">
           <div className="overflow-x-auto max-h-[600px] scrollbar-thin">
             <table className="w-full text-sm border-collapse">
               <thead>
@@ -68,7 +68,7 @@ export default function ParticipantsClient({
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-ink-100 bg-white">
+              <tbody className="divide-y divide-ink-100 bg-bg-card">
                 {participants.map((p) => (
                   <tr key={p.id} className="hover:bg-brand-50/10 transition-colors duration-150">
                     <td className="px-5 py-4 font-semibold text-ink-900">

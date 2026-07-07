@@ -42,7 +42,7 @@ export default function FaqSection() {
   ];
 
   return (
-    <section id="faq" className="bg-gradient-to-b from-blue-50/10 to-white dark:from-ink-900 dark:to-ink-950 py-24 border-t border-ink-100 dark:border-ink-800 relative overflow-hidden">
+    <section id="faq" className="bg-gradient-to-b from-blue-50/10 to-white dark:from-ink-950 dark:to-ink-950 py-24 border-t border-ink-100 dark:border-ink-800 relative overflow-hidden">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-brand-500/5 rounded-full blur-3xl pointer-events-none -z-10" />
 
       <div className="max-w-[800px] mx-auto px-5 sm:px-8">
@@ -70,7 +70,7 @@ export default function FaqSection() {
             return (
               <div
                 key={idx}
-                className="bg-white dark:bg-ink-900 border border-ink-150 dark:border-ink-800 rounded-2xl overflow-hidden transition-all duration-300 shadow-sm"
+                className="card rounded-2xl overflow-hidden transition-all duration-300 shadow-sm"
               >
                 <button
                   onClick={() => setOpenIndex(isOpen ? null : idx)}

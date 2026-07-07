@@ -58,28 +58,28 @@ export default function AnalyticsClient({
       label: { id: "Total Event", en: "Total Events" },
       value: stats.totalEvents,
       icon: CalendarBlank,
-      className: "bg-gradient-to-br from-indigo-50 to-white border-indigo-100",
+      className: "bg-gradient-to-br from-indigo-50 to-bg-card dark:from-indigo-950/20 dark:to-bg-card border-indigo-100 dark:border-indigo-900/30",
       iconClassName: "bg-indigo-500 text-white shadow-glow",
     },
     {
       label: { id: "Total Peserta", en: "Total Recipients" },
       value: stats.totalParticipants,
       icon: Users,
-      className: "bg-gradient-to-br from-brand-50 to-white border-brand-100",
+      className: "bg-gradient-to-br from-brand-50 to-bg-card dark:from-brand-950/20 dark:to-bg-card border-brand-100 dark:border-brand-900/30",
       iconClassName: "bg-brand-500 text-white shadow-glow",
     },
     {
       label: { id: "Sertifikat Digenerate", en: "Generated Certificates" },
       value: stats.totalCertificates,
       icon: Certificate,
-      className: "bg-gradient-to-br from-emerald-50 to-white border-emerald-100",
+      className: "bg-gradient-to-br from-emerald-50 to-bg-card dark:from-emerald-950/20 dark:to-bg-card border-emerald-100 dark:border-emerald-900/30",
       iconClassName: "bg-emerald-500 text-white shadow-glow",
     },
     {
       label: { id: "Total Verifikasi Publik", en: "Total Public Verifications" },
       value: stats.totalVerifications,
       icon: QrCode,
-      className: "bg-gradient-to-br from-amber-50 to-white border-amber-100",
+      className: "bg-gradient-to-br from-amber-50 to-bg-card dark:from-amber-950/20 dark:to-bg-card border-amber-100 dark:border-amber-900/30",
       iconClassName: "bg-amber-500 text-white shadow-glow",
     },
   ];
@@ -194,7 +194,7 @@ export default function AnalyticsClient({
                 {recentVerifications.map((v) => (
                   <div
                     key={v.id}
-                    className="p-3 bg-ink-50 rounded-xl border border-ink-100 flex items-start justify-between gap-3 hover:border-brand-300 transition-all duration-200"
+                    className="p-3 bg-ink-50/50 dark:bg-ink-900/30 rounded-xl border border-ink-100 dark:border-ink-800 flex items-start justify-between gap-3 hover:border-brand-300 transition-all duration-200"
                   >
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5">

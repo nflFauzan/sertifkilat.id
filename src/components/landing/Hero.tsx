@@ -30,7 +30,7 @@ export default function Hero({ stats }: HeroProps) {
     : "5+";
 
   return (
-    <section className="relative overflow-hidden min-h-[95vh] flex items-center bg-gradient-to-b from-blue-50/20 via-white to-white dark:from-ink-950 dark:via-ink-950 dark:to-ink-900 py-16 lg:py-24">
+    <section className="relative overflow-hidden min-h-[95vh] flex items-center bg-gradient-to-b from-blue-50/20 via-white to-white dark:from-ink-950 dark:via-ink-950 dark:to-ink-950 py-16 lg:py-24">
       
       {/* ── Background Glows & Mesh Overlay ── */}
       <div className="absolute top-0 inset-x-0 h-[500px] bg-gradient-to-b from-brand-500/5 via-transparent to-transparent pointer-events-none -z-10" />
@@ -67,7 +67,7 @@ export default function Hero({ stats }: HeroProps) {
             </h1>
             
             {/* Description */}
-            <p className="text-base sm:text-lg text-ink-550 dark:text-ink-400 max-w-lg leading-relaxed font-medium">
+            <p className="text-base sm:text-lg text-ink-700 dark:text-ink-300 max-w-lg leading-relaxed font-medium">
               {t("landing.hero.subtitle")}
             </p>
           </div>
@@ -84,7 +84,7 @@ export default function Hero({ stats }: HeroProps) {
 
             <a
               href="#cara-kerja"
-              className="px-6 py-4 rounded-xl border border-ink-150 dark:border-ink-800 text-ink-700 dark:text-ink-300 font-bold text-sm bg-white dark:bg-ink-900 hover:bg-ink-50 dark:hover:bg-ink-850 hover:border-ink-200 dark:hover:border-ink-750 transition-all hover:-translate-y-1 active:translate-y-0 shadow-sm"
+              className="px-6 py-4 rounded-xl border border-ink-150 text-ink-700 dark:text-ink-300 font-bold text-sm bg-bg-card hover:bg-ink-50 dark:hover:bg-ink-850 hover:border-ink-200 transition-all hover:-translate-y-1 active:translate-y-0 shadow-sm"
             >
               {lang === "id" ? "Pelajari Fitur" : "Explore Features"}
             </a>
@@ -92,15 +92,15 @@ export default function Hero({ stats }: HeroProps) {
 
           {/* Micro stats banner */}
           <div className="grid grid-cols-3 gap-4 w-full max-w-md pt-4">
-            <div className="bg-white/60 dark:bg-ink-900/60 backdrop-blur-md rounded-2xl p-4 border border-white/80 dark:border-ink-850 shadow-sm flex flex-col items-center lg:items-start justify-center transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 group">
+            <div className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-md rounded-2xl p-4 border border-white/80 dark:border-ink-850 shadow-sm flex flex-col items-center lg:items-start justify-center transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 group">
               <span className="text-2xl font-black text-brand-600 dark:text-brand-400 tracking-tight group-hover:scale-105 transition-transform">{formattedUsers}</span>
               <span className="text-[10px] font-bold text-ink-400 mt-1 uppercase tracking-wider text-center lg:text-left">{t("landing.hero.statUsers")}</span>
             </div>
-            <div className="bg-white/60 dark:bg-ink-900/60 backdrop-blur-md rounded-2xl p-4 border border-white/80 dark:border-ink-850 shadow-sm flex flex-col items-center lg:items-start justify-center transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 group">
+            <div className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-md rounded-2xl p-4 border border-white/80 dark:border-ink-850 shadow-sm flex flex-col items-center lg:items-start justify-center transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 group">
               <span className="text-2xl font-black text-indigo-600 dark:text-indigo-400 tracking-tight group-hover:scale-105 transition-transform">{formattedCerts}</span>
               <span className="text-[10px] font-bold text-ink-400 mt-1 uppercase tracking-wider text-center lg:text-left">{t("landing.hero.statCerts")}</span>
             </div>
-            <div className="bg-white/60 dark:bg-ink-900/60 backdrop-blur-md rounded-2xl p-4 border border-white/80 dark:border-ink-850 shadow-sm flex flex-col items-center lg:items-start justify-center transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 group">
+            <div className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-md rounded-2xl p-4 border border-white/80 dark:border-ink-850 shadow-sm flex flex-col items-center lg:items-start justify-center transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 group">
               <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight group-hover:scale-105 transition-transform">99.9%</span>
               <span className="text-[10px] font-bold text-ink-400 mt-1 uppercase tracking-wider text-center lg:text-left">{t("common.success")}</span>
             </div>
@@ -145,15 +145,15 @@ export default function Hero({ stats }: HeroProps) {
             </div>
 
             {/* Floating Glassmorphic Badges */}
-            <div className="flex items-center gap-1.5 bg-white/85 dark:bg-ink-900/85 backdrop-blur-md border border-white/50 dark:border-ink-800 shadow-xl px-4 py-2.5 rounded-full absolute -top-8 -left-6 z-20 hover:scale-105 transition-transform text-[11px] font-extrabold text-ink-850 dark:text-white">
+            <div className="flex items-center gap-1.5 bg-white/85 dark:bg-ink-950/85 backdrop-blur-md border border-white/50 dark:border-ink-800 shadow-xl px-4 py-2.5 rounded-full absolute -top-8 -left-6 z-20 hover:scale-105 transition-transform text-[11px] font-extrabold text-ink-850 dark:text-white">
               <span className="text-emerald-500 font-black">✓</span> QR Verification
             </div>
 
-            <div className="flex items-center gap-1.5 bg-white/85 dark:bg-ink-900/85 backdrop-blur-md border border-white/50 dark:border-ink-800 shadow-xl px-4 py-2.5 rounded-full absolute -bottom-6 -right-4 z-20 hover:scale-105 transition-transform text-[11px] font-extrabold text-brand-500 dark:text-brand-400">
+            <div className="flex items-center gap-1.5 bg-white/85 dark:bg-ink-950/85 backdrop-blur-md border border-white/50 dark:border-ink-800 shadow-xl px-4 py-2.5 rounded-full absolute -bottom-6 -right-4 z-20 hover:scale-105 transition-transform text-[11px] font-extrabold text-brand-500 dark:text-brand-400">
               <Lightning className="w-3.5 h-3.5" weight="fill" /> Generate Certificate
             </div>
 
-            <div className="flex items-center gap-1.5 bg-white/85 dark:bg-ink-900/85 backdrop-blur-md border border-white/50 dark:border-ink-800 shadow-xl px-4 py-2.5 rounded-full absolute top-[60%] -left-12 z-20 hover:scale-105 transition-transform text-[11px] font-extrabold text-ink-850 dark:text-white">
+            <div className="flex items-center gap-1.5 bg-white/85 dark:bg-ink-950/85 backdrop-blur-md border border-white/50 dark:border-ink-800 shadow-xl px-4 py-2.5 rounded-full absolute top-[60%] -left-12 z-20 hover:scale-105 transition-transform text-[11px] font-extrabold text-ink-850 dark:text-white">
               <Trophy className="text-amber-500" weight="fill" /> Premium Templates
             </div>
           </motion.div>

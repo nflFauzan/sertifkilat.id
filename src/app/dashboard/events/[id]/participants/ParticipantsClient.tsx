@@ -534,7 +534,7 @@ export default function ParticipantsClient({
                       <th className="px-5 py-3.5 text-right" />
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-ink-100 bg-white">
+                  <tbody className="divide-y divide-ink-100 bg-bg-card">
                     {participants.map((p) => (
                       <tr key={p.id} className="hover:bg-brand-50/10 transition-colors duration-150">
                         <td className="px-5 py-3.5">
@@ -603,8 +603,8 @@ export default function ParticipantsClient({
 
       {/* Excel Import Dialog Modal */}
       {showUploadModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink-900/60 backdrop-blur-sm">
-          <div className="w-full max-w-2xl bg-white rounded-2xl shadow-soft overflow-hidden flex flex-col max-h-[85vh]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-2xl bg-bg-card border border-ink-150 rounded-2xl shadow-soft overflow-hidden flex flex-col max-h-[85vh]">
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-ink-100 flex-shrink-0">
               <h2 className="text-lg font-bold text-ink-900">
@@ -713,7 +713,7 @@ export default function ParticipantsClient({
                             <th className="px-4 py-2.5 text-left">Status</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-ink-50 bg-white">
+                        <tbody className="divide-y divide-ink-50 bg-bg-card">
                           {validatedData.map((d, idx) => (
                             <tr key={`excel-preview-${idx}-${d.email}`} className="hover:bg-ink-50">
                               <td className="px-4 py-2 font-medium text-ink-900">{d.name || <span className="text-rose-500 italic">{lang === "id" ? "[Kosong]" : "[Empty]"}</span>}</td>

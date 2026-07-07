@@ -73,7 +73,7 @@ export default function RegisterPage() {
         </div>
 
         {/* Card */}
-        <div className="card p-8 shadow-soft bg-white">
+        <div className="card p-8 shadow-soft">
           {error && (
             <div className="mb-5 flex items-start gap-3 rounded-xl bg-rose-50 border border-rose-200 px-4 py-3 text-sm text-rose-700">
               <Warning weight="fill" className="w-4 h-4 mt-0.5 shrink-0" />
@@ -188,7 +188,7 @@ export default function RegisterPage() {
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-ink-100" />
             </div>
-            <div className="relative flex justify-center text-xs text-ink-400 bg-white px-2">
+            <div className="relative flex justify-center text-xs text-ink-400 bg-bg-card px-2">
               {lang === "id" ? "Atau daftarkan dengan" : "Or register with"}
             </div>
           </div>

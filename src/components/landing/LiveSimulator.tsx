@@ -14,7 +14,7 @@ function CertPreview({ name, event }: { name: string; event: string }) {
   const displayEvent = event.trim() || (lang === "id" ? "[Nama Event]" : "[Event Name]");
 
   return (
-    <div className="card shadow-glow p-3 bg-white">
+    <div className="card shadow-glow p-3">
       <div
         className="bg-[#FBF8F0] rounded-xl relative overflow-hidden"
         style={{ aspectRatio: "1.41 / 1" }}
@@ -24,36 +24,36 @@ function CertPreview({ name, event }: { name: string; event: string }) {
         <div className="absolute top-5 right-5 w-3.5 h-3.5 border-t-2 border-r-2 border-[#C9A84C]/35 rounded-tr" />
         <div className="absolute bottom-5 left-5 w-3.5 h-3.5 border-b-2 border-l-2 border-[#C9A84C]/35 rounded-bl" />
         <div className="absolute bottom-5 right-5 w-3.5 h-3.5 border-b-2 border-r-2 border-[#C9A84C]/35 rounded-br" />
-
+ 
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-8">
-          <span className="text-[9px] tracking-[0.28em] text-ink-400 font-medium">
+          <span className="text-[9px] tracking-[0.28em] text-slate-400 font-medium">
             {lang === "id" ? "SERTIFIKAT PENGHARGAAN" : "CERTIFICATE OF APPRECIATION"}
           </span>
-          <p className="text-[10px] text-ink-400 mt-2">{lang === "id" ? "Diberikan kepada" : "Presented to"}</p>
+          <p className="text-[10px] text-slate-400 mt-2">{lang === "id" ? "Diberikan kepada" : "Presented to"}</p>
           <div 
             className={`mt-2 font-display text-xl sm:text-2xl transition-all duration-200 ${
-              isNameEmpty ? "text-ink-300 italic font-normal" : "text-ink-900"
+              isNameEmpty ? "text-slate-300 italic font-normal" : "text-slate-800"
             }`}
           >
             {displayName}
           </div>
           <div className="w-16 h-px bg-[#C9A84C]/45 my-2" />
-          <p className="text-[10px] text-ink-500 max-w-[200px] leading-relaxed transition-all duration-200">
+          <p className="text-[10px] text-slate-500 max-w-[200px] leading-relaxed transition-all duration-200">
             {lang === "id" ? "atas partisipasinya dalam" : "for active participation in"}{" "}
-            <span className={`font-medium ${isEventEmpty ? "text-ink-300 italic" : "text-ink-900"}`}>
+            <span className={`font-medium ${isEventEmpty ? "text-slate-300 italic" : "text-slate-800"}`}>
               {displayEvent}
             </span>
           </p>
         </div>
-
-        <div className="absolute bottom-3 right-3 w-9 h-9 rounded-lg bg-ink-900 flex items-center justify-center">
+ 
+        <div className="absolute bottom-3 right-3 w-9 h-9 rounded-lg bg-slate-800 flex items-center justify-center">
           <QrCode size={16} className="text-white" />
         </div>
         <div className="absolute bottom-4 left-5">
-          <div className="w-12 h-px bg-ink-400/50 mb-1" />
-          <div className="text-[8px] text-ink-400">{lang === "id" ? "Ketua Panitia" : "Committee Chairman"}</div>
+          <div className="w-12 h-px bg-slate-300 mb-1" />
+          <div className="text-[8px] text-slate-400">{lang === "id" ? "Ketua Panitia" : "Committee Chairman"}</div>
         </div>
-        <div className="absolute top-3 right-3 font-mono text-[7px] text-ink-300">
+        <div className="absolute top-3 right-3 font-mono text-[7px] text-slate-300">
           SK-2026-####
         </div>
       </div>

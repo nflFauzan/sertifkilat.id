@@ -443,13 +443,13 @@ export default function DashboardClient({
       {/* ── Sticky Top Action Bar ── */}
       <div className="sticky top-0 z-30 bg-ink-50/80 backdrop-blur-md border-b border-ink-100 -mx-4 md:-mx-6 lg:-mx-8 px-4 md:px-6 lg:px-8 py-3 flex items-center justify-between -mt-4 md:-mt-6 lg:-mt-8 mb-6 shadow-sm">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-extrabold text-ink-950 tracking-tight uppercase bg-white border border-ink-150 px-3 py-1.5 rounded-xl">
+          <span className="text-xs font-extrabold text-ink-950 tracking-tight uppercase bg-bg-card border border-ink-150 px-3 py-1.5 rounded-xl">
             {t("dashboard.sidebar.dashboard")}
           </span>
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 bg-white border border-ink-150 rounded-xl px-3 py-1.5 shadow-sm">
+          <div className="flex items-center gap-1.5 bg-bg-card border border-ink-150 rounded-xl px-3 py-1.5 shadow-sm">
             <Lightning weight="fill" className={`w-3.5 h-3.5 ${activePlan === "FREE" ? "text-ink-400" : activePlan === "PRO" ? "text-brand-500" : "text-amber-500"}`} />
             <span className="text-[10px] font-extrabold text-ink-800 tracking-wider">
               {activePlan} PLAN
@@ -461,7 +461,7 @@ export default function DashboardClient({
             <button
               ref={bellButtonRef}
               onClick={() => setNotificationOpen(!notificationOpen)}
-              className="w-9 h-9 rounded-xl border border-ink-150 bg-white hover:bg-ink-50 flex items-center justify-center text-ink-600 transition-all cursor-pointer relative shadow-sm"
+              className="w-9 h-9 rounded-xl border border-ink-150 bg-bg-card hover:bg-ink-50 flex items-center justify-center text-ink-600 transition-all cursor-pointer relative shadow-sm"
             >
               <Bell className="w-5 h-5" />
               {isMounted && unreadCount > 0 && (
@@ -474,26 +474,8 @@ export default function DashboardClient({
             {notificationOpen && (
               <div
                 ref={notificationRef}
-                style={{
-                  position: "absolute",
-                  right: 0,
-                  marginTop: 8,
-                  width: 360,
-                  background: "#fff",
-                  border: "1px solid #e2e8f0",
-                  borderRadius: 16,
-                  boxShadow: "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-                  zIndex: 40,
-                  overflow: "hidden",
-                  animation: "slideFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards",
-                }}
+                className="absolute right-0 mt-2 w-[360px] bg-bg-card border border-ink-150 rounded-2xl shadow-xl z-40 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150"
               >
-                <style>{`
-                  @keyframes slideFadeIn {
-                    from { opacity: 0; transform: translateY(-8px) scale(0.98); }
-                    to { opacity: 1; transform: translateY(0) scale(1); }
-                  }
-                `}</style>
                 <div className="flex items-center justify-between px-4 py-3 bg-ink-50/50 border-b border-ink-100">
                   <span className="text-xs font-extrabold text-ink-900">{lang === "id" ? "Notifikasi" : "Notifications"}</span>
                   {notifications.length > 0 && (
@@ -563,7 +545,7 @@ export default function DashboardClient({
       </div>
 
       {/* ── Page Greeting & Title ── */}
-      <div className="bg-white border border-ink-150 rounded-2xl p-6 shadow-sm relative overflow-hidden">
+      <div className="card p-6 shadow-sm relative overflow-hidden">
         <div className="absolute right-0 top-0 w-80 h-80 bg-brand-500/5 rounded-full blur-3xl -z-10 pointer-events-none" />
         <div className="space-y-1.5">
           <div className="flex items-center gap-2">
@@ -596,7 +578,7 @@ export default function DashboardClient({
           return (
             <div
               key={stat.label}
-              className="bg-white border border-ink-150 rounded-2xl p-5 hover:scale-[1.02] hover:shadow-md transition-all duration-300 shadow-sm relative overflow-hidden group flex flex-col justify-between"
+              className="card p-5 hover:scale-[1.02] hover:shadow-md transition-all duration-300 shadow-sm relative overflow-hidden group flex flex-col justify-between"
             >
               <div className={`absolute top-0 inset-x-0 h-1 bg-gradient-to-r ${stat.color}`} />
               <div className="space-y-4">
@@ -624,7 +606,7 @@ export default function DashboardClient({
       </div>
 
       {/* ── Quick Actions Grid ── */}
-      <div className="bg-white border border-ink-150 rounded-2xl p-5 shadow-sm space-y-4">
+      <div className="card p-5 shadow-sm space-y-4">
         <div>
           <h2 className="font-extrabold text-ink-900 text-sm">{t("dashboard.home.quickActions")}</h2>
           <p className="text-[11px] text-ink-400 mt-0.5">{lang === "id" ? "Akses fitur utama platform dengan cepat" : "Quick access shortcuts for key platform services"}</p>
@@ -659,7 +641,7 @@ export default function DashboardClient({
           
           {/* 1. Pro / Business Analytics Overview charts */}
           {(activePlan === "PRO" || activePlan === "BUSINESS") && (
-            <div className="card bg-white border border-ink-150 rounded-2xl p-5 shadow-sm space-y-5">
+            <div className="card p-5 shadow-sm space-y-5">
               <div className="flex items-center justify-between pb-3 border-b border-ink-100">
                 <div>
                   <h2 className="font-extrabold text-ink-900 text-sm">{lang === "id" ? "Ikhtisar Analitik (PRO)" : "Analytics Overview (PRO)"}</h2>
@@ -777,7 +759,7 @@ export default function DashboardClient({
           )}
 
           {/* 2. Recent Certificates Table (Always visible) */}
-          <div className="card bg-white border border-ink-150 rounded-2xl shadow-sm overflow-hidden">
+          <div className="card shadow-sm overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-ink-100">
               <div>
                 <h2 className="font-extrabold text-ink-900 text-sm">{lang === "id" ? "Sertifikat Terbaru" : "Recent Certificates"}</h2>
@@ -856,7 +838,7 @@ export default function DashboardClient({
           </div>
 
           {/* 3. Recent Events Card List (Always visible) */}
-          <div className="card bg-white border border-ink-150 rounded-2xl shadow-sm overflow-hidden">
+          <div className="card shadow-sm overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-ink-100">
               <div>
                 <h2 className="font-extrabold text-ink-900 text-sm">{lang === "id" ? "Event Terbaru" : "Recent Events"}</h2>
@@ -903,7 +885,7 @@ export default function DashboardClient({
           </div>
 
           {/* 4. Recent Participants List (Always visible) */}
-          <div className="card bg-white border border-ink-150 rounded-2xl shadow-sm overflow-hidden">
+          <div className="card shadow-sm overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-ink-100">
               <div>
                 <h2 className="font-extrabold text-ink-900 text-sm">{lang === "id" ? "Pendaftaran Peserta Terakhir" : "Recent Participants"}</h2>
@@ -949,7 +931,7 @@ export default function DashboardClient({
         <div className="space-y-6">
           
           {/* 1. Notification Center (Always visible) */}
-          <div className="card bg-white border border-ink-150 rounded-2xl p-5 shadow-sm space-y-4">
+          <div className="card p-5 shadow-sm space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-ink-100">
               <div>
                 <h2 className="font-extrabold text-ink-900 text-sm">{lang === "id" ? "Pusat Notifikasi" : "Notification Center"}</h2>
@@ -998,7 +980,7 @@ export default function DashboardClient({
           </div>
 
           {/* 2. Recent Activity Timeline (Always visible) */}
-          <div className="card bg-white border border-ink-150 rounded-2xl p-5 shadow-sm space-y-4">
+          <div className="card p-5 shadow-sm space-y-4">
             <div>
               <h2 className="font-extrabold text-ink-900 text-sm">{lang === "id" ? "Log Aktivitas Workspace" : "Recent Activity Timeline"}</h2>
               <p className="text-[10px] text-ink-450">{lang === "id" ? "Aktivitas terbaru di akun Anda." : "Realtime activity timeline logs."}</p>
@@ -1016,7 +998,7 @@ export default function DashboardClient({
                   const Icon = act.icon;
                   return (
                     <div key={act.title} className="relative group">
-                      <span className="absolute -left-[27px] top-0.5 w-6.5 h-6.5 rounded-full bg-white border border-ink-150 flex items-center justify-center">
+                      <span className="absolute -left-[27px] top-0.5 w-6.5 h-6.5 rounded-full bg-bg-card border border-ink-150 flex items-center justify-center">
                         <span className={`w-4.5 h-4.5 rounded-md flex items-center justify-center ${act.color}`}>
                           <Icon className="w-2.5 h-2.5" />
                         </span>
@@ -1036,7 +1018,7 @@ export default function DashboardClient({
           </div>
 
           {/* 3. Upcoming Events Widget (Always visible) */}
-          <div className="card bg-white border border-ink-150 rounded-2xl p-5 shadow-sm space-y-4">
+          <div className="card p-5 shadow-sm space-y-4">
             <div>
               <h2 className="font-extrabold text-ink-900 text-sm">{lang === "id" ? "Event Mendatang" : "Upcoming Events"}</h2>
               <p className="text-[10px] text-ink-450">{lang === "id" ? "Jadwal kegiatan dalam waktu dekat." : "Scheduled participant batches."}</p>
@@ -1082,7 +1064,7 @@ export default function DashboardClient({
 
       {/* ── 4. BUSINESS PLAN (Visible only to Business) ── */}
       {activePlan === "BUSINESS" && (
-        <div className="bg-white border border-ink-150 rounded-2xl p-5 shadow-sm space-y-6">
+        <div className="card p-5 shadow-sm space-y-6">
           <div className="flex items-center justify-between pb-3 border-b border-ink-100">
             <div>
               <h2 className="font-extrabold text-amber-600 text-sm flex items-center gap-1.5">

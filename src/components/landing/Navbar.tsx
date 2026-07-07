@@ -21,7 +21,7 @@ export default function Navbar() {
     <header
       className={`sticky top-0 z-40 transition-all duration-300 ${
         scrolled
-          ? "bg-white/90 dark:bg-ink-900/90 backdrop-blur-md border-b border-ink-100 dark:border-ink-800 shadow-soft"
+          ? "bg-bg-card/90 backdrop-blur-md border-b border-ink-100 shadow-soft"
           : "bg-ink-50/80 dark:bg-ink-950/80 backdrop-blur-sm"
       }`}
     >
@@ -70,7 +70,7 @@ export default function Navbar() {
       </nav>
 
       {mobileOpen && (
-        <div className="md:hidden border-t border-ink-100 dark:border-ink-800 bg-white dark:bg-ink-900 px-5 py-4 space-y-2">
+        <div className="md:hidden border-t border-ink-100 bg-bg-card px-5 py-4 space-y-2">
           <a href="#fitur" className="block navlink py-2" onClick={() => setMobileOpen(false)}>{t("landing.nav.features")}</a>
           <a href="#cara-kerja" className="block navlink py-2" onClick={() => setMobileOpen(false)}>{t("landing.nav.howItWorks")}</a>
           <a href="#testimoni" className="block navlink py-2" onClick={() => setMobileOpen(false)}>{t("landing.nav.testimonials")}</a>
