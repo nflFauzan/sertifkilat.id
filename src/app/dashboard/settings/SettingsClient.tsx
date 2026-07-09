@@ -316,6 +316,7 @@ export default function SettingsClient({ user }: { user: UserType }) {
     localStorage.setItem("settings_user_fullname", fullName);
     setIsSavingProfile(false);
     showToast(t.toastProfile, "success");
+    window.dispatchEvent(new Event("profileUpdate"));
   };
 
   // Change Profile Photo
@@ -329,6 +330,7 @@ export default function SettingsClient({ user }: { user: UserType }) {
     setProfilePic(picked);
     localStorage.setItem("settings_user_pic", picked);
     showToast(lang === "id" ? "Foto profil diperbarui." : "Profile picture updated.", "success");
+    window.dispatchEvent(new Event("profileUpdate"));
   };
 
   // Password submission action (direct secure DB modification via server action)

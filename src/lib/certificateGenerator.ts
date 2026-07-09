@@ -157,9 +157,10 @@ export async function generateCertificateCanvas(
 
     if (field.key === "qr") {
       try {
+        const verifyUrl = data.verifyUrl || "https://sertifkilat.id";
         // Generate QR code as DataURL
         const qrSize = (field.fontSize || 80) * scaleX;
-        const qrDataUrl = await QRCode.toDataURL(data.verifyUrl, {
+        const qrDataUrl = await QRCode.toDataURL(verifyUrl, {
           margin: 1,
           width: qrSize * 2, // Generate higher res QR
           errorCorrectionLevel: "H",
@@ -253,6 +254,13 @@ export function downloadCertificatePDF(canvas: HTMLCanvasElement, filename: stri
 }
 
 /**
+ * Sanitizes file/folder name to be safe for extraction on Windows/UNIX.
+ */
+function sanitizeFilename(name: string): string {
+  return name.replace(/[^a-zA-Z0-9_\-]/g, "_");
+}
+
+/**
  * Generates and downloads a ZIP file containing all certificates (both PDF or PNG).
  */
 export async function downloadCertificatesZip({
@@ -263,6 +271,7 @@ export async function downloadCertificatesZip({
   format = "pdf",
   onProgress,
   onSaveFile,
+  onGenerationFailure,
 }: {
   certificates: CertificateData[];
   templateUrl: string;
@@ -271,9 +280,11 @@ export async function downloadCertificatesZip({
   format?: "pdf" | "png" | "both";
   onProgress?: (current: number, total: number) => void;
   onSaveFile?: (filename: string, base64: string) => Promise<void>;
+  onGenerationFailure?: (certName: string, errorMsg: string) => Promise<void>;
 }): Promise<void> {
   const zip = new JSZip();
   const total = certificates.length;
+  let addedFilesCount = 0;
 
   for (let i = 0; i < total; i++) {
     const cert = certificates[i];
@@ -281,19 +292,41 @@ export async function downloadCertificatesZip({
 
     try {
       const canvas = await generateCertificateCanvas(templateUrl, fields, cert);
-      const safeName = cert.name.replace(/[^a-z0-9]/gi, "_").toLowerCase();
-      const baseFilename = `${cert.serial}_${safeName}`;
+      const cleanSerial = sanitizeFilename(cert.serial || "SK");
+      const cleanName = sanitizeFilename(cert.name || "peserta").toLowerCase();
+      const baseFilename = `${cleanSerial}_${cleanName}`;
 
       if (format === "png" || format === "both") {
-        const pngDataUrl = canvas.toDataURL("image/png");
-        const pngBase64 = pngDataUrl.split(",")[1];
-        zip.file(`${baseFilename}.png`, pngBase64, { base64: true });
+        const pngBlob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
+        if (!pngBlob || pngBlob.size === 0) {
+          throw new Error("Gagal membuat data PNG (Blob kosong).");
+        }
+
+        zip.file(`${baseFilename}.png`, pngBlob);
+        addedFilesCount++;
         
         if (onSaveFile) {
           try {
+            const reader = new FileReader();
+            const base64Promise = new Promise<string>((resolve, reject) => {
+              reader.onloadend = () => {
+                if (typeof reader.result === "string") {
+                  const base64 = reader.result.split(",")[1];
+                  resolve(base64);
+                } else {
+                  reject(new Error("Gagal mengonversi file ke base64."));
+                }
+              };
+              reader.onerror = () => reject(reader.error);
+            });
+            reader.readAsDataURL(pngBlob);
+            const pngBase64 = await base64Promise;
             await onSaveFile(`${baseFilename}.png`, pngBase64);
-          } catch (saveErr) {
+          } catch (saveErr: any) {
             console.error("Failed to save PNG on server:", saveErr);
+            if (onGenerationFailure) {
+              await onGenerationFailure(cert.name, `Failed to save PNG on server: ${saveErr.message || saveErr}`);
+            }
           }
         }
       }
@@ -310,25 +343,44 @@ export async function downloadCertificatesZip({
         const jpegDataUrl = canvas.toDataURL("image/jpeg", 0.95);
         pdf.addImage(jpegDataUrl, "JPEG", 0, 0, imgWidth, imgHeight);
         
-        // Add PDF to ZIP
-        const pdfArray = pdf.output("arraybuffer");
-        zip.file(`${baseFilename}.pdf`, pdfArray);
+        const pdfBlob = pdf.output("blob");
+        if (!pdfBlob || pdfBlob.size === 0) {
+          throw new Error("Gagal membuat data PDF (Blob kosong).");
+        }
+
+        zip.file(`${baseFilename}.pdf`, pdfBlob);
+        addedFilesCount++;
         
         if (onSaveFile) {
           try {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const pdfBase64 = (pdf as any).output("base64");
+            if (!pdfBase64 || pdfBase64.length === 0) {
+              throw new Error("Base64 PDF data kosong.");
+            }
             await onSaveFile(`${baseFilename}.pdf`, pdfBase64);
-          } catch (saveErr) {
+          } catch (saveErr: any) {
             console.error("Failed to save PDF on server:", saveErr);
+            if (onGenerationFailure) {
+              await onGenerationFailure(cert.name, `Failed to save PDF on server: ${saveErr.message || saveErr}`);
+            }
           }
         }
       }
-    } catch (err) {
-      console.error(`Failed to generate ZIP item for ${cert.name}:`, err);
+    } catch (err: any) {
+      const errorMsg = err.message || String(err);
+      console.error(`Failed to generate ZIP item for ${cert.name}:`, errorMsg);
+      if (onGenerationFailure) {
+        await onGenerationFailure(cert.name, errorMsg);
+      }
     }
   }
 
+  if (addedFilesCount === 0) {
+    throw new Error("Tidak ada file valid yang berhasil ditambahkan ke ZIP.");
+  }
+
+  const cleanZipName = sanitizeFilename(zipFilename || "certificates");
   const content = await zip.generateAsync({
     type: "blob",
     mimeType: "application/zip",
@@ -338,11 +390,14 @@ export async function downloadCertificatesZip({
       level: 9,
     },
   });
+
   const url = URL.createObjectURL(content);
   const link = document.createElement("a");
   link.href = url;
-  link.download = `${zipFilename}.zip`;
+  link.download = `${cleanZipName}.zip`;
+  document.body.appendChild(link);
   link.click();
+  document.body.removeChild(link);
   
   // Clean up URL object
   setTimeout(() => URL.revokeObjectURL(url), 100);

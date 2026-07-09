@@ -22,6 +22,7 @@ type CertificateData = {
   date: string;
   issuedAt: string;
   templateName: string | null;
+  verifiedCount: number;
 };
 
 interface VerifyClientProps {
@@ -78,13 +79,13 @@ export default function VerifyClient({
             <div>
               <h2 className="font-bold text-white text-lg leading-tight">
                 {isValid 
-                  ? (lang === "id" ? "✓ Sertifikat Valid & Terverifikasi" : "✓ Valid & Verified Certificate") 
-                  : (lang === "id" ? "✗ Sertifikat Tidak Valid" : "✗ Invalid Certificate")}
+                  ? "✓ VALID CERTIFICATE" 
+                  : "✗ INVALID CERTIFICATE"}
               </h2>
               <p className="text-white/80 text-xs mt-0.5 font-medium">
                 {isValid
-                  ? (lang === "id" ? "Sertifikat diterbitkan secara sah melalui platform kami" : "Certificate was legitimately issued via our platform")
-                  : (lang === "id" ? "Nomor sertifikat tidak terdaftar di sistem" : "Certificate number is not registered in our system")}
+                  ? (lang === "id" ? "Sertifikat ini valid dan terverifikasi secara resmi" : "This certificate is valid and officially verified")
+                  : (lang === "id" ? "Sertifikat tidak ditemukan atau tidak valid" : "Certificate not found or invalid")}
               </p>
             </div>
           </div>
@@ -114,7 +115,7 @@ export default function VerifyClient({
               <div className="space-y-4">
                 <DetailRow
                   icon={<Hash className="w-4 h-4" />}
-                  label={lang === "id" ? "ID Sertifikat" : "Certificate ID"}
+                  label={lang === "id" ? "ID Sertifikat / Kode Verifikasi" : "Certificate ID / Verification Code"}
                   value={
                     <span className="font-mono font-bold text-brand-600 tracking-wider">
                       {certificateData.id}
@@ -149,6 +150,15 @@ export default function VerifyClient({
                     dateStyle: "medium",
                     timeStyle: "medium",
                   })}
+                />
+                <DetailRow
+                  icon={<Clock className="w-4 h-4" />}
+                  label={lang === "id" ? "Jumlah Pemindaian (Scan Count)" : "Verification Scan Count"}
+                  value={
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-100 text-amber-700 text-xs font-bold">
+                      {certificateData.verifiedCount} {lang === "id" ? "x Diperiksa" : "x Scanned"}
+                    </span>
+                  }
                 />
                 {certificateData.templateName && (
                   <DetailRow

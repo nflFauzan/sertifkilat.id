@@ -16,7 +16,7 @@ import {
   Check,
   Plus,
 } from "@phosphor-icons/react";
-import { generateCertificatesAction, getBatchCertificatesAction, saveGeneratedCertificateAction } from "@/app/actions/certificates";
+import { generateCertificatesAction, getBatchCertificatesAction, saveGeneratedCertificateAction, logGenerationFailureAction } from "@/app/actions/certificates";
 import { formatDate } from "@/lib/utils";
 import { downloadCertificatesZip, TemplateField } from "@/lib/certificateGenerator";
 import { downloadExcelTemplate } from "@/lib/excelTemplate";
@@ -106,6 +106,13 @@ export default function GeneratorClient({
             batchId,
             filename,
             base64Data: base64,
+          });
+        },
+        onGenerationFailure: async (certName, errorMsg) => {
+          await logGenerationFailureAction({
+            batchId,
+            participantName: certName,
+            error: errorMsg,
           });
         }
       });

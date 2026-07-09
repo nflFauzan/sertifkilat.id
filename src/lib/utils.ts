@@ -145,6 +145,17 @@ export function generateSerialNumber(index: number): string {
   return `SK-${year}-${padded}`;
 }
 
+// ─── Generate unique verification code ─────────────────────────────────────────
+export function generateVerificationCode(): string {
+  const year = new Date().getFullYear();
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let randomStr = "";
+  for (let i = 0; i < 8; i++) {
+    randomStr += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return `SK-${year}-${randomStr}`;
+}
+
 // ─── Truncate string ─────────────────────────────────────────────────────────
 export function truncate(str: string, length: number): string {
   if (str.length <= length) return str;

@@ -116,7 +116,14 @@ export default async function DashboardPage() {
       select: { plan: true },
     }),
     prisma.template.count({
-      where: { userId: session.user.id },
+      where: {
+        userId: session.user.id,
+        NOT: {
+          fileUrl: {
+            startsWith: "/templates/",
+          },
+        },
+      },
     }),
   ]);
  

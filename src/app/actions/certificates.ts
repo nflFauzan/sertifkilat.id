@@ -4,7 +4,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { generateSerialNumber } from "@/lib/utils";
+import { generateSerialNumber, generateVerificationCode } from "@/lib/utils";
+import QRCode from "qrcode";
 import fs from "fs/promises";
 import path from "path";
 
@@ -35,6 +36,20 @@ export async function generateCertificatesAction(formData: FormData) {
   }
 
   if (!participants.length) return { error: "Tidak ada peserta" };
+
+  // Verify plan limit on backend (Single Source of Truth)
+  const dbUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { plan: true },
+  });
+  const userPlan = dbUser?.plan || "FREE";
+  const limit = userPlan === "FREE" ? 25 : userPlan === "PRO" ? 150 : 999999;
+
+  if (participants.length > limit) {
+    return {
+      error: `Batas maksimal peserta untuk paket ${userPlan} Anda adalah ${limit} orang per cetak. File Anda berisi ${participants.length} peserta. Silakan upgrade untuk membuka kuota yang lebih besar.`
+    };
+  }
 
   // Get selected template, fallback to first user template, fallback to default template
   let template = null;
@@ -94,25 +109,36 @@ export async function generateCertificatesAction(formData: FormData) {
         },
       });
 
-      const serial = generateSerialNumber(existingCertCount + i + 1);
+      let serial = "";
+      let isUnique = false;
+      while (!isUnique) {
+        serial = generateVerificationCode();
+        const existingCert = await prisma.certificate.findUnique({
+          where: { serialNumber: serial },
+        });
+        if (!existingCert) {
+          isUnique = true;
+        }
+      }
 
-      // Only create if serial doesn't exist
-      const existingCert = await prisma.certificate.findUnique({
-        where: { serialNumber: serial },
+      const verifyUrl = `${appUrl}/verify/${serial}`;
+      const qrCode = await QRCode.toDataURL(verifyUrl, {
+        margin: 1,
+        width: 256,
+        errorCorrectionLevel: "H",
       });
 
-      if (!existingCert) {
-        await prisma.certificate.create({
-          data: {
-            serialNumber: serial,
-            batchId: batch.id,
-            participantId: participant.id,
-            verifyUrl: `${appUrl}/verify/${serial}`,
-            issuedAt: new Date(),
-          },
-        });
-        successCount++;
-      }
+      await prisma.certificate.create({
+        data: {
+          serialNumber: serial,
+          batchId: batch.id,
+          participantId: participant.id,
+          verifyUrl,
+          qrCode,
+          issuedAt: new Date(),
+        },
+      });
+      successCount++;
     } catch (e) {
       // Skip duplicates or errors
       console.error("Error creating certificate:", e);
@@ -222,3 +248,20 @@ export async function saveGeneratedCertificateAction({
     return { error: "Gagal menyimpan file hasil generate" };
   }
 }
+
+export async function logGenerationFailureAction({
+  batchId,
+  participantName,
+  error,
+}: {
+  batchId: string;
+  participantName: string;
+  error: string;
+}) {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/auth/login");
+
+  console.error(`[ZIP Generation Failure] Batch: ${batchId}, Participant: ${participantName}, Error: ${error}`);
+  return { success: true };
+}
+

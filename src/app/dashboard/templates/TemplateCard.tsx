@@ -82,6 +82,8 @@ interface Props {
   onPreview: (t: TemplateItem) => void;
   onDelete: (id: string) => void;
   isPending: boolean;
+  userPlan?: string;
+  onUpgradeRequired?: () => void;
 }
 
 export function TemplateCard({
@@ -92,7 +94,9 @@ export function TemplateCard({
   onToggleFavorite,
   onPreview,
   onDelete,
-  isPending
+  isPending,
+  userPlan = "FREE",
+  onUpgradeRequired,
 }: Props) {
   const { lang } = useTranslation();
   const meta = getMeta(template.fileUrl);
@@ -295,9 +299,14 @@ export function TemplateCard({
             <Eye size={13} /> {lang === "id" ? "Preview" : "Preview"}
           </button>
           <Link
-            href={`/dashboard/templates/${template.id}`}
+            href={userPlan === "FREE" && meta.badge === "premium" ? "#" : `/dashboard/templates/${template.id}`}
             onClick={(e) => {
               e.stopPropagation();
+              if (userPlan === "FREE" && meta.badge === "premium") {
+                e.preventDefault();
+                onUpgradeRequired?.();
+                return;
+              }
               localStorage.setItem("activeTemplateId", template.id);
             }}
             style={{

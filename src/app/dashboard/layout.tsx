@@ -20,7 +20,7 @@ import {
   FileText,
   Envelope,
 } from "@phosphor-icons/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getInitials } from "@/lib/utils";
 import { useTranslation } from "@/lib/hooks/useTranslation";
 
@@ -46,12 +46,33 @@ export default function DashboardLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { t, lang } = useTranslation();
 
+  // Local state for profile sync with settings changes without modifying session
+  const [displayName, setDisplayName] = useState<string>("");
+  const [displayPic, setDisplayPic] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handleProfileUpdate = () => {
+      const savedName = localStorage.getItem("settings_user_fullname");
+      const savedPic = localStorage.getItem("settings_user_pic");
+      if (savedName) setDisplayName(savedName);
+      else if (session?.user?.name) setDisplayName(session.user.name);
+
+      if (savedPic) setDisplayPic(savedPic);
+      else if (session?.user?.image) setDisplayPic(session.user.image);
+    };
+
+    handleProfileUpdate();
+    window.addEventListener("profileUpdate", handleProfileUpdate);
+    return () => {
+      window.removeEventListener("profileUpdate", handleProfileUpdate);
+    };
+  }, [session]);
+
   // Template editor takes over full viewport — skip dashboard chrome
   const isTemplateEditor = pathname.startsWith("/dashboard/templates/") && !!params?.id;
   if (isTemplateEditor) return <>{children}</>;
 
   const user = session?.user;
-  const initials = user?.name ? getInitials(user.name) : "?";
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-ink-50 flex">
@@ -150,13 +171,21 @@ export default function DashboardLayout({
 
           {/* User info */}
           <div className="flex items-center gap-3 px-3 py-3 mt-2 rounded-xl bg-ink-50">
-            <div className="w-8 h-8 rounded-full bg-brand-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 animate-pulse">
-              {initials}
-            </div>
+            {displayPic ? (
+              <img
+                src={displayPic}
+                alt={displayName || "User"}
+                className="w-8 h-8 rounded-full object-cover flex-shrink-0 border border-brand-100"
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-brand-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                {displayName ? getInitials(displayName) : "?"}
+              </div>
+            )}
             <div className="overflow-hidden">
               <div className="flex items-center gap-1.5 flex-wrap">
                 <p className="text-xs font-bold text-ink-900 truncate max-w-[100px]">
-                  {user?.name ?? "Pengguna"}
+                  {displayName || "Pengguna"}
                 </p>
                 {user?.plan === "BUSINESS" ? (
                   <span className="bg-amber-500 text-white text-[8px] font-extrabold px-1.5 py-0.5 rounded tracking-wider shadow-glow-sm shrink-0">

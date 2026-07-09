@@ -32,19 +32,24 @@ function LoginForm() {
     setIsLoading(true);
     setError("");
 
-    const fd = new FormData(e.currentTarget);
-    const result = await signIn("credentials", {
-      email: fd.get("email"),
-      password: fd.get("password"),
-      redirect: false,
-    });
+    try {
+      const fd = new FormData(e.currentTarget);
+      const result = await signIn("credentials", {
+        email: fd.get("email"),
+        password: fd.get("password"),
+        redirect: false,
+      });
 
-    if (result?.error) {
+      if (result?.error) {
+        setError(t("auth.loginError"));
+        setIsLoading(false);
+      } else {
+        window.location.href = "/dashboard";
+      }
+    } catch (err) {
+      console.error(err);
       setError(t("auth.loginError"));
       setIsLoading(false);
-    } else {
-      router.push("/dashboard");
-      router.refresh();
     }
   }
 

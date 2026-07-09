@@ -155,8 +155,9 @@ export default function TemplatesClient({
   };
 
   // Lock logic
-  const limitTemplates = userPlan === "FREE" ? 1 : userPlan === "PRO" ? 5 : 999999;
-  const isLocked = templates.length >= limitTemplates;
+  const customTemplatesCount = templates.filter(t => getMeta(t.fileUrl).badge === "custom").length;
+  const limitTemplates = userPlan === "FREE" ? 0 : userPlan === "PRO" ? 5 : 999999;
+  const isLocked = customTemplatesCount >= limitTemplates;
 
   // Filter templates
   const filtered = templates.filter(t => {
@@ -481,6 +482,8 @@ export default function TemplatesClient({
                     onPreview={setPreviewTemplate}
                     onDelete={handleDelete}
                     isPending={isPending}
+                    userPlan={userPlan}
+                    onUpgradeRequired={() => setUpgradeOpen(true)}
                   />
                 </div>
               ))}
@@ -668,6 +671,11 @@ export default function TemplatesClient({
             <div className="pt-3 border-t border-ink-100 space-y-2.5">
               <button
                 onClick={() => {
+                  const meta = getMeta(selectedTemplate.fileUrl);
+                  if (userPlan === "FREE" && meta.badge === "premium") {
+                    setUpgradeOpen(true);
+                    return;
+                  }
                   updateActiveTemplate(selectedTemplate.id);
                   // Redirect to certificate generator
                   window.location.href = "/dashboard/generator";
@@ -678,16 +686,21 @@ export default function TemplatesClient({
                 {lang === "id" ? "Gunakan Sebagai Template Aktif" : "Use As Active Template"}
               </button>
               
-              <Link
-                href={`/dashboard/templates/${selectedTemplate.id}`}
+              <button
                 onClick={() => {
+                  const meta = getMeta(selectedTemplate.fileUrl);
+                  if (userPlan === "FREE" && meta.badge === "premium") {
+                    setUpgradeOpen(true);
+                    return;
+                  }
                   updateActiveTemplate(selectedTemplate.id);
+                  window.location.href = `/dashboard/templates/${selectedTemplate.id}`;
                 }}
-                className="btn-secondary w-full justify-center !py-3 text-xs font-extrabold border border-ink-200 hover:bg-ink-50 transition-all flex items-center gap-2"
+                className="btn-secondary w-full justify-center !py-3 text-xs font-extrabold border border-ink-200 hover:bg-ink-50 transition-all flex items-center gap-2 cursor-pointer"
               >
                 <Sliders className="w-4 h-4 text-ink-600" />
                 {lang === "id" ? "Buka Kanvas Editor" : "Open Layout Editor"}
-              </Link>
+              </button>
             </div>
           </div>
         )}

@@ -15,6 +15,7 @@ import {
   Warning,
 } from "@phosphor-icons/react";
 import { upgradeUserPlanAction } from "@/app/actions/subscription";
+import { useSession } from "next-auth/react";
 
 interface UpgradeModalProps {
   isOpen: boolean;
@@ -29,6 +30,7 @@ export default function UpgradeModal({
   currentPlan,
   initialSelectedPlan,
 }: UpgradeModalProps) {
+  const { update } = useSession();
   const [step, setStep] = useState<"select" | "pay">("select");
   const [selectedPlan, setSelectedPlan] = useState<"PRO" | "BUSINESS">("PRO");
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly");
@@ -80,6 +82,14 @@ export default function UpgradeModal({
     }
   }
 
+  function handleClose() {
+    if (paymentStatus === "paid") {
+      window.location.reload();
+    } else {
+      onClose();
+    }
+  }
+
   async function handleConfirmPayment() {
     setPaymentStatus("verifying");
     setIsSubmitting(true);
@@ -89,6 +99,7 @@ export default function UpgradeModal({
       try {
         const res = await upgradeUserPlanAction(selectedPlan);
         if (res.success) {
+          await update({ plan: selectedPlan });
           setPaymentStatus("paid");
         } else {
           setPaymentStatus("waiting");
@@ -193,7 +204,7 @@ export default function UpgradeModal({
               </p>
             </div>
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="p-1.5 rounded-lg text-ink-400 hover:bg-ink-50 hover:text-ink-700 transition-all shrink-0"
             >
               <X className="w-5 h-5" />
@@ -298,7 +309,7 @@ export default function UpgradeModal({
               </div>
 
               <div className="flex gap-3 justify-end pt-4 border-t border-ink-150">
-                <button onClick={onClose} className="btn-secondary">
+                <button onClick={handleClose} className="btn-secondary">
                   Batal
                 </button>
                 <button onClick={() => setStep("pay")} className="btn-primary">
@@ -324,7 +335,7 @@ export default function UpgradeModal({
                     </p>
                   </div>
                   <div className="pt-4">
-                    <button onClick={onClose} className="btn-primary px-8">
+                    <button onClick={handleClose} className="btn-primary px-8">
                       Kembali ke Dashboard
                     </button>
                   </div>
@@ -552,7 +563,7 @@ export default function UpgradeModal({
                   <button
                     onClick={() => {
                       setPaymentStatus("cancelled");
-                      setTimeout(() => onClose(), 1000);
+                      setTimeout(() => handleClose(), 1000);
                     }}
                     className="btn-secondary"
                     disabled={isSubmitting}

@@ -23,6 +23,21 @@ export default async function TemplateEditorPage({
     notFound();
   }
 
+  // Get user plan and verify premium access
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { plan: true },
+  });
+  const userPlan = user?.plan || "FREE";
+
+  const isPremium = ["elegan-navy-gold", "luxury-achievement", "elegant-gold", "modern-appreciation"].some(
+    k => template.fileUrl.includes(k)
+  );
+
+  if (userPlan === "FREE" && isPremium) {
+    redirect("/dashboard/templates");
+  }
+
   // Safe serialization of template data
   const serializedTemplate = {
     id: template.id,

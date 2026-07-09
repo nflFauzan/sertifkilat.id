@@ -21,7 +21,7 @@ export default function DashboardPlanCard({
   const [modalOpen, setModalOpen] = useState(false);
   const { lang } = useTranslation();
 
-  const limitTemplates = plan === "FREE" ? 1 : plan === "PRO" ? 5 : 999999;
+  const limitTemplates = plan === "FREE" ? 0 : plan === "PRO" ? 5 : 999999;
   const limitParticipants = plan === "FREE" ? 25 : plan === "PRO" ? 150 : 999999;
 
   const isFree = plan === "FREE";
@@ -145,7 +145,9 @@ export default function DashboardPlanCard({
         <p className="text-[11px] text-ink-500">
           {isFree 
             ? (lang === "id" ? "Upgrade ke Pro/Business untuk fitur tak terbatas." : "Upgrade to Pro/Business for unlimited features.") 
-            : (lang === "id" ? "Anda telah membuka fitur-fitur premium." : "You have unlocked premium features.")}
+            : isPro 
+              ? (lang === "id" ? "Upgrade ke Business untuk fitur tak terbatas." : "Upgrade to Business for unlimited features.")
+              : (lang === "id" ? "Anda telah membuka semua fitur premium." : "You have unlocked all premium features.")}
         </p>
         {plan !== "BUSINESS" && (
           <button 
