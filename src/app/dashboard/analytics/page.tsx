@@ -78,6 +78,70 @@ export default async function AnalyticsPage() {
     orderBy: { createdAt: "desc" },
   });
 
+  const userId = session.user.id;
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+
+  const [
+    validScansCount,
+    invalidScansCount,
+    todayScansCount,
+    latestVerificationActivities,
+  ] = await Promise.all([
+    // 1. Valid scans (status: SUCCESS)
+    prisma.verificationLog.count({
+      where: {
+        status: "SUCCESS",
+        certificate: { batch: { event: { userId } } }
+      }
+    }),
+    // 2. Invalid scans (status: FAILED)
+    prisma.verificationLog.count({
+      where: {
+        status: "FAILED"
+      }
+    }),
+    // 3. Today's scans count
+    prisma.verificationLog.count({
+      where: {
+        OR: [
+          {
+            status: "SUCCESS",
+            certificate: { batch: { event: { userId } } }
+          },
+          {
+            status: "FAILED"
+          }
+        ],
+        scannedAt: { gte: startOfToday }
+      }
+    }),
+    // 4. Latest verification activities
+    prisma.verificationLog.findMany({
+      where: {
+        OR: [
+          {
+            status: "SUCCESS",
+            certificate: { batch: { event: { userId } } }
+          },
+          {
+            status: "FAILED"
+          }
+        ]
+      },
+      include: {
+        certificate: {
+          include: {
+            participant: { select: { name: true } },
+            batch: { include: { event: { select: { name: true } } } }
+          }
+        }
+      },
+      orderBy: { scannedAt: "desc" },
+      take: 5
+    })
+  ]);
+
   const serializedRecentVerifications = recentVerifications.map((c: typeof recentVerifications[number]) => ({
     id: c.id,
     serialNumber: c.serialNumber,
@@ -96,6 +160,15 @@ export default async function AnalyticsPage() {
     batchCount: e._count.batches,
   }));
 
+  const serializedVerifications = latestVerificationActivities.map(v => ({
+    id: v.id,
+    serialNumber: v.serialNumber,
+    scannedAt: v.scannedAt.toISOString(),
+    status: v.status,
+    participantName: v.certificate?.participant?.name || null,
+    eventName: v.certificate?.batch?.event?.name || null,
+  }));
+
   return (
     <AnalyticsClient
       stats={{
@@ -106,6 +179,12 @@ export default async function AnalyticsPage() {
       }}
       recentVerifications={serializedRecentVerifications}
       events={serializedEvents}
+      qrStats={{
+        validScansCount,
+        invalidScansCount,
+        todayScansCount,
+        latestVerifications: serializedVerifications,
+      }}
     />
   );
 }

@@ -20,6 +20,7 @@ export const metadata = {
 
 async function getDashboardData(userId: string) {
   const now = new Date();
+
   const [
     totalEvents,
     totalParticipants,

@@ -25,6 +25,7 @@ import {
 } from "@phosphor-icons/react";
 import { useTranslation } from "@/lib/hooks/useTranslation";
 import UpgradeModal from "@/components/UpgradeModal";
+import { getEmailLogsAction, resendEmailAction } from "@/app/actions/email";
 
 interface ToastType {
   id: number;
@@ -68,6 +69,22 @@ export default function EmailCenterPage() {
   const [queue, setQueue] = useState<EmailQueueItem[]>(INITIAL_QUEUE);
   const [selectedEmail, setSelectedEmail] = useState<EmailQueueItem | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isLoadingLogs, setIsLoadingLogs] = useState(true);
+
+  const loadLogs = async () => {
+    setIsLoadingLogs(true);
+    const res = await getEmailLogsAction();
+    if (res.success && res.logs && res.logs.length > 0) {
+      setQueue(res.logs as any);
+    } else {
+      setQueue(INITIAL_QUEUE);
+    }
+    setIsLoadingLogs(false);
+  };
+
+  useEffect(() => {
+    loadLogs();
+  }, []);
 
   // Template Builder states
   const [templateSubject, setTemplateSubject] = useState("Sertifikat Kelulusan: {{event}}");
@@ -123,27 +140,46 @@ export default function EmailCenterPage() {
     showToast(lang === "id" ? `Variabel ${tag} disisipkan` : `Variable ${tag} inserted`, "info");
   };
 
-  // Resend or Retry Mock Actions
-  const handleRetryEmail = (emailId: string) => {
-    showToast(lang === "id" ? `Mencoba mengirim ulang ${emailId}...` : `Retrying delivery for ${emailId}...`, "info");
-    setQueue(prev => prev.map(item => {
-      if (item.id === emailId) {
-        return { ...item, status: "Sending", sentAt: "Retrying..." };
-      }
-      return item;
-    }));
-    
-    // Simulate recovery success
-    setTimeout(() => {
+  // Resend or Retry Actions
+  const handleRetryEmail = async (emailId: string) => {
+    // If it's a mock ID (e.g. EM-1081), just mock the response to prevent DB errors
+    if (emailId.startsWith("EM-")) {
+      showToast(lang === "id" ? `Mencoba mengirim ulang ${emailId}...` : `Retrying delivery for ${emailId}...`, "info");
       setQueue(prev => prev.map(item => {
         if (item.id === emailId) {
-          showToast(lang === "id" ? `Email ${emailId} berhasil dikirim!` : `Email ${emailId} successfully sent!`, "success");
-          return { ...item, status: "Delivered", sentAt: "Just Now", deliveryTime: "1.2s" };
+          return { ...item, status: "Sending" };
         }
         return item;
       }));
-    }, 2000);
+      setTimeout(() => {
+        setQueue(prev => prev.map(item => {
+          if (item.id === emailId) {
+            showToast(lang === "id" ? `Email ${emailId} berhasil dikirim!` : `Email ${emailId} successfully sent!`, "success");
+            return { ...item, status: "Delivered", sentAt: "Just Now", deliveryTime: "1.2s" };
+          }
+          return item;
+        }));
+      }, 1500);
+      if (isDrawerOpen) setIsDrawerOpen(false);
+      return;
+    }
 
+    showToast(lang === "id" ? "Mengirim ulang email..." : "Resending email...", "info");
+    setQueue(prev => prev.map(item => {
+      if (item.id === emailId) {
+        return { ...item, status: "Sending" };
+      }
+      return item;
+    }));
+
+    const res = await resendEmailAction(emailId);
+    if (res.success) {
+      showToast(lang === "id" ? "Email berhasil dikirim ulang!" : "Email resent successfully!", "success");
+      loadLogs();
+    } else {
+      showToast(res.error || (lang === "id" ? "Gagal mengirim ulang" : "Resend failed"), "warning");
+      loadLogs();
+    }
     if (isDrawerOpen) setIsDrawerOpen(false);
   };
 
@@ -274,6 +310,21 @@ export default function EmailCenterPage() {
                 </div>
               </div>
 
+              {(selectedEmail as any).previewUrl && (
+                <div className="bg-emerald-50 dark:bg-emerald-950/20 p-4 rounded-xl border border-emerald-250 text-xs text-emerald-800 dark:text-emerald-300 space-y-2">
+                  <span className="font-bold block">✨ Ethereal Email (Received)</span>
+                  <p className="text-xxs">Anda dapat memverifikasi email yang diterima dan membuka file PDF lampiran dengan mengklik link di bawah ini:</p>
+                  <a 
+                    href={(selectedEmail as any).previewUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="inline-block px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded font-bold text-xxs transition-colors cursor-pointer"
+                  >
+                    Buka Ethereal Mailbox ↗
+                  </a>
+                </div>
+              )}
+
               {/* Email Content Preview */}
               <div className="space-y-3">
                 <h4 className="text-xs font-bold text-ink-700 uppercase tracking-wider">Visual Preview Email</h4>
@@ -301,22 +352,17 @@ export default function EmailCenterPage() {
 
             {/* Action buttons footer */}
             <div className="border-t border-ink-100 dark:border-ink-800 pt-4 flex gap-3 mt-6">
-              {selectedEmail.status === "Failed" && (
-                <button
-                  onClick={() => handleRetryEmail(selectedEmail.id)}
-                  className="btn-primary flex-1 justify-center py-2 text-xs"
-                >
-                  <ArrowCounterClockwise className="w-4 h-4" /> Retry Send
-                </button>
-              )}
               <button
-                onClick={() => {
-                  showToast(lang === "id" ? "Proses pengiriman dibatalkan." : "Delivery process cancelled.", "warning");
-                  setIsDrawerOpen(false);
-                }}
-                className="px-4 py-2 rounded-xl border border-ink-250 dark:border-ink-800 text-ink-700 font-bold text-xs hover:bg-rose-50 dark:hover:bg-rose-950/20 hover:text-rose-600 transition-all flex-1 text-center"
+                onClick={() => handleRetryEmail(selectedEmail.id)}
+                className="btn-primary flex-1 justify-center py-2 text-xs cursor-pointer"
               >
-                Cancel Email
+                <ArrowCounterClockwise className="w-4 h-4" /> {lang === "id" ? "Kirim Ulang" : "Resend Email"}
+              </button>
+              <button
+                onClick={() => setIsDrawerOpen(false)}
+                className="px-4 py-2 rounded-xl border border-ink-250 dark:border-ink-800 text-ink-700 font-bold text-xs hover:bg-rose-50 dark:hover:bg-rose-950/20 hover:text-rose-600 transition-all flex-1 text-center cursor-pointer"
+              >
+                {lang === "id" ? "Tutup" : "Close"}
               </button>
             </div>
           </div>
@@ -669,12 +715,12 @@ export default function EmailCenterPage() {
                           >
                             <Eye className="w-3.5 h-3.5" /> Detail
                           </button>
-                          {row.status === "Failed" && (
+                          {(row.status === "Failed" || row.status === "Delivered") && (
                             <button
                               onClick={() => handleRetryEmail(row.id)}
                               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xxs font-bold bg-brand-50 hover:bg-brand-100 text-brand-600 rounded-lg transition-all border border-brand-100 cursor-pointer"
                             >
-                              <ArrowCounterClockwise className="w-3.5 h-3.5" /> Retry
+                              <ArrowCounterClockwise className="w-3.5 h-3.5" /> {lang === "id" ? "Kirim Ulang" : "Resend"}
                             </button>
                           )}
                         </td>

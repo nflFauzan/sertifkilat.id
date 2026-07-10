@@ -58,6 +58,7 @@ type DashboardClientProps = {
     recentCertificates: Array<{
       id: string;
       serialNumber: string;
+      verifiedCount: number;
       issuedAt: Date | string;
       participant: { name: string; email?: string | null };
       batch: { event: { name: string } };
@@ -795,20 +796,12 @@ export default function DashboardClient({
                       <th className="px-5 py-3">Participant</th>
                       <th className="px-5 py-3">Event</th>
                       <th className="px-5 py-3">Generated Date</th>
-                      <th className="px-5 py-3">Status</th>
+                      <th className="px-5 py-3 text-center">{lang === "id" ? "Jumlah Scan" : "Scan Count"}</th>
                       <th className="px-5 py-3 text-right">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-ink-50 text-[11px] font-medium text-ink-700">
                     {data.recentCertificates.map((cert) => {
-                      const statuses = ["Generated", "Downloaded", "Verified", "Pending"];
-                      const status = statuses[cert.serialNumber.charCodeAt(0) % 4] || "Generated";
-                      const statusColors: Record<string, string> = {
-                        Generated: "bg-blue-50 text-blue-700 border-blue-150",
-                        Downloaded: "bg-emerald-50 text-emerald-700 border-emerald-150",
-                        Verified: "bg-purple-50 text-purple-700 border-purple-150",
-                        Pending: "bg-amber-50 text-amber-700 border-amber-150",
-                      };
                       return (
                         <tr key={cert.id} className="hover:bg-ink-50/20 transition-colors">
                           <td className="px-5 py-3.5 font-mono font-bold text-ink-900 tracking-tight">{cert.serialNumber}</td>
@@ -818,13 +811,14 @@ export default function DashboardClient({
                           </td>
                           <td className="px-5 py-3.5 truncate max-w-[150px]">{cert.batch.event.name}</td>
                           <td className="px-5 py-3.5 text-ink-400">{formatDate(cert.issuedAt)}</td>
-                          <td className="px-5 py-3.5">
-                            <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border ${statusColors[status]}`}>
-                              {status}
+                          <td className="px-5 py-3.5 text-center">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-100 text-amber-700 text-[10px] font-bold">
+                              <QrCode className="w-3.5 h-3.5" />
+                              {cert.verifiedCount}
                             </span>
                           </td>
                           <td className="px-5 py-3.5 text-right">
-                            <Link href={`/verify/${cert.id}`} className="text-[10px] text-brand-600 hover:text-brand-700 font-bold">
+                            <Link href={`/verify/${cert.serialNumber}`} className="text-[10px] text-brand-600 hover:text-brand-700 font-bold">
                               {lang === "id" ? "Lihat" : "View"}
                             </Link>
                           </td>

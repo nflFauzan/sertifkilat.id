@@ -15,10 +15,13 @@ import {
   FileCsv,
   Check,
   Plus,
+  Envelope,
 } from "@phosphor-icons/react";
 import { generateCertificatesAction, getBatchCertificatesAction, saveGeneratedCertificateAction, logGenerationFailureAction } from "@/app/actions/certificates";
+import { sendCertificateEmailAction } from "@/app/actions/email";
 import { formatDate } from "@/lib/utils";
-import { downloadCertificatesZip, TemplateField } from "@/lib/certificateGenerator";
+import { downloadCertificatesZip, TemplateField, generateCertificateCanvas } from "@/lib/certificateGenerator";
+import { jsPDF } from "jspdf";
 import { downloadExcelTemplate } from "@/lib/excelTemplate";
 import Link from "next/link";
 import * as XLSX from "xlsx";
@@ -76,6 +79,90 @@ export default function GeneratorClient({
   const fileRef = useRef<HTMLInputElement>(null);
   const [downloadingBatchId, setDownloadingBatchId] = useState<string | null>(null);
   const { t, lang } = useTranslation();
+
+  const [isSendingEmails, setIsSendingEmails] = useState(false);
+  const [emailProgressText, setEmailProgressText] = useState("");
+
+  const sanitizeFilename = (name: string) => name.replace(/[^a-zA-Z0-9_\-]/g, "_");
+
+  async function handleSendAllEmails(batchId: string) {
+    if (!confirm(lang === "id" ? "Apakah Anda yakin ingin mengirim sertifikat ke semua peserta via email?" : "Are you sure you want to send certificates to all participants via email?")) {
+      return;
+    }
+    setIsSendingEmails(true);
+    setEmailProgressText(lang === "id" ? "Menghubungkan..." : "Connecting...");
+
+    try {
+      const res = await getBatchCertificatesAction(batchId);
+      if (res.error || !res.batch) {
+        alert(res.error || (lang === "id" ? "Gagal mengirim email. Batch tidak ditemukan." : "Failed to send emails. Batch not found."));
+        setIsSendingEmails(false);
+        return;
+      }
+
+      const { templateUrl, templateFields, certificates, templateWidth, templateHeight } = res.batch;
+      const total = certificates.length;
+
+      for (let i = 0; i < total; i++) {
+        const cert = certificates[i];
+        setEmailProgressText(lang === "id" ? `Mengirim ${i + 1}/${total}...` : `Sending ${i + 1}/${total}...`);
+
+        try {
+          const formattedCert = {
+            ...cert,
+            date: formatDate(cert.date),
+            templateWidth,
+            templateHeight,
+          };
+
+          const canvas = await generateCertificateCanvas(templateUrl, templateFields as unknown as TemplateField[], formattedCert);
+          const imgWidth = canvas.width;
+          const imgHeight = canvas.height;
+          const orientation = imgWidth >= imgHeight ? "l" : "p";
+          
+          const pdf = new jsPDF({
+            orientation: orientation,
+            unit: "px",
+            format: [imgWidth, imgHeight],
+          });
+          const jpegDataUrl = canvas.toDataURL("image/jpeg", 0.95);
+          pdf.addImage(jpegDataUrl, "JPEG", 0, 0, imgWidth, imgHeight);
+          
+          const pdfBase64 = pdf.output("datauristring").split(",")[1];
+          
+          const cleanSerial = sanitizeFilename(cert.serial || "SK");
+          const cleanName = sanitizeFilename(cert.name || "peserta").toLowerCase();
+          const filename = `${cleanSerial}_${cleanName}.pdf`;
+
+          const emailRes = await sendCertificateEmailAction({
+            batchId,
+            participantId: (cert as any).participantId,
+            pdfBase64,
+            filename,
+          });
+
+          if (emailRes.error) {
+            console.error(`Failed to send email to ${cert.name}:`, emailRes.error);
+          } else {
+            console.log(`Email sent successfully to ${cert.name}`);
+            if (emailRes.previewUrl) {
+              console.log(`[Email Verification Link]: ${emailRes.previewUrl}`);
+            }
+          }
+        } catch (singleErr) {
+          console.error(`Failed to generate/send email for ${cert.name}:`, singleErr);
+        }
+      }
+
+      alert(lang === "id" ? "Proses pengiriman email selesai! Silakan periksa Pusat Email untuk detail status pengiriman." : "Email delivery process completed! Please check the Email Center for delivery details.");
+    } catch (err) {
+      console.error("Email Campaign error:", err);
+      alert(lang === "id" ? "Terjadi kesalahan saat memproses email." : "An error occurred while processing emails.");
+    } finally {
+      setIsSendingEmails(false);
+      setEmailProgressText("");
+    }
+  }
 
   async function handleDownloadZip(batchId: string, format: "pdf" | "png") {
     setDownloadingBatchId(batchId + "-" + format);
@@ -830,7 +917,7 @@ export default function GeneratorClient({
             <button
               onClick={() => handleDownloadZip(result.batchId, "pdf")}
               disabled={downloadingBatchId !== null}
-              className="btn-primary text-xs flex items-center gap-1.5 bg-rose-600 hover:bg-rose-700 text-white"
+              className="btn-primary text-xs flex items-center gap-1.5 bg-rose-600 hover:bg-rose-700 text-white cursor-pointer"
             >
               {downloadingBatchId === result.batchId + "-pdf" ? (
                 <CircleNotch className="w-4 h-4 animate-spin" />
@@ -843,7 +930,7 @@ export default function GeneratorClient({
             <button
               onClick={() => handleDownloadZip(result.batchId, "png")}
               disabled={downloadingBatchId !== null}
-              className="btn-primary text-xs flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
+              className="btn-primary text-xs flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
             >
               {downloadingBatchId === result.batchId + "-png" ? (
                 <CircleNotch className="w-4 h-4 animate-spin" />
@@ -851,6 +938,24 @@ export default function GeneratorClient({
                 <Download size={14} />
               )}
               Download ZIP (PNG)
+            </button>
+
+            <button
+              onClick={() => handleSendAllEmails(result.batchId)}
+              disabled={isSendingEmails}
+              className="btn-primary text-xs flex items-center gap-1.5 bg-brand-600 hover:bg-brand-700 text-white cursor-pointer"
+            >
+              {isSendingEmails ? (
+                <>
+                  <CircleNotch className="w-4 h-4 animate-spin" />
+                  <span>{emailProgressText}</span>
+                </>
+              ) : (
+                <>
+                  <Envelope size={14} />
+                  <span>{lang === "id" ? "Kirim Semua Email" : "Send All Emails"}</span>
+                </>
+              )}
             </button>
           </div>
 

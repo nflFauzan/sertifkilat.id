@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 import {
   CheckCircle,
   XCircle,
@@ -10,9 +11,19 @@ import {
   Hash,
   MapPin,
   Clock,
+  Download,
+  FilePdf,
+  Image as ImageIcon,
+  ShieldCheck,
 } from "@phosphor-icons/react";
 import { useTranslation } from "@/lib/hooks/useTranslation";
 import { formatDate } from "@/lib/utils";
+import {
+  generateCertificateCanvas,
+  downloadCertificatePNG,
+  downloadCertificatePDF,
+  type TemplateField,
+} from "@/lib/certificateGenerator";
 
 type CertificateData = {
   id: string;
@@ -23,6 +34,11 @@ type CertificateData = {
   issuedAt: string;
   templateName: string | null;
   verifiedCount: number;
+  templateUrl: string;
+  templateFields: any;
+  templateWidth?: number;
+  templateHeight?: number;
+  lastVerifiedAt: string | null;
 };
 
 interface VerifyClientProps {
@@ -38,6 +54,63 @@ export default function VerifyClient({
 }: VerifyClientProps) {
   const { lang } = useTranslation();
   const isValid = !!certificateData;
+
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [loadingPreview, setLoadingPreview] = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  useEffect(() => {
+    if (!isValid || !certificateData) return;
+
+    let active = true;
+    async function loadPreview() {
+      if (!certificateData) return;
+      setLoadingPreview(true);
+      try {
+        const certData = {
+          name: certificateData.recipientName,
+          event: certificateData.eventName,
+          date: formatDate(certificateData.date),
+          serial: certificateData.id,
+          verifyUrl: `${window.location.origin}/verify/${certificateData.id}`,
+          templateWidth: certificateData.templateWidth,
+          templateHeight: certificateData.templateHeight,
+        };
+
+        const canvas = await generateCertificateCanvas(
+          certificateData.templateUrl,
+          certificateData.templateFields as unknown as TemplateField[],
+          certData
+        );
+
+        if (active) {
+          canvasRef.current = canvas;
+          setPreviewUrl(canvas.toDataURL("image/png"));
+        }
+      } catch (err) {
+        console.error("Gagal memuat pratinjau sertifikat:", err);
+      } finally {
+        if (active) setLoadingPreview(false);
+      }
+    }
+
+    loadPreview();
+    return () => {
+      active = false;
+    };
+  }, [isValid, certificateData]);
+
+  const handleDownloadPNG = () => {
+    if (!canvasRef.current || !certificateData) return;
+    const cleanName = certificateData.recipientName.replace(/[^a-zA-Z0-9_\-]/g, "_").toLowerCase();
+    downloadCertificatePNG(canvasRef.current, `${certificateData.id}_${cleanName}`);
+  };
+
+  const handleDownloadPDF = () => {
+    if (!canvasRef.current || !certificateData) return;
+    const cleanName = certificateData.recipientName.replace(/[^a-zA-Z0-9_\-]/g, "_").toLowerCase();
+    downloadCertificatePDF(canvasRef.current, `${certificateData.id}_${cleanName}`);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-ink-50 via-brand-50/20 to-ink-100 flex items-center justify-center p-4">
@@ -185,6 +258,41 @@ export default function VerifyClient({
                   </span>
                 )}
               </div>
+
+              {/* Compact Verification Summary Grid */}
+              <div className="border-t border-ink-100 dark:border-ink-800 pt-5 mt-5">
+                <h4 className="text-xs font-bold text-ink-400 uppercase tracking-wider mb-3">
+                  {lang === "id" ? "Ringkasan Verifikasi" : "Verification Summary"}
+                </h4>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="bg-ink-50 dark:bg-ink-900/30 border border-ink-100 dark:border-ink-800/40 rounded-xl p-3 text-center">
+                    <p className="text-xxs font-bold text-ink-400 uppercase tracking-wider">
+                      {lang === "id" ? "Status" : "Status"}
+                    </p>
+                    <span className="inline-flex items-center gap-1 text-xs font-bold mt-1.5 text-emerald-600 dark:text-emerald-400">
+                      VALID
+                    </span>
+                  </div>
+                  <div className="bg-ink-50 dark:bg-ink-900/30 border border-ink-100 dark:border-ink-800/40 rounded-xl p-3 text-center">
+                    <p className="text-xxs font-bold text-ink-400 uppercase tracking-wider">
+                      {lang === "id" ? "Total Scan" : "Total Scans"}
+                    </p>
+                    <span className="inline-block text-xs font-bold text-ink-900 dark:text-ink-50 mt-1.5">
+                      {certificateData.verifiedCount} {lang === "id" ? "Kali" : "Times"}
+                    </span>
+                  </div>
+                  <div className="bg-ink-50 dark:bg-ink-900/30 border border-ink-100 dark:border-ink-800/40 rounded-xl p-3 text-center">
+                    <p className="text-xxs font-bold text-ink-400 uppercase tracking-wider">
+                      {lang === "id" ? "Scan Terakhir" : "Last Scan"}
+                    </p>
+                    <span className="inline-block text-xxs font-semibold text-ink-700 dark:text-ink-300 mt-2 truncate max-w-full">
+                      {certificateData.lastVerifiedAt 
+                        ? formatDate(certificateData.lastVerifiedAt) 
+                        : (lang === "id" ? "Pertama Kali" : "First scan")}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           ) : (
             <div className="p-8 text-center space-y-5">
@@ -192,10 +300,10 @@ export default function VerifyClient({
                 <XCircle className="w-8 h-8 text-rose-500 dark:text-rose-400" weight="fill" />
               </div>
               <div className="space-y-2">
-                <p className="text-sm font-semibold text-ink-800">
+                <p className="text-sm font-semibold text-ink-800 dark:text-ink-100">
                   {lang === "id" 
-                    ? <>Kode sertifikat <code className="bg-ink-100 font-mono font-bold text-rose-600 px-1.5 py-0.5 rounded text-xs">{decodedId}</code> tidak ditemukan.</>
-                    : <>Certificate code <code className="bg-ink-100 font-mono font-bold text-rose-600 px-1.5 py-0.5 rounded text-xs">{decodedId}</code> not found.</>}
+                    ? <>Kode sertifikat <code className="bg-ink-100 dark:bg-ink-900 font-mono font-bold text-rose-600 px-1.5 py-0.5 rounded text-xs">{decodedId}</code> tidak ditemukan.</>
+                    : <>Certificate code <code className="bg-ink-100 dark:bg-ink-900 font-mono font-bold text-rose-600 px-1.5 py-0.5 rounded text-xs">{decodedId}</code> not found.</>}
                 </p>
                 <p className="text-xs text-ink-500 leading-relaxed max-w-sm mx-auto">
                   {lang === "id" 
@@ -203,14 +311,96 @@ export default function VerifyClient({
                     : "Please check the certificate ID you entered or scan your QR code again. If you believe this is an error, please contact the event organizer."}
                 </p>
               </div>
-              <div className="pt-4 border-t border-ink-100">
+              <div className="pt-4 border-t border-ink-100 dark:border-ink-800">
                 <Link href="/" className="btn-secondary w-full justify-center">
                   {lang === "id" ? "Kembali ke Beranda" : "Back to Home"}
                 </Link>
               </div>
+
+              {/* Compact Verification Summary Grid for Invalid Case */}
+              <div className="border-t border-ink-100 dark:border-ink-800 pt-5 mt-5">
+                <h4 className="text-xs font-bold text-ink-400 uppercase tracking-wider mb-3">
+                  {lang === "id" ? "Ringkasan Verifikasi" : "Verification Summary"}
+                </h4>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="bg-ink-50 dark:bg-ink-900/30 border border-ink-100 dark:border-ink-800/40 rounded-xl p-3 text-center">
+                    <p className="text-xxs font-bold text-ink-400 uppercase tracking-wider">
+                      {lang === "id" ? "Status" : "Status"}
+                    </p>
+                    <span className="inline-flex items-center gap-1 text-xs font-bold mt-1.5 text-rose-600 dark:text-rose-400">
+                      INVALID
+                    </span>
+                  </div>
+                  <div className="bg-ink-50 dark:bg-ink-900/30 border border-ink-100 dark:border-ink-800/40 rounded-xl p-3 text-center col-span-2">
+                    <p className="text-xxs font-bold text-ink-400 uppercase tracking-wider">
+                      {lang === "id" ? "Catatan" : "Notes"}
+                    </p>
+                    <span className="inline-block text-xxs font-semibold text-rose-600 dark:text-rose-400 mt-2 truncate max-w-full">
+                      {lang === "id" ? "Kode tidak terdaftar" : "Code not registered"}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>
+
+        {/* Certificate Preview Card */}
+        {isValid && certificateData && (
+          <div className="card mt-6 p-6 shadow-soft space-y-4">
+            <div className="flex items-center justify-between border-b border-ink-100 dark:border-ink-800 pb-3">
+              <div className="flex items-center gap-2">
+                <ShieldCheck weight="fill" className="w-5 h-5 text-emerald-500" />
+                <h4 className="font-display font-bold text-ink-900 dark:text-ink-50 text-sm">
+                  {lang === "id" ? "Pratinjau & Unduh Sertifikat" : "Certificate Preview & Download"}
+                </h4>
+              </div>
+            </div>
+
+            {/* Thumbnail Preview */}
+            <div className="relative aspect-[1.414] w-full rounded-lg overflow-hidden bg-ink-100 dark:bg-ink-900/50 border border-ink-200 dark:border-ink-800 flex items-center justify-center group">
+              {loadingPreview ? (
+                <div className="flex flex-col items-center gap-2">
+                  <div className="w-6 h-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
+                  <span className="text-xxs text-ink-400 font-medium">
+                    {lang === "id" ? "Menyiapkan pratinjau..." : "Preparing preview..."}
+                  </span>
+                </div>
+              ) : previewUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={previewUrl}
+                  alt="Certificate Preview"
+                  className="w-full h-full object-contain"
+                />
+              ) : (
+                <span className="text-xxs text-ink-400">
+                  {lang === "id" ? "Gagal memuat pratinjau" : "Failed to load preview"}
+                </span>
+              )}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <button
+                onClick={handleDownloadPDF}
+                disabled={!previewUrl}
+                className="btn-primary justify-center text-xs gap-1.5 py-2.5 shadow-sm disabled:opacity-50"
+              >
+                <FilePdf className="w-4 h-4" />
+                {lang === "id" ? "Unduh PDF" : "Download PDF"}
+              </button>
+              <button
+                onClick={handleDownloadPNG}
+                disabled={!previewUrl}
+                className="btn-secondary justify-center text-xs gap-1.5 py-2.5 shadow-sm disabled:opacity-50"
+              >
+                <ImageIcon className="w-4 h-4" />
+                {lang === "id" ? "Unduh PNG" : "Download PNG"}
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Footer */}
         <p className="text-center text-xs text-ink-400 mt-6">

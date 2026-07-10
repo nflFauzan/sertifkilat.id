@@ -52,6 +52,11 @@ export default async function VerifyPage({ params }: Props) {
         issuedAt: dbCert.issuedAt.toISOString(),
         templateName: dbCert.batch.template.name,
         verifiedCount: dbCert.verifiedCount + 1,
+        templateUrl: dbCert.batch.template.fileUrl,
+        templateFields: dbCert.batch.template.fields,
+        templateWidth: dbCert.batch.template.width,
+        templateHeight: dbCert.batch.template.height,
+        lastVerifiedAt: dbCert.lastVerifiedAt ? dbCert.lastVerifiedAt.toISOString() : null,
       };
       isFromDatabase = true;
 

@@ -205,6 +205,7 @@ export async function getBatchCertificatesAction(batchId: string) {
       certificates: batch.certificates.map((c) => ({
         serial: c.serialNumber,
         name: c.participant.name,
+        participantId: c.participantId,
         event: batch.event.name,
         date: batch.event.date.toISOString(),
         verifyUrl: c.verifyUrl || "",
