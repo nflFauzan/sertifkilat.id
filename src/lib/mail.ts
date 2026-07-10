@@ -5,6 +5,31 @@ let transporter: nodemailer.Transporter | null = null;
 export async function getTransporter() {
   if (transporter) return transporter;
 
+  const host = process.env.SMTP_HOST;
+  const port = process.env.SMTP_PORT;
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+
+  if (host && port && user && pass) {
+    try {
+      const smtpPort = parseInt(port, 10);
+      const isSecure = smtpPort === 465;
+      transporter = nodemailer.createTransport({
+        host,
+        port: smtpPort,
+        secure: isSecure,
+        auth: {
+          user,
+          pass,
+        },
+      });
+      console.log(`[Email] Created SMTP Transporter using host: ${host}`);
+      return transporter;
+    } catch (error) {
+      console.error("[Email] Failed to create configured SMTP transporter:", error);
+    }
+  }
+
   // We automatically generate a test account on Ethereal Email for development/testing
   try {
     const testAccount = await nodemailer.createTestAccount();
@@ -52,8 +77,9 @@ export async function sendEmail({
   }>;
 }) {
   const mailTransporter = await getTransporter();
+  const from = process.env.SMTP_FROM || '"SertifKilat.id" <no-reply@sertifkilat.id>';
   const info = await mailTransporter.sendMail({
-    from: '"SertifKilat.id" <no-reply@sertifkilat.id>',
+    from,
     to,
     subject,
     html,
@@ -66,3 +92,4 @@ export async function sendEmail({
   }
   return { messageId: info.messageId, previewUrl };
 }
+
