@@ -23,6 +23,21 @@ export default async function TemplateEditorPage({
     notFound();
   }
 
+  // Get user plan and verify premium access
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { plan: true },
+  });
+  const userPlan = user?.plan || "FREE";
+
+  const isPremium = ["elegan-navy-gold", "luxury-achievement", "elegant-gold", "modern-appreciation"].some(
+    k => template.fileUrl.includes(k)
+  );
+
+  if (userPlan === "FREE" && isPremium) {
+    redirect("/dashboard/templates");
+  }
+
   // Safe serialization of template data
   const serializedTemplate = {
     id: template.id,
@@ -41,5 +56,28 @@ export default async function TemplateEditorPage({
     }> || [],
   };
 
-  return <EditorClient template={serializedTemplate} />;
+  // Fetch all templates for the user to support live template switching dropdown
+  const templates = await prisma.template.findMany({
+    where: { userId: session.user.id },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const serializedTemplates = templates.map(t => ({
+    id: t.id,
+    name: t.name,
+    fileUrl: t.fileUrl,
+    width: t.width,
+    height: t.height,
+    fields: t.fields as Array<{
+      key: string;
+      x: number;
+      y: number;
+      fontSize?: number;
+      color?: string;
+      fontWeight?: string;
+      align?: string;
+    }> || [],
+  }));
+
+  return <EditorClient template={serializedTemplate} templates={serializedTemplates} />;
 }

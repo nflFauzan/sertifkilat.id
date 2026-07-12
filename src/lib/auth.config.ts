@@ -7,11 +7,14 @@ export const authConfig = {
     error: "/auth/error",
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
         token.role = (user as { role?: string }).role;
         token.plan = (user as { plan?: string }).plan;
+      }
+      if (trigger === "update" && session?.plan) {
+        token.plan = session.plan;
       }
       return token;
     },

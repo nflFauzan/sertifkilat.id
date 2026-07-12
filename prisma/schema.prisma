@@ -90,6 +90,7 @@ model Participant {
   extraData    Json?
   createdAt    DateTime      @default(now())
   certificates Certificate[]
+  emailLogs    EmailLog[]
   event        Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
   @@unique([eventId, email])
@@ -146,6 +147,7 @@ model Certificate {
   batch            Batch             @relation(fields: [batchId], references: [id], onDelete: Cascade)
   participant      Participant       @relation(fields: [participantId], references: [id], onDelete: Cascade)
   verificationLogs VerificationLog[]
+  emailLogs        EmailLog[]
 
   @@map("certificates")
 }
@@ -161,6 +163,25 @@ model VerificationLog {
   certificate   Certificate? @relation(fields: [certificateId], references: [id])
 
   @@map("verification_logs")
+}
+
+model EmailLog {
+  id             String       @id @default(cuid())
+  userId         String
+  participantId  String
+  certificateId  String
+  status         String       // "QUEUED" | "SENT" | "FAILED"
+  sentAt         DateTime?
+  errorMessage   String?
+  subject        String
+  recipientEmail String
+  recipientName  String
+  eventName      String
+  certificate    Certificate  @relation(fields: [certificateId], references: [id], onDelete: Cascade)
+  participant    Participant  @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+
+  @@map("email_logs")
 }
 
 enum Role {

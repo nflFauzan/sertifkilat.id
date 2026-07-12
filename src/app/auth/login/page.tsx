@@ -6,11 +6,13 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeSlash, Lightning, CircleNotch, Warning, CheckCircle } from "@phosphor-icons/react";
 import { getMissingGoogleConfig } from "@/app/actions/auth";
+import { useTranslation } from "@/lib/hooks/useTranslation";
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isRegistered = searchParams.get("registered") === "true";
+  const { t, lang } = useTranslation();
 
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -30,19 +32,24 @@ function LoginForm() {
     setIsLoading(true);
     setError("");
 
-    const fd = new FormData(e.currentTarget);
-    const result = await signIn("credentials", {
-      email: fd.get("email"),
-      password: fd.get("password"),
-      redirect: false,
-    });
+    try {
+      const fd = new FormData(e.currentTarget);
+      const result = await signIn("credentials", {
+        email: fd.get("email"),
+        password: fd.get("password"),
+        redirect: false,
+      });
 
-    if (result?.error) {
-      setError("Gmail atau password salah");
+      if (result?.error) {
+        setError(t("auth.loginError"));
+        setIsLoading(false);
+      } else {
+        window.location.href = "/dashboard";
+      }
+    } catch (err) {
+      console.error(err);
+      setError(t("auth.loginError"));
       setIsLoading(false);
-    } else {
-      router.push("/dashboard");
-      router.refresh();
     }
   }
 
@@ -65,8 +72,8 @@ function LoginForm() {
               SertifKilat<span className="text-brand-500">.id</span>
             </span>
           </Link>
-          <h1 className="mt-6 text-2xl font-bold text-ink-900">Selamat datang kembali</h1>
-          <p className="mt-1 text-sm text-ink-500">Masuk ke akun SertifKilat.id kamu</p>
+          <h1 className="mt-6 text-2xl font-bold text-ink-900">{t("auth.loginTitle")}</h1>
+          <p className="mt-1 text-sm text-ink-500">{t("auth.loginSubtitle")}</p>
         </div>
 
         {/* Card */}
@@ -74,7 +81,7 @@ function LoginForm() {
           {isRegistered && !error && (
             <div className="mb-5 flex items-start gap-3 rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-700">
               <CheckCircle weight="fill" className="w-4 h-4 mt-0.5 shrink-0" />
-              <span>Registrasi berhasil! Silakan masuk dengan akun baru Anda.</span>
+              <span>{t("auth.registerSuccess")}</span>
             </div>
           )}
 
@@ -89,7 +96,7 @@ function LoginForm() {
             {/* Gmail */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-ink-700 mb-1.5">
-                Gmail
+                {t("auth.emailLabel")}
               </label>
               <input
                 id="email"
@@ -106,7 +113,7 @@ function LoginForm() {
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label htmlFor="password" className="block text-sm font-medium text-ink-700">
-                  Password
+                  {t("auth.passwordLabel")}
                 </label>
               </div>
               <div className="relative">
@@ -116,14 +123,14 @@ function LoginForm() {
                   type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
                   required
-                  placeholder="Password kamu"
+                  placeholder={t("auth.passwordLabel")}
                   className="input-field pr-11"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((p) => !p)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-700 transition-colors"
-                  aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
+                  aria-label={showPassword ? (lang === "id" ? "Sembunyikan password" : "Hide password") : (lang === "id" ? "Tampilkan password" : "Show password")}
                 >
                   {showPassword ? <EyeSlash className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -139,10 +146,10 @@ function LoginForm() {
               {isLoading ? (
                 <>
                   <CircleNotch className="w-4 h-4 animate-spin" />
-                  Masuk...
+                  {t("common.loading")}
                 </>
               ) : (
-                "Masuk"
+                t("auth.signInBtn")
               )}
             </button>
           </form>
@@ -152,8 +159,8 @@ function LoginForm() {
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-ink-100" />
             </div>
-            <div className="relative flex justify-center text-xs text-ink-400 bg-white px-2">
-              Atau lanjutkan dengan
+            <div className="relative flex justify-center text-xs text-ink-400 bg-bg-card px-2">
+              {lang === "id" ? "Atau lanjutkan dengan" : "Or continue with"}
             </div>
           </div>
 
@@ -162,8 +169,10 @@ function LoginForm() {
             <div className="mb-4 flex items-start gap-2.5 rounded-xl bg-amber-50 border border-amber-200 px-3.5 py-2.5 text-xs text-amber-800">
               <Warning weight="fill" className="w-4 h-4 mt-0.5 shrink-0 text-amber-500" />
               <div>
-                <span className="font-semibold block mb-0.5">Google Sign-in Nonaktif</span>
-                Variabel berikut belum dikonfigurasi di file <code className="bg-amber-100 px-1 rounded">.env</code>:
+                <span className="font-semibold block mb-0.5">
+                  {lang === "id" ? "Google Sign-in Nonaktif" : "Google Sign-in Disabled"}
+                </span>
+                {lang === "id" ? "Variabel berikut belum dikonfigurasi di file .env:" : "The following variables have not been configured in the .env file:"}
                 <ul className="list-disc list-inside mt-1 font-mono font-semibold">
                   {googleConfig.missing.map((v) => (
                     <li key={v}>{v}</li>
@@ -183,7 +192,7 @@ function LoginForm() {
                 await signIn("google", { callbackUrl: "/dashboard" });
               } catch (err) {
                 console.error(err);
-                setError("Gagal masuk dengan Google");
+                setError(lang === "id" ? "Gagal masuk dengan Google" : "Google Login Failed");
                 setIsLoading(false);
               }
             }}
@@ -208,15 +217,15 @@ function LoginForm() {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
               />
             </svg>
-            Continue with Google
+            {t("auth.googleBtn")}
           </button>
         </div>
 
         {/* Register link */}
         <p className="text-center mt-6 text-sm text-ink-500">
-          {"Don't have an account? "}
+          {t("auth.dontHaveAccount") + " "}
           <Link href="/auth/register" className="text-brand-600 font-semibold hover:text-brand-700 transition-colors">
-            Register
+            {t("auth.signUpBtn")}
           </Link>
         </p>
       </div>
@@ -225,13 +234,14 @@ function LoginForm() {
 }
 
 export default function LoginPage() {
+  const { t } = useTranslation();
   return (
     <Suspense
       fallback={
         <div className="min-h-screen bg-ink-50 flex items-center justify-center p-4">
           <div className="w-full max-w-md text-center card p-8 shadow-soft flex flex-col items-center justify-center">
             <div className="w-6 h-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
-            <p className="text-sm text-ink-500 mt-4">Memuat...</p>
+            <p className="text-sm text-ink-500 mt-4">{t("common.loading")}</p>
           </div>
         </div>
       }

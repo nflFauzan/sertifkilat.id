@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Eye, EyeSlash, Lightning, CircleNotch, Warning, CheckCircle } from "@phosphor-icons/react";
 import { registerAction, getMissingGoogleConfig } from "@/app/actions/auth";
 import { signIn } from "next-auth/react";
+import { useTranslation } from "@/lib/hooks/useTranslation";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -14,6 +15,7 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [googleConfig, setGoogleConfig] = useState<{ isConfigured: boolean; missing: string[] } | null>(null);
+  const { t, lang } = useTranslation();
 
   useEffect(() => {
     async function loadConfig() {
@@ -29,7 +31,7 @@ export default function RegisterPage() {
     const fd = new FormData(e.currentTarget);
 
     if (fd.get("password") !== fd.get("confirmPassword")) {
-      setError("Password tidak cocok");
+      setError(t("auth.passwordMismatch"));
       return;
     }
 
@@ -66,8 +68,8 @@ export default function RegisterPage() {
               SertifKilat<span className="text-brand-500">.id</span>
             </span>
           </Link>
-          <h1 className="mt-6 text-2xl font-bold text-ink-900">Buat akun gratis</h1>
-          <p className="mt-1 text-sm text-ink-500">Mulai generate sertifikat dalam hitungan menit</p>
+          <h1 className="mt-6 text-2xl font-bold text-ink-900">{t("auth.registerTitle")}</h1>
+          <p className="mt-1 text-sm text-ink-500">{t("auth.registerSubtitle")}</p>
         </div>
 
         {/* Card */}
@@ -82,7 +84,7 @@ export default function RegisterPage() {
           {success && (
             <div className="mb-5 flex items-start gap-3 rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-700">
               <CheckCircle weight="fill" className="w-4 h-4 mt-0.5 shrink-0" />
-              <span>Akun berhasil dibuat! Mengalihkan ke halaman login...</span>
+              <span>{lang === "id" ? "Akun berhasil dibuat! Mengalihkan ke halaman login..." : "Account created successfully! Redirecting to login page..."}</span>
             </div>
           )}
 
@@ -90,7 +92,7 @@ export default function RegisterPage() {
             {/* Name */}
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-ink-700 mb-1.5">
-                Full Name
+                {t("auth.fullNameLabel")}
               </label>
               <input
                 id="name"
@@ -98,7 +100,7 @@ export default function RegisterPage() {
                 type="text"
                 autoComplete="name"
                 required
-                placeholder="Nama lengkap kamu"
+                placeholder={lang === "id" ? "Nama lengkap kamu" : "Your full name"}
                 className="input-field"
               />
             </div>
@@ -106,7 +108,7 @@ export default function RegisterPage() {
             {/* Gmail */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-ink-700 mb-1.5">
-                Gmail
+                {t("auth.emailLabel")}
               </label>
               <input
                 id="email"
@@ -122,7 +124,7 @@ export default function RegisterPage() {
             {/* Password */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-ink-700 mb-1.5">
-                Password
+                {t("auth.passwordLabel")}
               </label>
               <div className="relative">
                 <input
@@ -131,25 +133,27 @@ export default function RegisterPage() {
                   type={showPassword ? "text" : "password"}
                   autoComplete="new-password"
                   required
-                  placeholder="Min. 8 karakter, huruf kapital & angka"
+                  placeholder={lang === "id" ? "Min. 8 karakter, huruf kapital & angka" : "Min. 8 characters, capital & number"}
                   className="input-field pr-11"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((p) => !p)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-700 transition-colors"
-                  aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
+                  aria-label={showPassword ? (lang === "id" ? "Sembunyikan password" : "Hide password") : (lang === "id" ? "Tampilkan password" : "Show password")}
                 >
                   {showPassword ? <EyeSlash className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-              <p className="mt-1.5 text-xs text-ink-400">Minimal 8 karakter, ada huruf kapital dan angka</p>
+              <p className="mt-1.5 text-xs text-ink-400">
+                {lang === "id" ? "Minimal 8 karakter, ada huruf kapital dan angka" : "Min. 8 characters, capital letter & number"}
+              </p>
             </div>
 
             {/* Confirm Password */}
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-ink-700 mb-1.5">
-                Confirm Password
+                {t("auth.confirmPasswordLabel")}
               </label>
               <input
                 id="confirmPassword"
@@ -157,7 +161,7 @@ export default function RegisterPage() {
                 type={showPassword ? "text" : "password"}
                 autoComplete="new-password"
                 required
-                placeholder="Ulangi password"
+                placeholder={lang === "id" ? "Ulangi password" : "Repeat password"}
                 className="input-field"
               />
             </div>
@@ -171,10 +175,10 @@ export default function RegisterPage() {
               {isPending ? (
                 <>
                   <CircleNotch className="w-4 h-4 animate-spin" />
-                  Mendaftar...
+                  {t("common.loading")}
                 </>
               ) : (
-                "Buat Akun Gratis"
+                t("auth.signUpBtn")
               )}
             </button>
           </form>
@@ -184,8 +188,8 @@ export default function RegisterPage() {
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-ink-100" />
             </div>
-            <div className="relative flex justify-center text-xs text-ink-400 bg-white px-2">
-              Atau daftarkan dengan
+            <div className="relative flex justify-center text-xs text-ink-400 bg-bg-card px-2">
+              {lang === "id" ? "Atau daftarkan dengan" : "Or register with"}
             </div>
           </div>
 
@@ -194,8 +198,10 @@ export default function RegisterPage() {
             <div className="mb-4 flex items-start gap-2.5 rounded-xl bg-amber-50 border border-amber-200 px-3.5 py-2.5 text-xs text-amber-800">
               <Warning weight="fill" className="w-4 h-4 mt-0.5 shrink-0 text-amber-500" />
               <div>
-                <span className="font-semibold block mb-0.5">Google Sign-in Nonaktif</span>
-                Variabel berikut belum dikonfigurasi di file <code className="bg-amber-100 px-1 rounded">.env</code>:
+                <span className="font-semibold block mb-0.5">
+                  {lang === "id" ? "Google Sign-in Nonaktif" : "Google Sign-in Disabled"}
+                </span>
+                {lang === "id" ? "Variabel berikut belum dikonfigurasi di file .env:" : "The following variables have not been configured in the .env file:"}
                 <ul className="list-disc list-inside mt-1 font-mono font-semibold">
                   {googleConfig.missing.map((v) => (
                     <li key={v}>{v}</li>
@@ -214,7 +220,7 @@ export default function RegisterPage() {
                 await signIn("google", { callbackUrl: "/dashboard" });
               } catch (err) {
                 console.error(err);
-                setError("Gagal mendaftar dengan Google");
+                setError(lang === "id" ? "Gagal mendaftar dengan Google" : "Google Registration Failed");
               }
             }}
             disabled={isPending || success || googleConfig?.isConfigured === false}
@@ -238,15 +244,15 @@ export default function RegisterPage() {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
               />
             </svg>
-            Continue with Google
+            {t("auth.googleBtn")}
           </button>
         </div>
 
         {/* Login link */}
         <p className="text-center mt-6 text-sm text-ink-500">
-          Already have an account?{" "}
+          {t("auth.haveAccount") + " "}
           <Link href="/auth/login" className="text-brand-600 font-semibold hover:text-brand-700 transition-colors">
-            Log in
+            {t("auth.signInBtn")}
           </Link>
         </p>
       </div>

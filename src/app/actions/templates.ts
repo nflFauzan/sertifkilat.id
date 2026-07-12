@@ -42,6 +42,33 @@ export async function createTemplateAction(formData: FormData) {
     return { error: "Nama template dan file gambar wajib diisi" };
   }
 
+  // Get user plan from DB (Single Source of Truth)
+  const dbUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { plan: true },
+  });
+  const userPlan = dbUser?.plan || "FREE";
+
+  if (userPlan === "FREE") {
+    return { error: "Paket FREE tidak mendukung unggah template kustom. Silakan upgrade paket Anda." };
+  }
+
+  if (userPlan === "PRO") {
+    const customTemplatesCount = await prisma.template.count({
+      where: {
+        userId: session.user.id,
+        NOT: {
+          fileUrl: {
+            startsWith: "/templates/",
+          },
+        },
+      },
+    });
+    if (customTemplatesCount >= 5) {
+      return { error: "Batas maksimal template kustom untuk paket PRO Anda adalah 5 template. Silakan upgrade ke paket BUSINESS untuk template kustom tak terbatas." };
+    }
+  }
+
   try {
     // 1. Define all default certificate fields (A4 Landscape 1122x794 coords)
     const defaultFields = [
