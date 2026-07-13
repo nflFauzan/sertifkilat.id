@@ -25,7 +25,15 @@ import {
 } from "@phosphor-icons/react";
 import { useTranslation } from "@/lib/hooks/useTranslation";
 import UpgradeModal from "@/components/UpgradeModal";
-import { getEmailLogsAction, resendEmailAction } from "@/app/actions/email";
+import { 
+  getEmailLogsAction, 
+  resendEmailAction, 
+  getEmailCenterDataAction, 
+  saveEmailTemplateAction, 
+  saveSmtpSettingsAction, 
+  testSmtpConnectionAction, 
+  sendBatchEmailsAction 
+} from "@/app/actions/email";
 
 interface ToastType {
   id: number;
@@ -71,20 +79,14 @@ export default function EmailCenterPage() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isLoadingLogs, setIsLoadingLogs] = useState(true);
 
-  const loadLogs = async () => {
-    setIsLoadingLogs(true);
-    const res = await getEmailLogsAction();
-    if (res.success && res.logs && res.logs.length > 0) {
-      setQueue(res.logs as any);
-    } else {
-      setQueue(INITIAL_QUEUE);
-    }
-    setIsLoadingLogs(false);
-  };
-
-  useEffect(() => {
-    loadLogs();
-  }, []);
+  // Email Center backend data states
+  const [events, setEvents] = useState<any[]>([]);
+  const [selectedEventId, setSelectedEventId] = useState("");
+  const [selectedBatchId, setSelectedBatchId] = useState("");
+  const [isSavingTemplate, setIsSavingTemplate] = useState(false);
+  const [isSavingSmtp, setIsSavingSmtp] = useState(false);
+  const [isTestingSmtp, setIsTestingSmtp] = useState(false);
+  const [isSendingBatch, setIsSendingBatch] = useState(false);
 
   // Template Builder states
   const [templateSubject, setTemplateSubject] = useState("Sertifikat Kelulusan: {{event}}");
@@ -108,6 +110,185 @@ export default function EmailCenterPage() {
   const [replyEmail, setReplyEmail] = useState("no-reply@sertifkilat.id");
   const [emailSignature, setEmailSignature] = useState("Sent securely via SertifKilat.id");
   const [brandColor, setBrandColor] = useState("#3b82f6");
+  const [smtpHost, setSmtpHost] = useState("");
+  const [smtpPort, setSmtpPort] = useState("587");
+  const [smtpUser, setSmtpUser] = useState("");
+  const [smtpPass, setSmtpPass] = useState("");
+
+  const loadLogs = async () => {
+    setIsLoadingLogs(true);
+    const res = await getEmailLogsAction();
+    if (res.success && res.logs && res.logs.length > 0) {
+      setQueue(res.logs as any);
+    } else {
+      setQueue(INITIAL_QUEUE);
+    }
+    setIsLoadingLogs(false);
+  };
+
+  const loadEmailCenterData = async () => {
+    const res = await getEmailCenterDataAction();
+    if (res.success) {
+      setEvents(res.events || []);
+      
+      if (res.smtpSettings) {
+        const smtp = res.smtpSettings as any;
+        setSenderName(smtp.senderName || "");
+        setReplyEmail(smtp.replyEmail || "");
+        setEmailSignature(smtp.emailSignature || "");
+        setBrandColor(smtp.brandColor || "#3b82f6");
+        setSmtpHost(smtp.host || "");
+        setSmtpPort(smtp.port || "587");
+        setSmtpUser(smtp.user || "");
+        setSmtpPass(smtp.pass || "");
+      }
+    }
+  };
+
+  useEffect(() => {
+    loadLogs();
+    loadEmailCenterData();
+  }, []);
+
+  const handleEventChangeForTemplate = (eventId: string) => {
+    setSelectedEventId(eventId);
+    const ev = events.find(e => e.id === eventId);
+    if (ev && ev.emailTemplate) {
+      const et = ev.emailTemplate as any;
+      setTemplateSubject(et.subject || `Sertifikat ${ev.name} Anda Telah Terbit`);
+      setTemplateGreeting(et.greeting || "Halo {{participant}},");
+      setTemplateBody(et.body || "Selamat! Anda telah dinyatakan berhak menerima sertifikat penghargaan atas partisipasi Anda dalam kegiatan <strong>{{event}}</strong>.\n\nSertifikat digital Anda dapat diakses dan diunduh secara resmi melalui tautan di bawah ini.");
+      setTemplateFooter(et.footer || "Salam hangat,\nTim Penyelenggara SertifKilat.id");
+      setBrandColor(et.brandColor || "#3b82f6");
+    } else if (ev) {
+      setTemplateSubject(`Sertifikat ${ev.name} Anda Telah Terbit`);
+      setTemplateGreeting("Halo {{participant}},");
+      setTemplateBody("Selamat! Anda telah dinyatakan berhak menerima sertifikat penghargaan atas partisipasi Anda dalam kegiatan <strong>{{event}}</strong>.\n\nSertifikat digital Anda dapat diakses dan diunduh secara resmi melalui tautan di bawah ini.");
+      setTemplateFooter("Salam hangat,\nTim Penyelenggara SertifKilat.id");
+      setBrandColor("#3b82f6");
+    }
+  };
+
+  const handleSaveTemplate = async () => {
+    if (!selectedEventId) {
+      showToast(lang === "id" ? "Silakan pilih event terlebih dahulu!" : "Please select an event first!", "warning");
+      return;
+    }
+
+    setIsSavingTemplate(true);
+    const res = await saveEmailTemplateAction(selectedEventId, {
+      subject: templateSubject,
+      greeting: templateGreeting,
+      body: templateBody,
+      footer: templateFooter,
+      brandColor,
+    });
+
+    setIsSavingTemplate(true); // reset
+    setIsSavingTemplate(false);
+    if (res.success) {
+      showToast(lang === "id" ? "Template email berhasil disimpan!" : "Email template saved!", "success");
+      loadEmailCenterData();
+    } else {
+      showToast(res.error || (lang === "id" ? "Gagal menyimpan" : "Save failed"), "warning");
+    }
+  };
+
+  const handleSaveSmtpSettings = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingSmtp(true);
+    const res = await saveSmtpSettingsAction({
+      host: smtpHost,
+      port: smtpPort,
+      user: smtpUser,
+      pass: smtpPass,
+      senderName,
+      replyEmail,
+      emailSignature,
+      brandColor,
+    });
+    setIsSavingSmtp(false);
+    if (res.success) {
+      showToast(lang === "id" ? "Setelan SMTP berhasil disimpan!" : "SMTP settings saved!", "success");
+      loadEmailCenterData();
+    } else {
+      showToast(res.error || (lang === "id" ? "Gagal menyimpan" : "Save failed"), "warning");
+    }
+  };
+
+  const handleTestSmtpConnection = async () => {
+    setIsTestingSmtp(true);
+    const res = await testSmtpConnectionAction({
+      host: smtpHost,
+      port: smtpPort,
+      user: smtpUser,
+      pass: smtpPass,
+      senderName,
+      replyEmail,
+      emailSignature,
+      brandColor,
+    });
+    setIsTestingSmtp(false);
+    if (res.success) {
+      showToast(res.message || "Connection verified!", "success");
+    } else {
+      showToast(res.error || "Connection test failed", "warning");
+    }
+  };
+
+  const handleBatchSendSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (userPlan === "FREE") {
+      setShowUpgradeModal(true);
+      return;
+    }
+
+    if (!selectedEventId) {
+      showToast(lang === "id" ? "Silakan pilih event!" : "Please select event!", "warning");
+      return;
+    }
+    if (!selectedBatchId) {
+      showToast(lang === "id" ? "Silakan pilih batch!" : "Please select batch!", "warning");
+      return;
+    }
+
+    if (deliveryMethod === "later") {
+      showToast(
+        lang === "id" 
+          ? `Pengiriman berhasil dijadwalkan pada ${scheduleDate} ${scheduleTime} (${scheduleTimezone}). Fondasi penjadwalan telah disiapkan di database.` 
+          : `Delivery successfully scheduled at ${scheduleDate} ${scheduleTime} (${scheduleTimezone}). Scheduling foundation is set in DB.`, 
+        "success"
+      );
+      return;
+    }
+
+    setIsSendingBatch(true);
+    showToast(lang === "id" ? "Memulai pengiriman batch email..." : "Starting batch email delivery...", "info");
+
+    const res = await sendBatchEmailsAction({
+      eventId: selectedEventId,
+      batchId: selectedBatchId,
+      targetType: targetAudience as any,
+      testEmail: targetAudience === "test" ? testEmailAddress : undefined,
+    });
+
+    setIsSendingBatch(false);
+    if (res.success) {
+      showToast(
+        lang === "id" 
+          ? `Selesai! Berhasil mengirim ${res.successCount} email, Gagal ${res.failCount} email.` 
+          : `Done! Successfully sent ${res.successCount} emails, Failed ${res.failCount} emails.`,
+        res.failCount > 0 ? "warning" : "success"
+      );
+      loadLogs();
+      setActiveTab("queue");
+    } else {
+      showToast(res.error || (lang === "id" ? "Gagal memproses pengiriman batch" : "Failed to process batch"), "warning");
+    }
+  };
+
+  const currentEvent = events.find(e => e.id === selectedEventId);
+  const activeBatches = currentEvent?.batches || [];
 
   // Simulate timeline process for selected email
   const getTimelineSteps = (status: string) => {
@@ -183,27 +364,6 @@ export default function EmailCenterPage() {
     if (isDrawerOpen) setIsDrawerOpen(false);
   };
 
-  // Batch send mock submission
-  const handleBatchSendSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (userPlan === "FREE") {
-      setShowUpgradeModal(true);
-      return;
-    }
-
-    if (deliveryMethod === "now") {
-      showToast(lang === "id" ? "Kampanye email berhasil diluncurkan!" : "Email delivery campaign launched successfully!", "success");
-      // Add fake items to queue representing progress
-      const newItems: EmailQueueItem[] = [
-        { id: `EM-${Math.floor(1000 + Math.random()*9000)}`, participant: "Ali Wardana", email: "ali.wardana@gmail.com", event: "Webinar AI 2026", certificate: "CERT-AI-090", status: "Sending", sentAt: "Just Now", subject: templateSubject, deliveryTime: "Processing" },
-        { id: `EM-${Math.floor(1000 + Math.random()*9000)}`, participant: "Siti Aminah", email: "siti.aminah@gmail.com", event: "Webinar AI 2026", certificate: "CERT-AI-091", status: "Queued", sentAt: "Just Now", subject: templateSubject, deliveryTime: "Pending" }
-      ];
-      setQueue(prev => [...newItems, ...prev]);
-    } else {
-      showToast(lang === "id" ? `Pengiriman dijadwalkan pada ${scheduleDate} ${scheduleTime} (${scheduleTimezone})` : `Delivery scheduled at ${scheduleDate} ${scheduleTime} (${scheduleTimezone})`, "success");
-    }
-    setActiveTab("queue");
-  };
 
   return (
     <div className="pb-24 relative text-ink-900 dark:text-ink-50">
@@ -745,12 +905,57 @@ export default function EmailCenterPage() {
               {lang === "id" ? "Konfigurasi Kampanye Pengiriman" : "Configure Batch Campaign"}
             </h3>
 
+            {/* Event & Batch Selector */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-ink-750 mb-1.5">
+                  Pilih Event <span className="text-rose-500">*</span>
+                </label>
+                <select
+                  value={selectedEventId}
+                  onChange={(e) => {
+                    setSelectedEventId(e.target.value);
+                    setSelectedBatchId(""); // Reset batch
+                  }}
+                  className="input-field text-xs font-semibold"
+                  required
+                >
+                  <option value="">— Pilih Event —</option>
+                  {events.map((ev) => (
+                    <option key={ev.id} value={ev.id}>
+                      {ev.name} ({ev.type})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-ink-750 mb-1.5">
+                  Pilih Batch Cetak <span className="text-rose-500">*</span>
+                </label>
+                <select
+                  value={selectedBatchId}
+                  onChange={(e) => setSelectedBatchId(e.target.value)}
+                  className="input-field text-xs font-semibold"
+                  required
+                  disabled={!selectedEventId}
+                >
+                  <option value="">— Pilih Batch —</option>
+                  {activeBatches.map((b: any) => (
+                    <option key={b.id} value={b.id}>
+                      {b.name} ({b.doneCount}/{b.totalCount} Selesai)
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
             {/* Target Options */}
             <div className="space-y-3">
               <label className="text-xs font-bold text-ink-700 block">{lang === "id" ? "Penerima Sertifikat" : "Target Recipients"}</label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {[
-                  { key: "all", title: "All Participants", desc: "Send to all registered batch participants (150 recipients)" },
+                  { key: "all", title: "All Participants", desc: "Send to all registered batch participants" },
                   { key: "selected", title: "Selected Participants", desc: "Choose specific row items manually from the table list" },
                   { key: "failed", title: "Resend Failed Only", desc: "Trigger re-delivery campaign to failed recipient logs" },
                   { key: "test", title: "Send Test Email", desc: "Deliver a test instance of the selected template style" }
@@ -863,9 +1068,17 @@ export default function EmailCenterPage() {
               </button>
               <button
                 type="submit"
-                className="btn-primary py-2 px-5 text-xs font-bold"
+                disabled={isSendingBatch}
+                className="btn-primary py-2 px-5 text-xs font-bold inline-flex items-center gap-1.5"
               >
-                {deliveryMethod === "now" ? "Send Certificates" : "Schedule Campaign"}
+                {isSendingBatch ? (
+                  <>
+                    <CircleNotch className="w-4.5 h-4.5 animate-spin" />
+                    {lang === "id" ? "Mengirim..." : "Sending..."}
+                  </>
+                ) : (
+                  deliveryMethod === "now" ? "Send Certificates" : "Schedule Campaign"
+                )}
               </button>
             </div>
           </form>
@@ -902,84 +1115,117 @@ export default function EmailCenterPage() {
               {lang === "id" ? "Penyunting Template Email" : "Email Template Editor"}
             </h3>
 
-            {/* Variable injectors tags */}
+            {/* Event Selection */}
             <div className="space-y-2">
-              <label className="text-xxs font-bold text-ink-600 uppercase tracking-wider block">Sisipkan Variabel (Click to inject)</label>
-              <div className="flex flex-wrap gap-2">
-                {[
-                  { key: "participant", label: "{{participant}}" },
-                  { key: "event", label: "{{event}}" },
-                  { key: "certificate", label: "{{certificate}}" },
-                  { key: "date", label: "{{date}}" },
-                  { key: "verification", label: "{{verification}}" }
-                ].map(v => (
-                  <button
-                    key={v.key}
-                    type="button"
-                    onClick={() => injectVariable(v.key, "body")}
-                    className="px-2.5 py-1 text-[10px] font-mono font-bold bg-brand-50 hover:bg-brand-100 text-brand-600 rounded-lg transition-all border border-brand-100 cursor-pointer"
-                  >
-                    {v.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Subject text input */}
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-ink-700 block">Email Subject</label>
-              <input
-                type="text"
-                value={templateSubject}
-                onChange={e => setTemplateSubject(e.target.value)}
-                className="input-field font-semibold text-xs"
-                placeholder="Subject"
-              />
-            </div>
-
-            {/* Greeting input */}
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-ink-700 block">Greeting Header</label>
-              <input
-                type="text"
-                value={templateGreeting}
-                onChange={e => setTemplateGreeting(e.target.value)}
-                className="input-field text-xs"
-                placeholder="Greeting"
-              />
-            </div>
-
-            {/* Body textarea */}
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-ink-700 block">Email Body Message</label>
-              <textarea
-                value={templateBody}
-                onChange={e => setTemplateBody(e.target.value)}
-                className="input-field text-xs min-h-[140px] font-medium leading-relaxed"
-                placeholder="Write your email body..."
-              />
-            </div>
-
-            {/* Footer textarea */}
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-ink-700 block">Email Footer Signature</label>
-              <textarea
-                value={templateFooter}
-                onChange={e => setTemplateFooter(e.target.value)}
-                className="input-field text-xs min-h-[60px] font-medium leading-relaxed"
-                placeholder="Signatures, links..."
-              />
-            </div>
-
-            <div className="pt-2">
-              <button
-                type="button"
-                onClick={() => showToast(lang === "id" ? "Template email berhasil disimpan!" : "Email template saved!", "success")}
-                className="btn-primary py-2 px-5 text-xs font-bold shadow-sm"
+              <label className="text-xs font-bold text-ink-700 block">Pilih Event <span className="text-rose-500">*</span></label>
+              <select
+                value={selectedEventId}
+                onChange={e => handleEventChangeForTemplate(e.target.value)}
+                className="input-field text-xs font-semibold"
               >
-                Save Template Styling
-              </button>
+                <option value="">— Pilih Event —</option>
+                {events.map(ev => (
+                  <option key={ev.id} value={ev.id}>{ev.name} ({ev.type})</option>
+                ))}
+              </select>
             </div>
+
+            {selectedEventId ? (
+              <>
+                {/* Variable injectors tags */}
+                <div className="space-y-2 animate-in fade-in duration-200">
+                  <label className="text-xxs font-bold text-ink-600 uppercase tracking-wider block">Sisipkan Variabel (Click to inject)</label>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { key: "participant", label: "{{participant}}" },
+                      { key: "event", label: "{{event}}" },
+                      { key: "certificate", label: "{{certificate}}" },
+                      { key: "date", label: "{{date}}" },
+                      { key: "verification", label: "{{verification}}" }
+                    ].map(v => (
+                      <button
+                        key={v.key}
+                        type="button"
+                        onClick={() => injectVariable(v.key, "body")}
+                        className="px-2.5 py-1 text-[10px] font-mono font-bold bg-brand-50 hover:bg-brand-100 text-brand-600 rounded-lg transition-all border border-brand-100 cursor-pointer"
+                      >
+                        {v.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Subject text input */}
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-ink-700 block">Email Subject</label>
+                  <input
+                    type="text"
+                    value={templateSubject}
+                    onChange={e => setTemplateSubject(e.target.value)}
+                    className="input-field font-semibold text-xs"
+                    placeholder="Subject"
+                  />
+                </div>
+
+                {/* Greeting input */}
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-ink-700 block">Greeting Header</label>
+                  <input
+                    type="text"
+                    value={templateGreeting}
+                    onChange={e => setTemplateGreeting(e.target.value)}
+                    className="input-field text-xs"
+                    placeholder="Greeting"
+                  />
+                </div>
+
+                {/* Body textarea */}
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-ink-700 block">Email Body Message</label>
+                  <textarea
+                    value={templateBody}
+                    onChange={e => setTemplateBody(e.target.value)}
+                    className="input-field text-xs min-h-[140px] font-medium leading-relaxed"
+                    placeholder="Write your email body..."
+                  />
+                </div>
+
+                {/* Footer textarea */}
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-ink-700 block">Email Footer Signature</label>
+                  <textarea
+                    value={templateFooter}
+                    onChange={e => setTemplateFooter(e.target.value)}
+                    className="input-field text-xs min-h-[60px] font-medium leading-relaxed"
+                    placeholder="Signatures, links..."
+                  />
+                </div>
+
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={handleSaveTemplate}
+                    disabled={isSavingTemplate}
+                    className="btn-primary py-2 px-5 text-xs font-bold shadow-sm inline-flex items-center gap-1.5"
+                  >
+                    {isSavingTemplate ? (
+                      <>
+                        <CircleNotch className="w-4.5 h-4.5 animate-spin" />
+                        {lang === "id" ? "Menyimpan..." : "Saving..."}
+                      </>
+                    ) : (
+                      lang === "id" ? "Simpan Template" : "Save Template"
+                    )}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-12 border border-dashed border-ink-200 rounded-2xl bg-ink-50 text-xs text-ink-500 animate-in fade-in duration-200">
+                {lang === "id" 
+                  ? "Pilih salah satu event untuk mulai mengedit template email." 
+                  : "Please select an event to edit its email template."}
+              </div>
+            )}
           </div>
 
           {/* Real-time live preview box */}
@@ -1025,7 +1271,7 @@ export default function EmailCenterPage() {
 
       {/* TAB CONTENT 5: EMAIL SETTINGS */}
       {activeTab === "settings" && (
-        <div className="card shadow-sm p-6 md:p-8 space-y-8 animate-in fade-in duration-200">
+        <form onSubmit={handleSaveSmtpSettings} className="card shadow-sm p-6 md:p-8 space-y-8 animate-in fade-in duration-200">
           
           <div className="flex justify-between items-start border-b border-ink-100 dark:border-ink-800 pb-4 gap-4 flex-wrap">
             <div>
@@ -1037,17 +1283,17 @@ export default function EmailCenterPage() {
                 Configure your custom delivery address, reply inbox, branding, and SMTP server integrations.
               </p>
             </div>
-            <span className="text-[9px] font-extrabold text-brand-600 bg-brand-50 px-2.5 py-1 rounded border border-brand-100 uppercase tracking-widest animate-pulse">
-              Coming Soon
+            <span className="text-[9px] font-extrabold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded border border-emerald-100 uppercase tracking-widest">
+              Unlocked & Active
             </span>
           </div>
 
-          {/* Settings forms mock */}
+          {/* Settings forms */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             
             {/* Sender configurations */}
             <div className="space-y-4">
-              <h4 className="text-xs font-bold text-ink-700 uppercase tracking-wider">Sender Info</h4>
+              <h4 className="text-xs font-bold text-ink-700 uppercase tracking-wider">Sender Info & Branding</h4>
               <div className="space-y-3">
                 <div>
                   <label className="text-xs font-bold text-ink-700 block mb-1.5">Sender Name</label>
@@ -1056,6 +1302,8 @@ export default function EmailCenterPage() {
                     value={senderName}
                     onChange={e => setSenderName(e.target.value)}
                     className="input-field text-xs font-semibold"
+                    placeholder="SertifKilat Auto-mailer"
+                    required
                   />
                 </div>
                 <div>
@@ -1065,6 +1313,8 @@ export default function EmailCenterPage() {
                     value={replyEmail}
                     onChange={e => setReplyEmail(e.target.value)}
                     className="input-field text-xs font-semibold"
+                    placeholder="no-reply@sertifkilat.id"
+                    required
                   />
                 </div>
                 <div>
@@ -1074,15 +1324,9 @@ export default function EmailCenterPage() {
                     value={emailSignature}
                     onChange={e => setEmailSignature(e.target.value)}
                     className="input-field text-xs"
+                    placeholder="Sent securely via SertifKilat.id"
                   />
                 </div>
-              </div>
-            </div>
-
-            {/* Branding configurations */}
-            <div className="space-y-4">
-              <h4 className="text-xs font-bold text-ink-700 uppercase tracking-wider">Email Branding</h4>
-              <div className="space-y-3">
                 <div>
                   <label className="text-xs font-bold text-ink-700 block mb-1.5">Brand Accent Color</label>
                   <div className="flex items-center gap-2">
@@ -1100,31 +1344,98 @@ export default function EmailCenterPage() {
                     />
                   </div>
                 </div>
+              </div>
+            </div>
+
+            {/* SMTP Server Settings */}
+            <div className="space-y-4">
+              <h4 className="text-xs font-bold text-ink-700 uppercase tracking-wider">SMTP Server Settings</h4>
+              <div className="space-y-3">
                 <div>
-                  <label className="text-xs font-bold text-ink-700 block mb-1.5">Upload Logo Header</label>
-                  <div className="border border-dashed border-ink-200 dark:border-ink-800 rounded-xl p-4 text-center hover:border-brand-500 transition-all cursor-pointer">
-                    <span className="text-[10px] text-ink-700 font-bold block">Choose Logo Image File</span>
-                    <span className="text-[8px] text-ink-600 block mt-0.5">PNG, JPG up to 1MB</span>
+                  <label className="text-xs font-bold text-ink-700 block mb-1.5">SMTP Host</label>
+                  <input
+                    type="text"
+                    value={smtpHost}
+                    onChange={e => setSmtpHost(e.target.value)}
+                    className="input-field text-xs font-mono"
+                    placeholder="smtp.mailgun.org"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-bold text-ink-700 block mb-1.5">SMTP Port</label>
+                    <input
+                      type="text"
+                      value={smtpPort}
+                      onChange={e => setSmtpPort(e.target.value)}
+                      className="input-field text-xs font-mono"
+                      placeholder="587"
+                    />
                   </div>
+                  <div>
+                    <label className="text-xs font-bold text-ink-700 block mb-1.5">Security</label>
+                    <div className="text-[10px] text-ink-600 font-semibold h-10 flex items-center bg-ink-50 dark:bg-ink-850 px-3 rounded-xl border border-ink-150">
+                      {smtpPort === "465" ? "SSL/TLS (Secure)" : "STARTTLS (Standard)"}
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-ink-700 block mb-1.5">SMTP Username</label>
+                  <input
+                    type="text"
+                    value={smtpUser}
+                    onChange={e => setSmtpUser(e.target.value)}
+                    className="input-field text-xs font-mono"
+                    placeholder="user@example.com"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-ink-700 block mb-1.5">SMTP Password</label>
+                  <input
+                    type="password"
+                    value={smtpPass}
+                    onChange={e => setSmtpPass(e.target.value)}
+                    className="input-field text-xs font-mono"
+                    placeholder="••••••••••••"
+                  />
                 </div>
               </div>
             </div>
+
           </div>
 
-          {/* SMTP Details coming soon */}
-          <div className="border-t border-ink-100 dark:border-ink-800 pt-6 space-y-4">
-            <h4 className="text-xs font-bold text-ink-700 uppercase tracking-wider">SMTP Server Settings (Locked)</h4>
-            <div className="p-4 bg-ink-50 dark:bg-ink-850 rounded-xl border border-ink-150 dark:border-ink-800 text-xs text-ink-700 leading-normal flex items-start gap-3">
-              <Lock className="w-5 h-5 text-ink-500 shrink-0 mt-0.5" />
-              <div>
-                <strong>Custom SMTP configuration is coming in next release.</strong>
-                <p className="text-[10px] text-ink-600 mt-1">
-                  You will be able to input your own custom SMTP servers (Host, Port, User, Password) to route emails through Amazon SES, Mailgun, SendGrid, or direct host mailers.
-                </p>
-              </div>
-            </div>
+          <div className="flex gap-3 justify-end pt-6 border-t border-ink-100 dark:border-ink-800">
+            <button
+              type="button"
+              onClick={handleTestSmtpConnection}
+              disabled={isTestingSmtp}
+              className="px-4 py-2 rounded-xl border border-ink-250 dark:border-ink-750 text-ink-600 font-bold text-xs hover:bg-ink-50 dark:hover:bg-ink-800 transition-all cursor-pointer disabled:opacity-50 inline-flex items-center gap-1.5"
+            >
+              {isTestingSmtp ? (
+                <>
+                  <CircleNotch className="w-4.5 h-4.5 animate-spin" />
+                  Testing Connection...
+                </>
+              ) : (
+                "Test SMTP Connection"
+              )}
+            </button>
+            <button
+              type="submit"
+              disabled={isSavingSmtp}
+              className="btn-primary py-2 px-5 text-xs font-bold disabled:opacity-50 inline-flex items-center gap-1.5"
+            >
+              {isSavingSmtp ? (
+                <>
+                  <CircleNotch className="w-4.5 h-4.5 animate-spin" />
+                  Saving Settings...
+                </>
+              ) : (
+                lang === "id" ? "Simpan Setelan" : "Save Settings"
+              )}
+            </button>
           </div>
-        </div>
+        </form>
       )}
 
     </div>
